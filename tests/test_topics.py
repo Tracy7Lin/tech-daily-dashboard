@@ -58,6 +58,23 @@ class TopicTests(unittest.TestCase):
         )
         self.assertEqual(topic_id_for_entry(entry), "customer-adoption")
 
+    def test_topic_id_for_entry_prioritizes_safety_over_model(self) -> None:
+        entry = EnrichedEntry(
+            raw=RawEntry(
+                company_slug="openai",
+                company_name="OpenAI",
+                source_label="news",
+                title="Trusted access with GPT-5.5",
+                url="https://example.com",
+            ),
+            tags=["ai", "model", "safety"],
+            category="technology",
+            importance=5,
+            summary_cn="summary",
+            comparison_angle="ai、model、safety",
+        )
+        self.assertEqual(topic_id_for_entry(entry), "safety-governance")
+
 
 if __name__ == "__main__":
     unittest.main()

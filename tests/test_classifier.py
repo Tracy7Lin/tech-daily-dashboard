@@ -32,6 +32,21 @@ class ClassifierTests(unittest.TestCase):
         self.assertIn("model", result.tags)
         self.assertIn("safety", result.tags)
         self.assertGreaterEqual(result.importance, 4)
+        self.assertIn("OpenAI", result.summary_cn)
+        self.assertIn("安全", result.summary_cn)
+
+    def test_classify_entry_does_not_treat_system_card_as_hardware(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="news",
+            title="GPT-5.5 Instant System Card",
+            url="https://example.com",
+            summary="Documentation for the GPT-5.5 Instant model and its safeguards.",
+        )
+        result = classify_entry(entry)
+        self.assertNotIn("hardware", result.tags)
+        self.assertIn("model", result.tags)
 
 
 if __name__ == "__main__":

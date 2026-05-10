@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from .models import EnrichedEntry, RawEntry
+from .summarizer import Summarizer
 
 TAG_KEYWORDS = {
     "ai": ("ai", "model", "llm", "agent", "genai", "copilot"),
     "product": ("launch", "release", "introduce", "new", "debut"),
     "developer": ("api", "sdk", "developer", "platform"),
     "enterprise": ("enterprise", "business", "workspace", "cloud"),
-    "hardware": ("device", "phone", "laptop", "chip", "robot", "car"),
+    "hardware": ("device", "phone", "laptop", "chip", "robot", "vehicle", "automotive"),
     "strategy": ("partnership", "strategy", "future", "vision", "roadmap"),
     "model": ("gpt", "claude", "gemini", "llama", "opus", "sonnet", "model"),
     "safety": ("safety", "privacy", "wellbeing", "trusted", "policy", "governance", "security"),
@@ -17,6 +18,7 @@ TAG_KEYWORDS = {
 }
 
 PRIORITY_COMPANIES = {"openai", "google", "microsoft", "anthropic", "meta", "amazon"}
+SUMMARIZER = Summarizer()
 
 
 def _lower_blob(entry: RawEntry) -> str:
@@ -60,7 +62,7 @@ def classify_entry(entry: RawEntry) -> EnrichedEntry:
         importance += 1
 
     comparison_angle = "、".join(tag for tag in tags if tag != "general") or "general"
-    summary_cn = build_summary(entry, category)
+    summary_cn = SUMMARIZER.summarize(entry, tags, category)
     return EnrichedEntry(
         raw=entry,
         tags=tags,
@@ -69,22 +71,3 @@ def classify_entry(entry: RawEntry) -> EnrichedEntry:
         summary_cn=summary_cn,
         comparison_angle=comparison_angle,
     )
-
-
-def build_summary(entry: RawEntry, category: str) -> str:
-    base = entry.summary.strip() or entry.title.strip()
-    title = entry.title.strip()
-    if entry.summary.strip():
-        why = entry.summary.strip()
-    else:
-        why = ""
-    if category == "strategy":
-        suffix = "这更偏战略动作，重点在于公司对外释放未来方向或合作信号。"
-        return f"{title}。{why + '。' if why and why not in title else ''}{suffix}"
-    if category == "product":
-        suffix = "这更偏产品动作，值得关注其面向用户或开发者的实际落地。"
-        return f"{title}。{why + '。' if why and why not in title else ''}{suffix}"
-    if category == "technology":
-        suffix = "这更偏技术动作，重点在于 AI 或平台能力的延展。"
-        return f"{title}。{why + '。' if why and why not in title else ''}{suffix}"
-    return f"{title}。{why + '。' if why and why not in title else ''}这是当天值得记录的官方动态，可结合原文确认后续影响。"

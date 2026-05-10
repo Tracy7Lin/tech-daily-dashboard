@@ -20,14 +20,14 @@ TOPIC_TITLES = {
 
 def topic_id_for_entry(entry: EnrichedEntry) -> str:
     tags = set(entry.tags)
-    if {"model", "ai"} <= tags:
-        return "model-release"
     if "safety" in tags:
         return "safety-governance"
     if "customer" in tags:
         return "customer-adoption"
     if "infrastructure" in tags:
         return "ai-infrastructure"
+    if {"model", "ai"} <= tags:
+        return "model-release"
     if {"ai", "developer"} <= tags:
         return "ai-agent"
     if {"ai", "enterprise"} <= tags:
