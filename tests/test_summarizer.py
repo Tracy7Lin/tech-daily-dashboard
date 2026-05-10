@@ -16,7 +16,7 @@ class SummarizerTests(unittest.TestCase):
             summary="Smarter, clearer and more personalized responses for everyday use.",
         )
         summary = build_summary(entry, ["ai", "model", "consumer"], "product")
-        self.assertIn("OpenAI 围绕“launches GPT-5.5 Instant for ChatGPT”发布了一项产品相关的更新", summary)
+        self.assertIn("OpenAI 围绕“launches GPT-5.5 Instant for ChatGPT”", summary)
         self.assertIn("模型能力升级", summary)
         self.assertIn("重点在于", summary)
 
@@ -31,7 +31,7 @@ class SummarizerTests(unittest.TestCase):
         )
         summary = build_summary(entry, ["ai", "customer"], "technology")
         self.assertIn("客户落地与采用进展", summary)
-        self.assertIn("真实业务与工作流", summary)
+        self.assertIn("真实业务场景", summary)
 
     def test_build_summary_prioritizes_safety_over_model_when_both_exist(self) -> None:
         entry = RawEntry(
@@ -44,6 +44,46 @@ class SummarizerTests(unittest.TestCase):
         )
         summary = build_summary(entry, ["ai", "model", "safety"], "technology")
         self.assertIn("安全、治理与可信使用", summary)
+
+    def test_build_summary_strips_html_and_mentions_rollout_when_relevant(self) -> None:
+        entry = RawEntry(
+            company_slug="google",
+            company_name="Google",
+            source_label="Google Blog",
+            title="Google Health Coach is becoming globally available",
+            url="https://example.com",
+            summary="<img src=\"hero.png\">Google Health Coach, now available globally, provides personalized insights on workouts, sleep and recovery.",
+        )
+        summary = build_summary(entry, ["product", "consumer"], "product")
+        self.assertNotIn("<img", summary)
+        self.assertIn("面向更大范围用户", summary)
+        self.assertNotIn("rollout", summary)
+
+    def test_build_summary_uses_customer_case_wording(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="OpenAI News",
+            title="Parloa builds service agents customers want to talk to",
+            url="https://example.com",
+            summary="Parloa leverages OpenAI models to deploy reliable real-time customer service agents for enterprises.",
+        )
+        summary = build_summary(entry, ["ai", "enterprise", "customer", "model"], "technology")
+        self.assertIn("客户案例", summary)
+        self.assertIn("真实业务场景", summary)
+
+    def test_build_summary_does_not_treat_brand_title_performance_as_model_gain(self) -> None:
+        entry = RawEntry(
+            company_slug="google",
+            company_name="Google",
+            source_label="Google Blog",
+            title="Pre-order Stephen Curry’s special edition Fitbit Air",
+            url="https://example.com",
+            summary="NBA champion and Google Performance Advisor, Stephen Curry, has partnered with Fitbit to debut a special edition band.",
+        )
+        summary = build_summary(entry, ["product"], "product")
+        self.assertNotIn("模型能力、推理表现或工作流效果的提升", summary)
+        self.assertIn("产品能力是否真正落地到用户或开发者场景", summary)
 
 
 if __name__ == "__main__":

@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import re
+
 from .models import EnrichedEntry, RawEntry
 from .summarizer import Summarizer
 
 TAG_KEYWORDS = {
-    "ai": ("ai", "model", "llm", "agent", "genai", "copilot"),
-    "product": ("launch", "release", "introduce", "new", "debut"),
-    "developer": ("api", "sdk", "developer", "platform"),
-    "enterprise": ("enterprise", "business", "workspace", "cloud"),
-    "hardware": ("device", "phone", "laptop", "chip", "robot", "vehicle", "automotive"),
-    "strategy": ("partnership", "strategy", "future", "vision", "roadmap"),
-    "model": ("gpt", "claude", "gemini", "llama", "opus", "sonnet", "model"),
-    "safety": ("safety", "privacy", "wellbeing", "trusted", "policy", "governance", "security"),
-    "customer": ("customer", "customers", "bank", "uber", "enterprise", "adoption", "uses openai", "helps"),
-    "infrastructure": ("data center", "compute", "fabric", "infrastructure", "silicon", "ethernet", "capacity"),
+    "ai": ("ai", "model", "models", "llm", "agent", "agents", "genai", "copilot"),
+    "product": ("launch", "launches", "launched", "release", "releases", "released", "introduce", "introducing", "introduced", "new", "debut", "debuts"),
+    "developer": ("api", "apis", "sdk", "sdks", "developer", "developers", "platform", "platforms"),
+    "enterprise": ("enterprise", "enterprises", "business", "businesses", "workspace", "workspaces", "cloud"),
+    "hardware": ("device", "devices", "phone", "phones", "laptop", "laptops", "chip", "chips", "robot", "robots", "vehicle", "vehicles", "automotive"),
+    "strategy": ("partnership", "partnerships", "strategy", "strategic", "future", "vision", "roadmap"),
+    "model": ("gpt", "claude", "gemini", "llama", "opus", "sonnet", "model", "models"),
+    "safety": ("safety", "privacy", "trusted", "policy", "policies", "governance", "security", "safeguard", "safeguards"),
+    "customer": ("customer", "customers", "bank", "banks", "uber", "adoption", "adopt", "deploy", "deployment", "uses openai", "use openai"),
+    "infrastructure": ("data center", "data centers", "compute", "fabric", "infrastructure", "silicon", "ethernet", "capacity"),
     "consumer": ("chatgpt", "chrome", "assistant", "glasses", "alexa", "whatsapp"),
 }
 
@@ -27,14 +29,19 @@ def _lower_blob(entry: RawEntry) -> str:
             entry.title.lower(),
             entry.summary.lower(),
             entry.content.lower(),
-            entry.url.lower(),
         ]
     )
 
 
+def _contains_keyword(blob: str, keyword: str) -> bool:
+    escaped = re.escape(keyword.lower()).replace(r"\ ", r"\s+")
+    pattern = rf"(?<![a-z0-9]){escaped}(?![a-z0-9])"
+    return re.search(pattern, blob) is not None
+
+
 def classify_entry(entry: RawEntry) -> EnrichedEntry:
     blob = _lower_blob(entry)
-    tags = [tag for tag, words in TAG_KEYWORDS.items() if any(word in blob for word in words)]
+    tags = [tag for tag, words in TAG_KEYWORDS.items() if any(_contains_keyword(blob, word) for word in words)]
     if not tags:
         tags = ["general"]
 

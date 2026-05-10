@@ -48,6 +48,45 @@ class ClassifierTests(unittest.TestCase):
         self.assertNotIn("hardware", result.tags)
         self.assertIn("model", result.tags)
 
+    def test_classify_entry_does_not_match_ai_inside_other_words(self) -> None:
+        entry = RawEntry(
+            company_slug="google",
+            company_name="Google",
+            source_label="Google Blog",
+            title="Google Health Coach is becoming globally available",
+            url="https://example.com/google-health-coach",
+            summary="Personalized insights on workouts, sleep, recovery and wellbeing.",
+        )
+        result = classify_entry(entry)
+        self.assertNotIn("ai", result.tags)
+        self.assertNotIn("safety", result.tags)
+
+    def test_classify_entry_matches_plural_and_inflected_keywords(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="OpenAI News",
+            title="OpenAI launches new agents APIs for developers",
+            url="https://example.com/openai-agents-apis",
+            summary="The release expands developer platforms for enterprise teams.",
+        )
+        result = classify_entry(entry)
+        self.assertIn("ai", result.tags)
+        self.assertIn("product", result.tags)
+        self.assertIn("developer", result.tags)
+
+    def test_classify_entry_does_not_use_url_taxonomy_as_developer_signal(self) -> None:
+        entry = RawEntry(
+            company_slug="google",
+            company_name="Google",
+            source_label="Google Blog",
+            title="Google Health Coach is becoming globally available",
+            url="https://blog.google/products-and-platforms/products/google-health/google-health-coach/",
+            summary="Google Health Coach, now available globally, provides personalized insights on workouts, sleep, recovery and wellbeing.",
+        )
+        result = classify_entry(entry)
+        self.assertNotIn("developer", result.tags)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,8 +19,15 @@ TAG_FOCUS = {
 }
 
 
+def _contains_phrase(text: str, phrase: str) -> bool:
+    escaped = re.escape(phrase.lower()).replace(r"\ ", r"\s+")
+    pattern = rf"(?<![a-z0-9]){escaped}(?![a-z0-9])"
+    return re.search(pattern, text) is not None
+
+
 def _clean_whitespace(text: str) -> str:
-    return " ".join(text.split()).strip()
+    without_html = re.sub(r"<[^>]+>", " ", text)
+    return " ".join(without_html.split()).strip()
 
 
 def _short_title(title: str, company_name: str) -> str:
@@ -47,16 +54,20 @@ def _pick_focus(tags: list[str], category: str) -> str:
 
 
 def _why_clause(summary: str, tags: list[str], category: str) -> str:
+    lowered = summary.lower()
     if summary:
-        lowered = summary.lower()
-        if any(word in lowered for word in ("privacy", "safety", "trusted", "security")):
+        if any(_contains_phrase(lowered, word) for word in ("privacy", "safety", "trusted", "security", "safeguard", "safeguards")):
             return "重点在于把能力升级和安全控制同时往前推进。"
-        if any(word in lowered for word in ("enterprise", "customer", "bank", "workflow", "business")):
-            return "重点在于把能力进一步推向真实业务与工作流。"
-        if any(word in lowered for word in ("model", "performance", "reasoning", "coding", "agents")):
+        if any(_contains_phrase(lowered, word) for word in ("global", "globally", "worldwide")):
+            return "重点在于把这项能力从局部试点推向面向更大范围用户的正式上线。"
+        if any(_contains_phrase(lowered, word) for word in ("enterprise", "customer", "customers", "bank", "banks", "workflow", "workflows", "business", "deploy", "deployment")):
+            return "重点在于验证能力能否进入真实业务场景并形成可复制的客户案例。"
+        if any(_contains_phrase(lowered, word) for word in ("model", "models", "reasoning", "coding", "agents", "agent")):
             return "重点在于模型能力、推理表现或工作流效果的提升。"
+        if any(_contains_phrase(lowered, word) for word in ("personalized", "personalised", "insights", "experience", "available")):
+            return "重点在于把新能力直接变成用户可感知的日常体验。"
     if "customer" in tags:
-        return "重点在于真实客户场景中的采用和落地速度。"
+        return "重点在于真实业务场景中的采用速度，以及能否沉淀成客户案例。"
     if "infrastructure" in tags:
         return "重点在于支撑后续 AI 能力扩张的底层投入。"
     if "safety" in tags:
@@ -68,19 +79,29 @@ def _why_clause(summary: str, tags: list[str], category: str) -> str:
     return "重点在于产品能力是否真正落地到用户或开发者场景。"
 
 
+def _action_clause(tags: list[str], category: str) -> str:
+    if "customer" in tags:
+        return "披露了一则客户案例"
+    if "safety" in tags:
+        return "更新了安全与治理相关能力"
+    if "infrastructure" in tags:
+        return "披露了基础设施相关进展"
+    if "model" in tags:
+        return "发布了模型与能力更新"
+    if category == "strategy":
+        return "披露了一项战略层面的更新"
+    if category == "technology":
+        return "发布了一项技术能力相关的更新"
+    if category == "product":
+        return "发布了一项产品相关的更新"
+    return "披露了一项值得关注的官方动态"
+
+
 def build_summary(entry: RawEntry, tags: list[str], category: str) -> str:
     short_title = _short_title(entry.title, entry.company_name)
     focus = _pick_focus(tags, category)
     why = _why_clause(_clean_whitespace(entry.summary), tags, category)
-
-    if category == "strategy":
-        action = "披露了一项战略层面的更新"
-    elif category == "technology":
-        action = "发布了一项技术能力相关的更新"
-    elif category == "product":
-        action = "发布了一项产品相关的更新"
-    else:
-        action = "披露了一项值得关注的官方动态"
+    action = _action_clause(tags, category)
 
     return f"{entry.company_name} 围绕“{short_title}”{action}，核心看点是 {focus}。{why}"
 
