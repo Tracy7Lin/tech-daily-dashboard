@@ -1,0 +1,252 @@
+[
+  {
+    "slug": "openai",
+    "name": "OpenAI",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "rss",
+        "label": "OpenAI News",
+        "url": "https://openai.com/news/rss.xml",
+        "include_patterns": ["openai", "gpt", "model", "agent", "api"],
+        "exclude_patterns": ["careers", "jobs"]
+      }
+    ]
+  },
+  {
+    "slug": "google",
+    "name": "Google",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "rss",
+        "label": "Google Blog",
+        "url": "https://blog.google/rss/",
+        "include_patterns": ["ai", "gemini", "cloud", "workspace", "android"],
+        "exclude_patterns": ["culture", "keyword"]
+      }
+    ]
+  },
+  {
+    "slug": "microsoft",
+    "name": "Microsoft",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "rss",
+        "label": "Microsoft Blogs",
+        "url": "https://blogs.microsoft.com/feed/",
+        "include_patterns": ["copilot", "azure", "ai", "windows", "microsoft 365"],
+        "exclude_patterns": ["career", "jobs"]
+      }
+    ]
+  },
+  {
+    "slug": "anthropic",
+    "name": "Anthropic",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Anthropic News",
+        "url": "https://www.anthropic.com/news",
+        "path_prefixes": ["/news/"],
+        "include_patterns": ["claude", "api", "model", "agent", "anthropic"],
+        "exclude_patterns": ["career", "policy"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 4,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "apple",
+    "name": "Apple",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "rss",
+        "label": "Apple Newsroom",
+        "url": "https://www.apple.com/newsroom/rss-feed.rss",
+        "include_patterns": ["apple", "iphone", "mac", "ipad", "vision", "intelligence"],
+        "exclude_patterns": ["store", "music playlist"]
+      }
+    ]
+  },
+  {
+    "slug": "meta",
+    "name": "Meta",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Meta News",
+        "url": "https://about.fb.com/news/",
+        "path_prefixes": ["/news/"],
+        "include_patterns": ["ai", "llama", "meta", "threads", "ray-ban"],
+        "exclude_patterns": ["policy", "safety center", "community standards", "bill c-22", "position on"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 4,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "amazon",
+    "name": "Amazon",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "About Amazon News",
+        "url": "https://www.aboutamazon.com/news",
+        "path_prefixes": ["/news/"],
+        "include_patterns": ["aws", "amazon", "alexa", "ai", "device", "supply chain"],
+        "exclude_patterns": ["book", "holiday shopping", "culture", "entertainment", "prime video", "trailer", "rural america", "sustainability"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 4,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "nvidia",
+    "name": "NVIDIA",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "rss",
+        "label": "NVIDIA Blog",
+        "url": "https://blogs.nvidia.com/feed/",
+        "include_patterns": ["ai", "nvidia", "robotics", "software", "omniverse"],
+        "exclude_patterns": ["career", "jobs"]
+      }
+    ]
+  },
+  {
+    "slug": "tesla",
+    "name": "Tesla",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Tesla Blog",
+        "url": "https://www.tesla.com/blog",
+        "path_prefixes": ["/blog"],
+        "include_patterns": ["tesla", "autopilot", "robot", "software", "model"],
+        "exclude_patterns": ["career", "event registration"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "xai",
+    "name": "xAI",
+    "region": "us",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "xAI Blog",
+        "url": "https://x.ai/blog",
+        "path_prefixes": ["/blog"],
+        "include_patterns": ["grok", "model", "api", "xai", "agent"],
+        "exclude_patterns": ["careers"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "tencent",
+    "name": "Tencent",
+    "region": "cn",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Tencent Articles",
+        "url": "https://www.tencent.com/en-us/articles.html",
+        "path_prefixes": ["/en-us/articles/"],
+        "include_patterns": ["ai", "cloud", "wechat", "game", "model"],
+        "exclude_patterns": ["culture", "esg", "charity"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "bytedance",
+    "name": "ByteDance",
+    "region": "cn",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "ByteDance News",
+        "url": "https://www.bytedance.com/en/news",
+        "path_prefixes": ["/en/news/"],
+        "include_patterns": ["ai", "model", "doubao", "capcut", "byteplus"],
+        "exclude_patterns": ["culture", "campus", "philanthropy"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "alibaba",
+    "name": "Alibaba",
+    "region": "cn",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Alibaba News",
+        "url": "https://www.alibabagroup.com/en-US/news",
+        "path_prefixes": ["/en-US/news/"],
+        "include_patterns": ["ai", "cloud", "qwen", "alibaba", "taobao"],
+        "exclude_patterns": ["esg", "charity", "festival"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "huawei",
+    "name": "Huawei",
+    "region": "cn",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Huawei News",
+        "url": "https://www.huawei.com/en/news",
+        "path_prefixes": ["/en/news/"],
+        "include_patterns": ["huawei", "cloud", "ai", "mate", "harmonyos"],
+        "exclude_patterns": ["sustainability", "seed for the future"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  },
+  {
+    "slug": "xiaomi",
+    "name": "Xiaomi",
+    "region": "cn",
+    "sources": [
+      {
+        "kind": "html",
+        "label": "Xiaomi News",
+        "url": "https://www.mi.com/global/discover/news",
+        "path_prefixes": ["/global/discover/"],
+        "include_patterns": ["xiaomi", "hyperos", "ai", "phone", "device"],
+        "exclude_patterns": ["fan festival", "lifestyle"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 3,
+        "require_published_at": true
+      }
+    ]
+  }
+]

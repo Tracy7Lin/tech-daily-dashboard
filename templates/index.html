@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科技巨头每日情报看板</title>
+  <style>
+    :root {
+      --bg: #f5f4ee;
+      --panel: #fffdf8;
+      --ink: #1f2a37;
+      --accent: #b44c2a;
+      --muted: #6b7280;
+      --line: #ded8cb;
+    }
+    body { margin: 0; font-family: "Segoe UI", "PingFang SC", sans-serif; background: radial-gradient(circle at top, #fff8ea, var(--bg)); color: var(--ink); }
+    main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+    .hero { padding: 28px; background: linear-gradient(135deg, #fff7df, #fffdf8); border: 1px solid var(--line); border-radius: 24px; }
+    .hero h1 { margin: 0 0 12px; font-size: 2rem; }
+    .meta { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 24px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: 0 10px 30px rgba(31, 42, 55, 0.05); }
+    .section-title { margin-top: 32px; margin-bottom: 14px; font-size: 1.25rem; }
+    a { color: var(--accent); text-decoration: none; }
+    ul { padding-left: 18px; }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <p class="meta">$date</p>
+      <h1>科技巨头每日情报看板</h1>
+      <p>$headline</p>
+      <p class="meta">有效新闻：$total_entries | 覆盖公司：$companies_covered | 热门主题：$hottest_topics</p>
+      <p><a href="./$date/index.html">查看当日详情</a> · <a href="./archive.html">历史归档</a></p>
+    </section>
+
+    <h2 class="section-title">主题对比</h2>
+    <div class="grid">$topic_cards</div>
+
+    <h2 class="section-title">公司动态</h2>
+    <div class="grid">$company_cards</div>
+  </main>
+</body>
+</html>
