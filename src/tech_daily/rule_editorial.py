@@ -74,13 +74,13 @@ def build_topic_summary(title: str, entries: list[EnrichedEntry]) -> str:
     companies = sorted({entry.raw.company_name for entry in entries})
     angles = list(dict.fromkeys(angle_for_entry(entry) for entry in entries))
     if len(companies) == 1:
-        return f"今天围绕 {title} 的动作主要来自 {companies[0]}，核心重心落在{angles[0]}。"
+        return f"{companies[0]} 今天把 {title} 推到台前，重点落在{angles[0]}。"
     if len(angles) > 1:
         return (
-            f"今天围绕 {title} 的动作主要来自 {'、'.join(companies[:3])}，"
-            f"重心集中在{angles[0]}与{angles[1]}。"
+            f"今天 {title} 的讨论主要由 {'、'.join(companies[:3])} 拉动，"
+            f"焦点分别落在{angles[0]}与{angles[1]}。"
         )
-    return f"今天围绕 {title} 的动作主要来自 {'、'.join(companies[:3])}，核心重心落在{angles[0]}。"
+    return f"今天 {title} 的讨论主要由 {'、'.join(companies[:3])} 拉动，核心重心落在{angles[0]}。"
 
 
 def build_topic_comparison(entries: list[EnrichedEntry]) -> str:

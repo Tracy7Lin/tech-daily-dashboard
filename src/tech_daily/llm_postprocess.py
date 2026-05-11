@@ -25,6 +25,13 @@ SPECULATIVE_PATTERNS = (
     "预计",
 )
 
+EDITORIAL_HYPE_PATTERNS = (
+    "行业拐点",
+    "激增",
+    "颠覆",
+    "改写格局",
+)
+
 MAX_SUMMARY_CHARS = 160
 MAX_EDITORIAL_CHARS = 140
 
@@ -89,6 +96,8 @@ def clean_editorial_text(text: str) -> str:
     cleaned = _remove_meta_phrases(cleaned)
     cleaned = _clean_text(cleaned)
     cleaned = _enforce_max_length(cleaned, MAX_EDITORIAL_CHARS)
+    if any(pattern in cleaned for pattern in EDITORIAL_HYPE_PATTERNS):
+        raise ValueError("llm_editorial_hype_language")
     if _is_low_signal(cleaned):
         raise ValueError("llm_editorial_low_signal")
     return cleaned

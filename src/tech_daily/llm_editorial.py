@@ -36,6 +36,7 @@ class LLMEditorial:
             instructions=(
                 "你是科技行业分析博客编辑。请写一句中文日报总览，强调今天最值得关注的信号。"
                 "要像高质量行业简报，不要使用模板腔，不要写元话术。"
+                "只能提及输入里明确出现的公司，不要自行拔高成“行业拐点”“激增”等夸张结论。"
             ),
             input_text=(
                 f"总条数：{total_entries}\n"
@@ -45,14 +46,26 @@ class LLMEditorial:
             schema_name="headline_payload",
             schema={
                 "type": "object",
-                "properties": {"headline": {"type": "string"}},
-                "required": ["headline"],
+                "properties": {
+                    "headline": {"type": "string"},
+                    "mentioned_companies": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["headline", "mentioned_companies"],
                 "additionalProperties": False,
             },
         )
+        validate_mentioned_companies(payload["mentioned_companies"], active_companies)
         return clean_editorial_text(payload["headline"])
 
     def build_topic_summary(self, title: str, entries: list[EnrichedEntry]) -> str:
+        companies = sorted({entry.raw.company_name for entry in entries})
+        if len(companies) <= 1:
+            from .rule_editorial import build_topic_summary as build_rule_topic_summary
+
+            return build_rule_topic_summary(title, entries)
         return self._build_topic_field(title, entries, "summary", "总结这个主题今天真正发生了什么。")
 
     def build_topic_comparison(self, entries: list[EnrichedEntry]) -> str:

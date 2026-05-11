@@ -79,6 +79,20 @@ class EditorialTests(unittest.TestCase):
         self.assertIn("OpenAI", summary)
         self.assertIn("Google", summary)
 
+    def test_build_topic_summary_for_single_company_reads_less_mechanical(self) -> None:
+        entries = [
+            _entry(
+                "openai",
+                "OpenAI",
+                "How enterprises are scaling AI",
+                summary="AI governance at scale.",
+                tags=["ai", "enterprise", "safety"],
+            ),
+        ]
+        summary = self.rule_service.build_topic_summary("安全与治理", entries)
+        self.assertIn("OpenAI", summary)
+        self.assertNotIn("动作主要来自", summary)
+
     def test_build_topic_comparison_avoids_raw_internal_category_names(self) -> None:
         entries = [
             _entry(
