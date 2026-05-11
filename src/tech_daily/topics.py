@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from .editorial import build_topic_comparison, build_topic_summary, build_topic_trend
 from .models import EnrichedEntry, TopicCluster
 
 TOPIC_TITLES = {
@@ -52,27 +53,11 @@ def build_topic_clusters(entries: list[EnrichedEntry], limit: int = 5) -> list[T
     grouped = group_entries_by_topic(entries)
     clusters: list[TopicCluster] = []
     for topic_id, topic_entries in grouped.items():
-        names = [entry.raw.company_name for entry in topic_entries]
         title = TOPIC_TITLES.get(topic_id, topic_id)
         sorted_entries = sorted(topic_entries, key=lambda item: (-item.importance, item.raw.company_name))
-        company_angles: dict[str, str] = {}
-        for entry in sorted_entries:
-            if entry.raw.company_name not in company_angles:
-                angle = entry.category
-                if "model" in entry.tags:
-                    angle = "模型能力"
-                elif "safety" in entry.tags:
-                    angle = "安全治理"
-                elif "customer" in entry.tags:
-                    angle = "客户落地"
-                elif "infrastructure" in entry.tags:
-                    angle = "基础设施"
-                elif "developer" in entry.tags:
-                    angle = "开发者平台"
-                company_angles[entry.raw.company_name] = angle
-        comparison = "；".join(f"{name} 偏 {angle}" for name, angle in company_angles.items())
-        trend = f"相关公司包括 {', '.join(sorted(set(names)))}，显示该方向正在继续演进。"
-        summary = f"今日围绕 {title} 有 {len(topic_entries)} 条高相关动态，主要集中在 {', '.join(sorted(set(names))[:3])}。"
+        comparison = build_topic_comparison(sorted_entries)
+        trend = build_topic_trend(title, sorted_entries)
+        summary = build_topic_summary(title, sorted_entries)
         clusters.append(
             TopicCluster(
                 topic_id=topic_id,

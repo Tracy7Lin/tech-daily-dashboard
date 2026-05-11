@@ -7,6 +7,7 @@ from pathlib import Path
 from .classifier import classify_entry
 from .collector import collect_entries
 from .config_loader import load_companies
+from .editorial import build_daily_headline
 from .models import CompanyReport, DailyReport, EnrichedEntry
 from .quality import filter_high_signal_entries, matches_report_date
 from .render import write_site
@@ -86,14 +87,7 @@ def _build_headline(total_entries: int, statuses) -> str:
 
 
 def _build_daily_brief(topic_clusters, company_reports, total_entries: int) -> str:
-    if not total_entries:
-        return ""
-    active_companies = [report.company_name for report in company_reports if report.has_updates][:3]
-    lead = topic_clusters[0].title if topic_clusters else "官方动态"
-    if len(topic_clusters) > 1:
-        second = topic_clusters[1].title
-        return f"今天共筛出 {total_entries} 条高价值动态，重点集中在 {lead} 与 {second}，活跃公司包括 {', '.join(active_companies)}。"
-    return f"今天共筛出 {total_entries} 条高价值动态，重点集中在 {lead}，活跃公司包括 {', '.join(active_companies)}。"
+    return build_daily_headline(topic_clusters, company_reports, total_entries)
 
 
 def build_daily_report(date_str: str) -> DailyReport:
