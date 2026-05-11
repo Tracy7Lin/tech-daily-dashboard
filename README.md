@@ -10,6 +10,11 @@
 - 主题对比优先的首页
 - 静态 HTML 与 JSON 产物
 
+## 仓库定位
+
+这个仓库现在单独维护科技日报项目本身，不再与 `E:\Jarvis_fun` 根目录下的其他实验性内容混放。
+如果你在本地统一管理多个小项目，建议把它作为独立子项目目录保留，例如 `E:\Jarvis_fun\tech-daily-dashboard`。
+
 ## 目录结构
 
 - `config/companies.json`: 默认观察名单与信源配置
