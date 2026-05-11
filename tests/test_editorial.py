@@ -4,10 +4,6 @@ from unittest.mock import Mock
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.editorial import (
     EditorialService,
-    build_daily_headline,
-    build_topic_comparison,
-    build_topic_summary,
-    build_topic_trend,
 )
 from tech_daily.models import EnrichedEntry, RawEntry
 
@@ -41,6 +37,9 @@ def _entry(
 
 
 class EditorialTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.rule_service = EditorialService(mode="rule")
+
     def test_build_daily_headline_reads_like_editorial_signal(self) -> None:
         clusters = [
             type("Cluster", (), {"title": "安全与治理", "entries": [1, 2, 3]})(),
@@ -51,7 +50,7 @@ class EditorialTests(unittest.TestCase):
             type("Report", (), {"company_name": "Google", "has_updates": True})(),
             type("Report", (), {"company_name": "Apple", "has_updates": True})(),
         ]
-        headline = build_daily_headline(clusters, company_reports, 6)
+        headline = self.rule_service.build_daily_headline(clusters, company_reports, 6)
         self.assertIn("今天最值得关注的信号", headline)
         self.assertIn("安全与治理", headline)
         self.assertIn("OpenAI", headline)
@@ -74,7 +73,7 @@ class EditorialTests(unittest.TestCase):
                 category="general",
             ),
         ]
-        summary = build_topic_summary("安全与治理", entries)
+        summary = self.rule_service.build_topic_summary("安全与治理", entries)
         self.assertIn("安全与治理", summary)
         self.assertIn("OpenAI", summary)
         self.assertIn("Google", summary)
@@ -97,7 +96,7 @@ class EditorialTests(unittest.TestCase):
                 category="general",
             ),
         ]
-        comparison = build_topic_comparison(entries)
+        comparison = self.rule_service.build_topic_comparison(entries)
         self.assertIn("OpenAI", comparison)
         self.assertIn("Amazon", comparison)
         self.assertNotIn("general", comparison)
@@ -122,7 +121,7 @@ class EditorialTests(unittest.TestCase):
                 category="product",
             ),
         ]
-        trend = build_topic_trend("模型与能力发布", entries)
+        trend = self.rule_service.build_topic_trend("模型与能力发布", entries)
         self.assertIn("说明", trend)
         self.assertNotIn("正在继续演进", trend)
 
@@ -147,7 +146,7 @@ class EditorialTests(unittest.TestCase):
                 importance=2,
             ),
         ]
-        summary = build_topic_summary("其他重要动态", entries)
+        summary = self.rule_service.build_topic_summary("其他重要动态", entries)
         self.assertIn("终端或设备入口探索", summary)
         self.assertNotIn("重点方向仍在继续试探", summary)
 

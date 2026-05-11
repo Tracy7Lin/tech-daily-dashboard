@@ -5,13 +5,16 @@ from unittest.mock import patch
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.classifier import classify_entry
-from tech_daily.editorial import build_daily_headline
+from tech_daily.editorial import EditorialService
 from tech_daily.models import Company, RawEntry, SourceStatus
 from tech_daily.pipeline import _augment_status_counts, _build_daily_brief, _build_headline, generate_daily_report
 from tech_daily.quality import filter_high_signal_entries, matches_report_date
 
 
 class PipelineTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.rule_editorial = EditorialService(mode="rule")
+
     def test_build_headline_distinguishes_no_same_day_updates(self) -> None:
         statuses = [
             SourceStatus(
@@ -65,7 +68,8 @@ class PipelineTests(unittest.TestCase):
             type("Report", (), {"company_name": "OpenAI", "has_updates": True})(),
             type("Report", (), {"company_name": "Microsoft", "has_updates": True})(),
         ]
-        brief = _build_daily_brief(clusters, company_reports, 5)
+        with patch("tech_daily.pipeline.build_daily_headline", self.rule_editorial.build_daily_headline):
+            brief = _build_daily_brief(clusters, company_reports, 5)
         self.assertIn("今天最值得关注的信号", brief)
         self.assertIn("模型与能力发布", brief)
         self.assertIn("OpenAI", brief)
