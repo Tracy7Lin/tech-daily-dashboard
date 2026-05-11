@@ -1,83 +1,136 @@
 # 科技巨头每日情报看板
 
-一个面向个人使用的静态日报生成器。它读取公司与信源配置，抓取官方动态，进行规则或 LLM 混合摘要与主题归类，并输出可归档的静态网页。
+一个面向个人使用的科技情报日报生成器。
 
-## 当前目标
+项目会从预设的科技公司官方渠道抓取动态，完成筛选、摘要、主题聚合与横向对比，并输出可归档的静态网页与 JSON 报告。
 
-- 配置驱动的公司观察名单
-- 官方来源优先
-- 中文速览摘要
-- 主题对比优先的首页
-- 静态 HTML 与 JSON 产物
+## Overview
 
-## 仓库定位
+- 官方信源优先，降低噪音与二手转载干扰
+- 支持规则模式、LLM 模式与 `hybrid` 混合模式
+- 首页以主题对比为核心，而不是简单按公司堆叠新闻
+- 输出静态站点，便于本地查看、归档和后续部署
 
-这个仓库现在单独维护科技日报项目本身，不再与 `E:\Jarvis_fun` 根目录下的其他实验性内容混放。
-如果你在本地统一管理多个小项目，建议把它作为独立子项目目录保留，例如 `E:\Jarvis_fun\tech-daily-dashboard`。
+这个仓库现在作为独立项目维护，建议本地放在类似 `E:\Jarvis_fun\tech-daily-dashboard` 的子目录下，而不是与其他实验性内容混放。
 
-## 目录结构
+## Features
 
-- `config/companies.json`: 默认观察名单与信源配置
-- `src/tech_daily`: 核心代码
+- 可配置的公司观察名单与官方信源
+- 面向日报场景的中文摘要生成
+- 跨公司主题聚合与差异对比
+- 当日首页、详情页与历史归档产物
+- LLM 不可用时自动回退到规则表达
+
+## Quick Start
+
+### 1. 环境准备
+
+- Python 3.11+
+- 可选：兼容 OpenAI API 的 LLM 服务
+
+### 2. 安装与配置
+
+复制配置模板：
+
+```bash
+copy .env.example .env
+```
+
+然后按需填写：
+
+- `TECH_DAILY_SUMMARY_MODE`
+- `TECH_DAILY_EDITORIAL_MODE`
+- `TECH_DAILY_LLM_API_URL`
+- `TECH_DAILY_LLM_API_KEY`
+- `TECH_DAILY_LLM_MODEL`
+
+### 3. 生成单日日报
+
+```bash
+python run_dashboard.py generate --date 2026-05-11 --output-dir build/site
+```
+
+### 4. 回填最近几天的日报
+
+```bash
+python run_dashboard.py backfill --end-date 2026-05-11 --days 7 --output-dir build/site
+```
+
+## Output
+
+默认生成结果位于：
+
+- `build/site/index.html`
+- `build/site/archive.html`
+- `build/site/<date>/index.html`
+- `build/site/<date>/report.json`
+
+## Project Layout
+
+- `config/companies.json`: 公司与信源配置
+- `src/tech_daily`: 核心业务代码
 - `templates/`: 静态页面模板
-- `docs/`: 需求、设计、计划文档
-- `build/`: 运行产物
+- `tests/`: 单元测试与回归测试
+- `docs/`: 需求、设计与实现文档
+- `build/`: 本地生成产物
 
-## 运行方式
+## Configuration
 
-```bash
-python run_dashboard.py generate --date 2026-05-10
-```
-
-如果希望指定输出目录：
-
-```bash
-python run_dashboard.py generate --date 2026-05-10 --output-dir build/site
-```
-
-如果希望回填最近几天的日报归档：
-
-```bash
-python run_dashboard.py backfill --end-date 2026-05-10 --days 7 --output-dir build/site
-```
-
-## 当前实现边界
-
-首版使用 Python 标准库实现，重点是保留高内聚、低耦合结构：
-
-- `collector.py` 只负责采集
-- `classifier.py` / `summarizer.py` 只负责内容理解
-- `topics.py` 只负责主题聚合
-- `render.py` 只负责静态站点输出
-- `pipeline.py` 只负责编排
-
-后续可扩展方向：
-
-- 替换为更强的 LLM 摘要器
-- 为不同站点添加更精准的源适配器
-- 引入历史归档索引
-- 将站点升级为动态看板
-
-## LLM 表达层配置
-
-当前实现只把 LLM 用在内容表达层，不用在抓取、日期判断、去重和基础分类上。
-
-建议先将 `.env.example` 复制为 `.env`，再填入你自己的模型地址和密钥。`.env` 已加入忽略，不会进入版本控制。
+### LLM 相关配置
 
 - `TECH_DAILY_SUMMARY_MODE`: `rule` / `llm` / `hybrid`
 - `TECH_DAILY_EDITORIAL_MODE`: `rule` / `llm` / `hybrid`
-- `TECH_DAILY_LLM_API_URL`: 默认 `https://api.openai.com/v1/responses`
+- `TECH_DAILY_LLM_API_URL`: LLM API 地址
 - `TECH_DAILY_LLM_API_KEY`: LLM API Key
-- `TECH_DAILY_LLM_MODEL`: 默认 `deepseekv4`
-- `TECH_DAILY_LLM_TIMEOUT_SECONDS`: 默认 `20`
-- `TECH_DAILY_LLM_FALLBACK_ENABLED`: 默认 `true`
+- `TECH_DAILY_LLM_MODEL`: 模型名
+- `TECH_DAILY_LLM_TIMEOUT_SECONDS`: 请求超时秒数
+- `TECH_DAILY_LLM_FALLBACK_ENABLED`: 是否启用规则回退
 
 推荐默认值：
 
 - `TECH_DAILY_SUMMARY_MODE=hybrid`
 - `TECH_DAILY_EDITORIAL_MODE=hybrid`
 
-这意味着：
+### 观察名单与信源
 
-- 有可用 LLM 时，用 LLM 生成单条中文简报和首页/主题分析文案
-- LLM 不可用或调用失败时，自动退回现有规则表达
+默认观察名单和官方信源维护在：
+
+`config/companies.json`
+
+你可以在这里扩展公司、RSS 源、HTML 页面源和过滤规则。
+
+## Architecture
+
+项目保持高内聚、低耦合，职责边界如下：
+
+- `collector.py`: 采集与基础去重
+- `normalize.py` / `quality.py`: 归一化与质量过滤
+- `classifier.py`: 标签、分类与重要度判定
+- `summarizer.py`: 单条摘要门面
+- `editorial.py`: 首页与主题分析门面
+- `topics.py`: 主题聚合
+- `render.py`: 静态页面渲染
+- `pipeline.py`: 日报生成编排
+
+其中 LLM 只用于表达层，不参与抓取、日期判断、去重和基础分类。
+
+## Verification
+
+运行测试：
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+生成真实日报进行本地验证：
+
+```bash
+python run_dashboard.py generate --date 2026-05-11 --output-dir build/site
+```
+
+## Roadmap
+
+- 继续提升摘要与主题分析的稳定性
+- 精修不同公司站点的发布时间与正文提取
+- 增加更强的历史检索与筛选能力
+- 为未来的科技情报分析 agent 保留可复用 skill 边界
