@@ -83,3 +83,10 @@ def clean_editorial_text(text: str) -> str:
     if _is_low_signal(cleaned):
         raise ValueError("llm_editorial_low_signal")
     return cleaned
+
+
+def validate_mentioned_companies(mentioned_companies: list[str], allowed_companies: list[str]) -> None:
+    allowed = {company.strip() for company in allowed_companies if company.strip()}
+    mentioned = {company.strip() for company in mentioned_companies if company.strip()}
+    if not mentioned.issubset(allowed):
+        raise ValueError("llm_editorial_unlisted_company")

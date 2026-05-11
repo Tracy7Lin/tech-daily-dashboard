@@ -3,6 +3,7 @@ import unittest
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.llm_editorial import LLMEditorial
 from tech_daily.models import EnrichedEntry, RawEntry
+from tech_daily.rule_editorial import build_topic_comparison
 
 
 class _StubClient:
@@ -48,7 +49,40 @@ class LLMEditorialTests(unittest.TestCase):
         self.assertIn("模型与平台能力", headline)
 
     def test_build_topic_comparison_rejects_empty_generic_output(self) -> None:
-        editorial = LLMEditorial(_StubClient({"comparison": "根据提供信息，不同公司都在推进相关工作。"}))
+        editorial = LLMEditorial(_StubClient({"comparison": "根据提供信息，不同公司都在推进相关工作。", "mentioned_companies": []}))
+        entries = [
+            _entry("openai", "OpenAI", "API update", "Model update for developers.", ["ai", "model", "developer"]),
+            _entry("google", "Google", "Workspace update", "New AI features for users.", ["ai", "product"]),
+        ]
+
+        with self.assertRaises(ValueError):
+            editorial.build_topic_comparison(entries)
+
+    def test_build_topic_comparison_uses_rule_path_for_single_company_topic(self) -> None:
+        editorial = LLMEditorial(
+            _StubClient(
+                {
+                    "comparison": "OpenAI与Google形成差异。",
+                    "mentioned_companies": ["OpenAI", "Google"],
+                }
+            )
+        )
+        entries = [
+            _entry("openai", "OpenAI", "API update", "Model update for developers.", ["ai", "model", "developer"]),
+        ]
+
+        comparison = editorial.build_topic_comparison(entries)
+        self.assertEqual(comparison, build_topic_comparison(entries))
+
+    def test_build_topic_comparison_rejects_unlisted_companies(self) -> None:
+        editorial = LLMEditorial(
+            _StubClient(
+                {
+                    "comparison": "OpenAI强调治理，而Meta更重视开放生态。",
+                    "mentioned_companies": ["OpenAI", "Meta"],
+                }
+            )
+        )
         entries = [
             _entry("openai", "OpenAI", "API update", "Model update for developers.", ["ai", "model", "developer"]),
             _entry("google", "Google", "Workspace update", "New AI features for users.", ["ai", "product"]),

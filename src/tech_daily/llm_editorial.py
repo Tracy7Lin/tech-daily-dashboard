@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from .llm_client import LLMClient
-from .llm_postprocess import clean_editorial_text
+from .llm_postprocess import clean_editorial_text, validate_mentioned_companies
 from .models import EnrichedEntry
+from .rule_editorial import build_topic_comparison as build_rule_topic_comparison
 
 
 def _entry_lines(entries: list[EnrichedEntry], limit: int = 4) -> str:
@@ -49,7 +50,36 @@ class LLMEditorial:
         return self._build_topic_field(title, entries, "summary", "总结这个主题今天真正发生了什么。")
 
     def build_topic_comparison(self, entries: list[EnrichedEntry]) -> str:
-        return self._build_topic_field("", entries, "comparison", "比较不同公司的切入点差异，不要暴露内部标签。")
+        companies = sorted({entry.raw.company_name for entry in entries})
+        if len(companies) <= 1:
+            return build_rule_topic_comparison(entries)
+
+        payload = self.client.generate_json(
+            instructions=(
+                "你是科技行业分析博客编辑。请比较给定公司之间的切入点差异。"
+                "只能比较输入中明确出现的公司，不得引入任何未提供的公司、品牌或媒体。"
+                "不要使用“根据提供信息”“可以看出”这类元话术。"
+            ),
+            input_text=(
+                f"允许提及的公司：{'、'.join(companies)}\n"
+                f"代表事件：\n{_entry_lines(entries)}\n"
+            ),
+            schema_name="comparison_payload",
+            schema={
+                "type": "object",
+                "properties": {
+                    "comparison": {"type": "string"},
+                    "mentioned_companies": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["comparison", "mentioned_companies"],
+                "additionalProperties": False,
+            },
+        )
+        validate_mentioned_companies(payload["mentioned_companies"], companies)
+        return clean_editorial_text(payload["comparison"])
 
     def build_topic_trend(self, title: str, entries: list[EnrichedEntry]) -> str:
         return self._build_topic_field(title, entries, "trend", "总结这说明行业正在往哪里变化。")
