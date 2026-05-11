@@ -5,42 +5,257 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$date - 科技巨头日报详情</title>
   <style>
-    body { margin: 0; font-family: "Segoe UI", "PingFang SC", sans-serif; background: #f6f5f1; color: #1f2937; }
-    main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
-    .card { background: #fff; border: 1px solid #e5e0d5; border-radius: 18px; padding: 20px; margin-bottom: 18px; }
-    .entry { padding-top: 12px; border-top: 1px solid #eee7da; margin-top: 12px; }
-    .meta { color: #6b7280; }
-    .stack { display: grid; gap: 18px; }
-    .eyebrow { margin: 0 0 8px; color: #b44c2a; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    :root {
+      --bg: #f4f7fb;
+      --surface: rgba(255, 255, 255, 0.8);
+      --surface-strong: #ffffff;
+      --ink: #102033;
+      --ink-soft: #516173;
+      --line: rgba(117, 138, 173, 0.22);
+      --brand: #2563eb;
+      --brand-soft: rgba(37, 99, 235, 0.12);
+      --shadow: 0 24px 60px rgba(15, 23, 42, 0.10);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 24%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 55%, #eef3f9 100%);
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .site-shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
+    }
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      box-shadow: 0 0 0 8px var(--brand-soft);
+    }
+    .top-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .page-header {
+      padding: 30px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(244,248,255,0.86));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--brand);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .page-header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 3.8vw, 3.1rem);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+    }
+    .hero-copy {
+      margin: 16px 0 0;
+      max-width: 780px;
+      color: var(--ink-soft);
+      font-size: 1.04rem;
+      line-height: 1.78;
+    }
+    .section {
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+    .section h2 {
+      margin: 0 0 8px;
+      letter-spacing: -0.03em;
+    }
+    .section-hint {
+      margin: 0 0 18px;
+      color: var(--ink-soft);
+      line-height: 1.7;
+    }
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+    .card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.9);
+      padding: 22px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+    }
+    .highlight-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,249,255,0.84));
+    }
+    .card-topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .importance-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .card h3,
+    .card h4 {
+      margin: 0 0 10px;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+    }
+    .section-copy,
+    .topic-note,
+    .supplement {
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+      line-height: 1.76;
+    }
+    .meta {
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+    .meta-line {
+      margin: 0;
+      padding-top: 12px;
+      border-top: 1px solid rgba(117, 138, 173, 0.16);
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 0;
+    }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .topic-list-label { margin: 14px 0 10px; }
+    .topic-event-list,
+    .status-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+    .topic-event,
+    .status-list li,
+    .company-card .entry {
+      padding-top: 12px;
+      margin-top: 12px;
+      border-top: 1px solid rgba(117, 138, 173, 0.16);
+    }
+    .topic-event:first-child,
+    .status-list li:first-child,
+    .company-card .entry:first-of-type {
+      padding-top: 0;
+      margin-top: 0;
+      border-top: 0;
+    }
+    .topic-event-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .inline-link { font-weight: 600; }
+    .empty { color: var(--ink-soft); }
+    @media (max-width: 720px) {
+      .site-shell { padding-inline: 16px; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .page-header,
+      .section { padding: 22px; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <section class="card">
-      <p class="meta">$date</p>
+  <main class="site-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <span class="brand-mark"></span>
+        <span>Tech Daily Dashboard</span>
+      </div>
+      <nav class="top-links">
+        <a href="../index.html">返回首页</a>
+        <a href="../archive.html">历史归档</a>
+      </nav>
+    </header>
+
+    <section class="page-header">
+      <p class="eyebrow">$date</p>
       <h1>当日日报详情</h1>
-      <p>$headline</p>
-      <p><a href="../index.html">返回首页</a> · <a href="../archive.html">历史归档</a></p>
+      <p class="hero-copy">$headline</p>
     </section>
 
-    <section class="card">
+    <section class="section">
       <h2>重点观察</h2>
+      <p class="section-hint">这里优先展示当天最值得先读的条目，适合作为快速进入整份日报的入口。</p>
       <div class="stack">$highlights</div>
     </section>
 
-    <section class="card">
+    <section class="section">
       <h2>主题对比</h2>
-      $topic_cards
+      <p class="section-hint">按主题查看不同动作的聚合与判断，而不是逐条阅读同类更新。</p>
+      <div class="stack">$topic_cards</div>
     </section>
 
-    <section class="card">
+    <section class="section">
       <h2>公司动态</h2>
-      $company_cards
+      <p class="section-hint">需要回看某一家公司的完整动作时，可以直接从这里下钻。</p>
+      <div class="stack">$company_cards</div>
     </section>
 
-    <section class="card">
+    <section class="section">
       <h2>源状态说明</h2>
-      <ul>$statuses</ul>
+      <p class="section-hint">显示各个官方来源当天的抓取与保留情况，便于追踪缺失与过滤原因。</p>
+      <ul class="status-list">$statuses</ul>
     </section>
   </main>
 </body>

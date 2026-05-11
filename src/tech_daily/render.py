@@ -58,14 +58,16 @@ def _select_highlights(report: DailyReport, limit: int) -> list[EnrichedEntry]:
 
 
 def _render_highlight_card(entry: EnrichedEntry) -> str:
+    tag_badges = "".join(f"<span class='tag-chip'>{html.escape(tag)}</span>" for tag in entry.tags[:4])
     return (
         "<article class='card highlight-card'>"
-        f"<p class='eyebrow'>{html.escape(entry.raw.company_name)}</p>"
+        f"<div class='card-topline'><p class='eyebrow'>{html.escape(entry.raw.company_name)}</p><span class='importance-pill'>P{entry.importance}</span></div>"
         f"<h3>{html.escape(entry.raw.title)}</h3>"
-        f"<p>{html.escape(entry.summary_cn)}</p>"
-        f"<p class='meta'>{_entry_meta(entry)}</p>"
-        f"<p><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
-        f"<p><a href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
+        f"<p class='section-copy'>{html.escape(entry.summary_cn)}</p>"
+        f"<p class='meta meta-line'>{_entry_meta(entry)}</p>"
+        f"<div class='tag-row'>{tag_badges}</div>"
+        f"<p class='supplement'><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
+        f"<p><a class='inline-link' href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
         "</article>"
     )
 
@@ -80,22 +82,21 @@ def _render_highlights(report: DailyReport, limit: int) -> str:
 def _render_topic_card(cluster: TopicCluster) -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     representative_entries = "".join(
-        "<li>"
-        f"<strong>{html.escape(entry.raw.company_name)}</strong>："
-        f"<a href=\"{html.escape(entry.raw.url)}\">{html.escape(entry.raw.title)}</a>"
-        f"<p>{html.escape(entry.summary_cn)}</p>"
+        "<li class='topic-event'>"
+        f"<div class='topic-event-title'><strong>{html.escape(entry.raw.company_name)}</strong><a class='inline-link' href=\"{html.escape(entry.raw.url)}\">{html.escape(entry.raw.title)}</a></div>"
+        f"<p class='section-copy'>{html.escape(entry.summary_cn)}</p>"
         "</li>"
         for entry in cluster.entries[:3]
     )
     return (
         "<section class='card topic-card'>"
         f"<h3>{html.escape(cluster.title)}</h3>"
-        f"<p class='meta'>涉及公司：{len(companies)} | 条目数：{len(cluster.entries)} | 公司：{html.escape(', '.join(companies))}</p>"
-        f"<p>{html.escape(cluster.summary)}</p>"
-        f"<p><strong>差异对比：</strong>{html.escape(cluster.comparison)}</p>"
-        f"<p><strong>趋势判断：</strong>{html.escape(cluster.trend)}</p>"
-        "<p><strong>代表事件：</strong></p>"
-        f"<ul>{representative_entries}</ul>"
+        f"<p class='meta meta-line'>涉及公司：{len(companies)} | 条目数：{len(cluster.entries)} | 公司：{html.escape(', '.join(companies))}</p>"
+        f"<p class='section-copy'>{html.escape(cluster.summary)}</p>"
+        f"<p class='topic-note'><strong>差异对比：</strong>{html.escape(cluster.comparison)}</p>"
+        f"<p class='topic-note'><strong>趋势判断：</strong>{html.escape(cluster.trend)}</p>"
+        "<p class='topic-list-label'><strong>代表事件：</strong></p>"
+        f"<ul class='topic-event-list'>{representative_entries}</ul>"
         "</section>"
     )
 
@@ -109,10 +110,10 @@ def _render_company_report(report: CompanyReport) -> str:
             items.append(
                 "<article class='entry'>"
                 f"<h4>{html.escape(entry.raw.title)}</h4>"
-                f"<p>{html.escape(entry.summary_cn)}</p>"
-                f"<p class='meta'>{_entry_meta(entry)}</p>"
-                f"<p><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
-                f"<p><a href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
+                f"<p class='section-copy'>{html.escape(entry.summary_cn)}</p>"
+                f"<p class='meta meta-line'>{_entry_meta(entry)}</p>"
+                f"<p class='supplement'><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
+                f"<p><a class='inline-link' href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
                 "</article>"
             )
         body = "".join(items)

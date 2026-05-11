@@ -72,6 +72,9 @@ class RenderTests(unittest.TestCase):
             source_statuses=[],
         )
         html = render_index(report)
+        self.assertIn("site-shell", html)
+        self.assertIn("hero-stats", html)
+        self.assertIn("metric-pill", html)
         self.assertIn("主题对比", html)
         self.assertIn("重点观察", html)
         self.assertIn("涉及公司", html)
@@ -114,6 +117,9 @@ class RenderTests(unittest.TestCase):
             source_statuses=[],
         )
         html = render_daily(report)
+        self.assertIn("site-shell", html)
+        self.assertIn("page-header", html)
+        self.assertIn("status-list", html)
         self.assertIn("重点观察", html)
         self.assertIn("原文补充", html)
         self.assertIn("Google Blog", html)
@@ -179,6 +185,7 @@ class RenderTests(unittest.TestCase):
             write_site(older_report, output_dir)
             write_site(newer_report, output_dir)
             archive_html = (output_dir / "archive.html").read_text(encoding="utf-8")
+            self.assertIn("archive-list", archive_html)
             self.assertIn("2026-05-10", archive_html)
             self.assertIn("2026-05-09", archive_html)
 
