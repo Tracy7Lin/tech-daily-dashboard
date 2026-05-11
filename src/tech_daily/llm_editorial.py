@@ -3,7 +3,11 @@ from __future__ import annotations
 from .llm_client import LLMClient
 from .llm_postprocess import clean_editorial_text, validate_mentioned_companies
 from .models import EnrichedEntry
-from .rule_editorial import build_topic_comparison as build_rule_topic_comparison
+from .rule_editorial import (
+    build_daily_headline as build_rule_daily_headline,
+    build_topic_comparison as build_rule_topic_comparison,
+    build_topic_trend as build_rule_topic_trend,
+)
 
 
 def _entry_lines(entries: list[EnrichedEntry], limit: int = 4) -> str:
@@ -24,6 +28,8 @@ class LLMEditorial:
         return self.client.is_available()
 
     def build_daily_headline(self, topic_clusters, company_reports, total_entries: int) -> str:
+        if total_entries <= 3:
+            return build_rule_daily_headline(topic_clusters, company_reports, total_entries)
         active_companies = [report.company_name for report in company_reports if report.has_updates][:4]
         topics = [cluster.title for cluster in topic_clusters[:3]]
         payload = self.client.generate_json(
@@ -82,6 +88,9 @@ class LLMEditorial:
         return clean_editorial_text(payload["comparison"])
 
     def build_topic_trend(self, title: str, entries: list[EnrichedEntry]) -> str:
+        companies = sorted({entry.raw.company_name for entry in entries})
+        if len(companies) <= 1:
+            return build_rule_topic_trend(title, entries)
         return self._build_topic_field(title, entries, "trend", "总结这说明行业正在往哪里变化。")
 
     def _build_topic_field(self, title: str, entries: list[EnrichedEntry], field_name: str, instruction: str) -> str:

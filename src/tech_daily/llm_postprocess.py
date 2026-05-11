@@ -18,6 +18,13 @@ GENERIC_PATTERNS = (
     "相关工作",
 )
 
+SPECULATIVE_PATTERNS = (
+    "可能",
+    "有望",
+    "或将",
+    "预计",
+)
+
 MAX_SUMMARY_CHARS = 160
 MAX_EDITORIAL_CHARS = 140
 
@@ -70,6 +77,8 @@ def clean_summary_text(text: str, *, title: str) -> str:
     cleaned = _trim_title_repetition(cleaned, title)
     cleaned = _clean_text(cleaned)
     cleaned = _enforce_max_length(cleaned, MAX_SUMMARY_CHARS)
+    if any(pattern in cleaned for pattern in SPECULATIVE_PATTERNS):
+        raise ValueError("llm_summary_speculative")
     if _is_low_signal(cleaned):
         raise ValueError("llm_summary_low_signal")
     return cleaned

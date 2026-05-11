@@ -57,6 +57,26 @@ class LLMSummarizerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             summarizer.summarize(entry, ["ai", "model", "consumer"], "product")
 
+    def test_summarize_rejects_speculative_claims(self) -> None:
+        summarizer = LLMSummarizer(
+            _StubClient(
+                {
+                    "summary_cn": "谷歌将AI升级后的Google Finance服务扩展到欧洲，支持全本地语言。此举可能重塑欧洲用户的投资决策方式。"
+                }
+            )
+        )
+        entry = RawEntry(
+            company_slug="google",
+            company_name="Google",
+            source_label="Google Blog",
+            title="The new AI-powered Google Finance is expanding to Europe.",
+            url="https://example.com",
+            summary="AI-powered Google Finance expands in Europe with local language support.",
+        )
+
+        with self.assertRaises(ValueError):
+            summarizer.summarize(entry, ["ai", "product"], "product")
+
 
 if __name__ == "__main__":
     unittest.main()

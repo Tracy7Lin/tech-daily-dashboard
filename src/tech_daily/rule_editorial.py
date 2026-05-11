@@ -63,12 +63,10 @@ def build_daily_headline(topic_clusters, company_reports, total_entries: int) ->
         return (
             f"今天最值得关注的信号是，{lead}与{second}同时升温；"
             f"{companies_label} 正在把竞争继续推向更具体的产品、平台或落地场景。"
-            f" 全日共筛出 {total_entries} 条高价值动态。"
         )
     return (
         f"今天最值得关注的信号是，{lead}成为主线；"
         f"{companies_label} 都在围绕这一方向继续加码。"
-        f" 全日共筛出 {total_entries} 条高价值动态。"
     )
 
 
@@ -92,7 +90,7 @@ def build_topic_comparison(entries: list[EnrichedEntry]) -> str:
         return "暂无可比较的公司切入点。"
     if len(items) == 1:
         company, angle = items[0]
-        return f"{company} 目前主要沿着{angle}推进。"
+        return f"{company} 这次更偏向{angle}。"
     if len(items) == 2:
         return f"{items[0][0]} 更偏 {items[0][1]}，{items[1][0]} 则更偏 {items[1][1]}。"
     lead = f"{items[0][0]} 更偏 {items[0][1]}"

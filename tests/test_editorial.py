@@ -54,6 +54,7 @@ class EditorialTests(unittest.TestCase):
         self.assertIn("今天最值得关注的信号", headline)
         self.assertIn("安全与治理", headline)
         self.assertIn("OpenAI", headline)
+        self.assertNotIn("全日共筛出", headline)
 
     def test_build_topic_summary_names_actual_focus(self) -> None:
         entries = [
@@ -102,6 +103,20 @@ class EditorialTests(unittest.TestCase):
         self.assertNotIn("general", comparison)
         self.assertNotIn("technology", comparison)
         self.assertNotIn("product", comparison)
+
+    def test_build_topic_comparison_for_single_company_reads_less_mechanical(self) -> None:
+        entries = [
+            _entry(
+                "openai",
+                "OpenAI",
+                "How enterprises are scaling AI",
+                summary="AI governance at scale.",
+                tags=["ai", "enterprise", "safety"],
+            ),
+        ]
+        comparison = self.rule_service.build_topic_comparison(entries)
+        self.assertIn("OpenAI", comparison)
+        self.assertNotIn("目前主要沿着", comparison)
 
     def test_build_topic_trend_reads_like_industry_takeaway(self) -> None:
         entries = [
