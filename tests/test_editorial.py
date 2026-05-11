@@ -1,7 +1,9 @@
 import unittest
+from unittest.mock import Mock
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.editorial import (
+    EditorialService,
     build_daily_headline,
     build_topic_comparison,
     build_topic_summary,
@@ -148,6 +150,17 @@ class EditorialTests(unittest.TestCase):
         summary = build_topic_summary("其他重要动态", entries)
         self.assertIn("终端或设备入口探索", summary)
         self.assertNotIn("重点方向仍在继续试探", summary)
+
+    def test_editorial_service_hybrid_falls_back_to_rule_headline(self) -> None:
+        rule = Mock()
+        rule.build_daily_headline.return_value = "rule headline"
+        llm = Mock()
+        llm.is_available.return_value = False
+
+        service = EditorialService(mode="hybrid", fallback_enabled=True, rule_editor=rule, llm_editor=llm)
+        result = service.build_daily_headline([], [], 0)
+        self.assertEqual(result, "rule headline")
+        rule.build_daily_headline.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
 import unittest
+from unittest.mock import Mock
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.models import RawEntry
-from tech_daily.summarizer import build_summary
+from tech_daily.summarizer import Summarizer, build_summary
 
 
 class SummarizerTests(unittest.TestCase):
@@ -84,6 +85,44 @@ class SummarizerTests(unittest.TestCase):
         summary = build_summary(entry, ["product"], "product")
         self.assertNotIn("模型能力、推理表现或工作流效果的提升", summary)
         self.assertIn("产品能力是否真正落地到用户或开发者场景", summary)
+
+    def test_summarizer_hybrid_falls_back_to_rule_when_llm_unavailable(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="OpenAI News",
+            title="OpenAI launches GPT-5.5 Instant for ChatGPT",
+            url="https://example.com",
+            summary="Smarter, clearer and more personalized responses for everyday use.",
+        )
+        rule = Mock()
+        rule.summarize.return_value = "rule summary"
+        llm = Mock()
+        llm.is_available.return_value = False
+
+        summarizer = Summarizer(mode="hybrid", fallback_enabled=True, rule_summarizer=rule, llm_summarizer=llm)
+        result = summarizer.summarize(entry, ["ai", "model"], "product")
+        self.assertEqual(result, "rule summary")
+        rule.summarize.assert_called_once()
+
+    def test_summarizer_hybrid_falls_back_to_rule_on_llm_error(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="OpenAI News",
+            title="OpenAI launches GPT-5.5 Instant for ChatGPT",
+            url="https://example.com",
+            summary="Smarter, clearer and more personalized responses for everyday use.",
+        )
+        rule = Mock()
+        rule.summarize.return_value = "rule summary"
+        llm = Mock()
+        llm.is_available.return_value = True
+        llm.summarize.side_effect = RuntimeError("boom")
+
+        summarizer = Summarizer(mode="hybrid", fallback_enabled=True, rule_summarizer=rule, llm_summarizer=llm)
+        result = summarizer.summarize(entry, ["ai", "model"], "product")
+        self.assertEqual(result, "rule summary")
 
 
 if __name__ == "__main__":
