@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import html
 import json
+import re
 from pathlib import Path
 from string import Template
 
 from .archive import load_report_snapshots
-from .models import CompanyReport, DailyReport, TopicCluster
+from .models import CompanyReport, DailyReport, EnrichedEntry, TopicCluster
 from .paths import TEMPLATES_DIR
 
 
@@ -14,18 +15,87 @@ def _load_template(name: str) -> Template:
     return Template((TEMPLATES_DIR / name).read_text(encoding="utf-8"))
 
 
+def _strip_html(text: str) -> str:
+    return " ".join(re.sub(r"<[^>]+>", " ", text).split()).strip()
+
+
+def _truncate(text: str, limit: int = 160) -> str:
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1].rstrip() + "…"
+
+
+def _format_published_at(value: str) -> str:
+    if not value:
+        return "未知"
+    if re.match(r"^\d{4}-\d{2}-\d{2}T", value):
+        return value.replace("T", " ").replace("Z", " UTC")
+    return value
+
+
+def _entry_supplement(entry: EnrichedEntry) -> str:
+    cleaned = _strip_html(entry.raw.summary)
+    if cleaned:
+        return _truncate(cleaned, 180)
+    return "暂无原文补充说明。"
+
+
+def _entry_meta(entry: EnrichedEntry) -> str:
+    return (
+        f"来源：{html.escape(entry.raw.source_label)} | "
+        f"发布时间：{html.escape(_format_published_at(entry.raw.published_at))} | "
+        f"分类：{html.escape(entry.category)} | "
+        f"重要度：{entry.importance} | "
+        f"对比角度：{html.escape(entry.comparison_angle)} | "
+        f"标签：{html.escape(', '.join(entry.tags))}"
+    )
+
+
+def _select_highlights(report: DailyReport, limit: int) -> list[EnrichedEntry]:
+    entries = [entry for company in report.company_reports for entry in company.entries]
+    entries.sort(key=lambda item: (-item.importance, item.raw.company_name, item.raw.title))
+    return entries[:limit]
+
+
+def _render_highlight_card(entry: EnrichedEntry) -> str:
+    return (
+        "<article class='card highlight-card'>"
+        f"<p class='eyebrow'>{html.escape(entry.raw.company_name)}</p>"
+        f"<h3>{html.escape(entry.raw.title)}</h3>"
+        f"<p>{html.escape(entry.summary_cn)}</p>"
+        f"<p class='meta'>{_entry_meta(entry)}</p>"
+        f"<p><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
+        f"<p><a href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
+        "</article>"
+    )
+
+
+def _render_highlights(report: DailyReport, limit: int) -> str:
+    highlights = _select_highlights(report, limit)
+    if not highlights:
+        return "<p class='empty'>今日暂无重点观察</p>"
+    return "".join(_render_highlight_card(entry) for entry in highlights)
+
+
 def _render_topic_card(cluster: TopicCluster) -> str:
-    links = "".join(
-        f'<li><a href="{html.escape(entry.raw.url)}">{html.escape(entry.raw.company_name)}: {html.escape(entry.raw.title)}</a></li>'
-        for entry in cluster.entries[:5]
+    companies = sorted({entry.raw.company_name for entry in cluster.entries})
+    representative_entries = "".join(
+        "<li>"
+        f"<strong>{html.escape(entry.raw.company_name)}</strong>："
+        f"<a href=\"{html.escape(entry.raw.url)}\">{html.escape(entry.raw.title)}</a>"
+        f"<p>{html.escape(entry.summary_cn)}</p>"
+        "</li>"
+        for entry in cluster.entries[:3]
     )
     return (
         "<section class='card topic-card'>"
         f"<h3>{html.escape(cluster.title)}</h3>"
+        f"<p class='meta'>涉及公司：{len(companies)} | 条目数：{len(cluster.entries)} | 公司：{html.escape(', '.join(companies))}</p>"
         f"<p>{html.escape(cluster.summary)}</p>"
         f"<p><strong>差异对比：</strong>{html.escape(cluster.comparison)}</p>"
         f"<p><strong>趋势判断：</strong>{html.escape(cluster.trend)}</p>"
-        f"<ul>{links}</ul>"
+        "<p><strong>代表事件：</strong></p>"
+        f"<ul>{representative_entries}</ul>"
         "</section>"
     )
 
@@ -40,7 +110,8 @@ def _render_company_report(report: CompanyReport) -> str:
                 "<article class='entry'>"
                 f"<h4>{html.escape(entry.raw.title)}</h4>"
                 f"<p>{html.escape(entry.summary_cn)}</p>"
-                f"<p class='meta'>标签：{html.escape(', '.join(entry.tags))} | 重要度：{entry.importance}</p>"
+                f"<p class='meta'>{_entry_meta(entry)}</p>"
+                f"<p><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
                 f"<p><a href='{html.escape(entry.raw.url)}'>查看原文</a></p>"
                 "</article>"
             )
@@ -63,6 +134,7 @@ def render_index(report: DailyReport) -> str:
         total_entries=str(report.total_entries),
         companies_covered=str(report.companies_covered),
         hottest_topics=html.escape(" / ".join(report.hottest_topics) or "暂无"),
+        highlights=_render_highlights(report, limit=5),
         topic_cards=topic_cards,
         company_cards=company_cards,
     )
@@ -77,6 +149,7 @@ def render_daily(report: DailyReport) -> str:
     return template.substitute(
         date=html.escape(report.date),
         headline=html.escape(report.headline),
+        highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(_render_company_report(company) for company in report.company_reports),
         statuses=statuses or "<li>无</li>",

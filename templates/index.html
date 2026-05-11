@@ -21,6 +21,10 @@
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 24px; }
     .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: 0 10px 30px rgba(31, 42, 55, 0.05); }
     .section-title { margin-top: 32px; margin-bottom: 14px; font-size: 1.25rem; }
+    .stack { display: grid; gap: 18px; margin-top: 16px; }
+    .eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .topic-card ul, .company-card ul { margin: 0; padding-left: 18px; }
+    .topic-card li { margin-bottom: 12px; }
     a { color: var(--accent); text-decoration: none; }
     ul { padding-left: 18px; }
     .empty { color: var(--muted); }
@@ -35,6 +39,9 @@
       <p class="meta">有效新闻：$total_entries | 覆盖公司：$companies_covered | 热门主题：$hottest_topics</p>
       <p><a href="./$date/index.html">查看当日详情</a> · <a href="./archive.html">历史归档</a></p>
     </section>
+
+    <h2 class="section-title">重点观察</h2>
+    <div class="stack">$highlights</div>
 
     <h2 class="section-title">主题对比</h2>
     <div class="grid">$topic_cards</div>

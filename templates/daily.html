@@ -10,6 +10,8 @@
     .card { background: #fff; border: 1px solid #e5e0d5; border-radius: 18px; padding: 20px; margin-bottom: 18px; }
     .entry { padding-top: 12px; border-top: 1px solid #eee7da; margin-top: 12px; }
     .meta { color: #6b7280; }
+    .stack { display: grid; gap: 18px; }
+    .eyebrow { margin: 0 0 8px; color: #b44c2a; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
   </style>
 </head>
 <body>
@@ -19,6 +21,11 @@
       <h1>当日日报详情</h1>
       <p>$headline</p>
       <p><a href="../index.html">返回首页</a> · <a href="../archive.html">历史归档</a></p>
+    </section>
+
+    <section class="card">
+      <h2>重点观察</h2>
+      <div class="stack">$highlights</div>
     </section>
 
     <section class="card">
