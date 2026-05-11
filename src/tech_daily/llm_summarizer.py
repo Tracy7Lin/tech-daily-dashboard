@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .llm_client import LLMClient
+from .llm_postprocess import clean_summary_text
 from .models import RawEntry
 from .rule_summarizer import clean_whitespace
 
@@ -15,8 +16,10 @@ class LLMSummarizer:
     def summarize(self, entry: RawEntry, tags: list[str], category: str) -> str:
         payload = self.client.generate_json(
             instructions=(
-                "你是科技行业日报编辑。请将单条官方动态压缩成 1-3 句中文简报。"
-                "不要编造事实，不要写元话术，不要重复标题。必须点出发生了什么以及为什么值得看。"
+                "你是科技行业日报编辑，负责把官方动态写成高质量中文简报。"
+                "输出应像成熟科技简报，而不是模板改写。"
+                "要求：2-3 句；不要复述标题；不要写“根据提供信息”“可以看出”等元话术；"
+                "必须交代发生了什么，以及为什么值得关注。"
             ),
             input_text=(
                 f"公司：{entry.company_name}\n"
@@ -33,4 +36,4 @@ class LLMSummarizer:
                 "additionalProperties": False,
             },
         )
-        return payload["summary_cn"].strip()
+        return clean_summary_text(payload["summary_cn"], title=entry.title)

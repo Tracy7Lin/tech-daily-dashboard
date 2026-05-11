@@ -1,5 +1,7 @@
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from bootstrap import SRC_DIR  # noqa: F401
@@ -38,6 +40,53 @@ class SettingsTests(unittest.TestCase):
             settings = load_settings()
         self.assertEqual(settings.summary_mode, "hybrid")
         self.assertEqual(settings.editorial_mode, "hybrid")
+
+    def test_load_settings_reads_defaults_from_dotenv_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            env_path = Path(temp_dir) / ".env"
+            env_path.write_text(
+                "\n".join(
+                    [
+                        "TECH_DAILY_SUMMARY_MODE=hybrid",
+                        "TECH_DAILY_EDITORIAL_MODE=llm",
+                        "TECH_DAILY_LLM_MODEL=deepseekv4",
+                        "TECH_DAILY_LLM_API_URL=https://example.com/v1/responses",
+                        "TECH_DAILY_LLM_API_KEY=dotenv-secret",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            with patch.dict(os.environ, {}, clear=True):
+                settings = load_settings(env_path=env_path)
+
+        self.assertEqual(settings.editorial_mode, "llm")
+        self.assertEqual(settings.llm_model, "deepseekv4")
+        self.assertEqual(settings.llm_api_key, "dotenv-secret")
+
+    def test_load_settings_prefers_environment_over_dotenv(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            env_path = Path(temp_dir) / ".env"
+            env_path.write_text(
+                "\n".join(
+                    [
+                        "TECH_DAILY_LLM_MODEL=deepseekv4",
+                        "TECH_DAILY_LLM_API_KEY=dotenv-secret",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            with patch.dict(
+                os.environ,
+                {
+                    "TECH_DAILY_LLM_MODEL": "env-override-model",
+                    "TECH_DAILY_LLM_API_KEY": "env-secret",
+                },
+                clear=True,
+            ):
+                settings = load_settings(env_path=env_path)
+
+        self.assertEqual(settings.llm_model, "env-override-model")
+        self.assertEqual(settings.llm_api_key, "env-secret")
 
 
 if __name__ == "__main__":

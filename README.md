@@ -57,11 +57,13 @@ python run_dashboard.py backfill --end-date 2026-05-10 --days 7 --output-dir bui
 
 当前实现只把 LLM 用在内容表达层，不用在抓取、日期判断、去重和基础分类上。
 
+建议先将 `.env.example` 复制为 `.env`，再填入你自己的模型地址和密钥。`.env` 已加入忽略，不会进入版本控制。
+
 - `TECH_DAILY_SUMMARY_MODE`: `rule` / `llm` / `hybrid`
 - `TECH_DAILY_EDITORIAL_MODE`: `rule` / `llm` / `hybrid`
 - `TECH_DAILY_LLM_API_URL`: 默认 `https://api.openai.com/v1/responses`
 - `TECH_DAILY_LLM_API_KEY`: LLM API Key
-- `TECH_DAILY_LLM_MODEL`: 默认 `gpt-5.5`
+- `TECH_DAILY_LLM_MODEL`: 默认 `deepseekv4`
 - `TECH_DAILY_LLM_TIMEOUT_SECONDS`: 默认 `20`
 - `TECH_DAILY_LLM_FALLBACK_ENABLED`: 默认 `true`
 

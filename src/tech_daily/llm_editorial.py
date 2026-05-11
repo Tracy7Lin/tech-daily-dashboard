@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .llm_client import LLMClient
+from .llm_postprocess import clean_editorial_text
 from .models import EnrichedEntry
 
 
@@ -27,7 +28,7 @@ class LLMEditorial:
         payload = self.client.generate_json(
             instructions=(
                 "你是科技行业分析博客编辑。请写一句中文日报总览，强调今天最值得关注的信号。"
-                "要像高质量行业简报，不要使用模板腔。"
+                "要像高质量行业简报，不要使用模板腔，不要写元话术。"
             ),
             input_text=(
                 f"总条数：{total_entries}\n"
@@ -42,7 +43,7 @@ class LLMEditorial:
                 "additionalProperties": False,
             },
         )
-        return payload["headline"].strip()
+        return clean_editorial_text(payload["headline"])
 
     def build_topic_summary(self, title: str, entries: list[EnrichedEntry]) -> str:
         return self._build_topic_field(title, entries, "summary", "总结这个主题今天真正发生了什么。")
@@ -57,7 +58,7 @@ class LLMEditorial:
         payload = self.client.generate_json(
             instructions=(
                 "你是科技行业分析博客编辑。请根据给定主题和代表事件输出高质量中文分析。"
-                "不要使用“根据提供信息”这类元话术。"
+                "不要使用“根据提供信息”“可以看出”这类元话术。"
                 + instruction
             ),
             input_text=f"主题：{title}\n代表事件：\n{_entry_lines(entries)}\n",
@@ -69,4 +70,4 @@ class LLMEditorial:
                 "additionalProperties": False,
             },
         )
-        return payload[field_name].strip()
+        return clean_editorial_text(payload[field_name])
