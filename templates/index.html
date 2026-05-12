@@ -189,6 +189,20 @@
       backdrop-filter: blur(16px);
       padding: 22px;
     }
+    .summary-card { padding: 0; overflow: hidden; }
+    .card-trigger {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      padding: 22px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .card-trigger:hover {
+      background: rgba(255,255,255,0.32);
+    }
     .highlight-card {
       background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,249,255,0.82));
     }
@@ -278,6 +292,13 @@
     .inline-link {
       font-weight: 600;
     }
+    .trigger-hint {
+      display: inline-flex;
+      margin-top: 14px;
+      color: var(--brand);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
     .company-card .entry {
       margin-top: 14px;
       padding-top: 14px;
@@ -291,12 +312,75 @@
     .empty {
       color: var(--ink-soft);
     }
+    .modal-root[hidden] { display: none; }
+    .modal-root {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(8px);
+    }
+    .modal-panel {
+      position: relative;
+      width: min(860px, 100%);
+      max-height: min(88vh, 920px);
+      overflow: auto;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line-strong);
+      background: rgba(248, 251, 255, 0.96);
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+      padding: 26px;
+      animation: modalIn 220ms ease;
+    }
+    .modal-close {
+      position: sticky;
+      top: 0;
+      margin-left: auto;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.14);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .modal-content { margin-top: 8px; }
+    .modal-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
     @media (max-width: 720px) {
       .site-shell { padding-inline: 16px; }
       .hero { padding: 24px; }
       .topbar,
       .section-head { align-items: flex-start; flex-direction: column; }
       .grid { grid-template-columns: 1fr; }
+      .modal-root { padding: 0; }
+      .modal-panel {
+        width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+        padding: 22px 18px 28px;
+      }
     }
   </style>
 </head>
@@ -348,5 +432,46 @@
     </div>
     <div class="grid">$company_cards</div>
   </main>
+  <div class="modal-root" id="modal-root" hidden>
+    <div class="modal-backdrop" data-modal-close></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" aria-label="关闭" data-modal-close>×</button>
+      <div class="modal-content" id="modal-content"></div>
+    </section>
+  </div>
+  <script>
+    const modalRoot = document.getElementById('modal-root');
+    const modalContent = document.getElementById('modal-content');
+    const previousOverflow = () => document.body.dataset.previousOverflow || '';
+
+    function closeModal() {
+      modalRoot.hidden = true;
+      modalContent.innerHTML = '';
+      document.body.style.overflow = previousOverflow();
+    }
+
+    function openModal(templateId) {
+      const template = document.getElementById(templateId);
+      if (!template) return;
+      document.body.dataset.previousOverflow = document.body.style.overflow || '';
+      document.body.style.overflow = 'hidden';
+      modalContent.innerHTML = template.innerHTML;
+      modalRoot.hidden = false;
+    }
+
+    document.querySelectorAll('[data-modal-trigger]').forEach((trigger) => {
+      trigger.addEventListener('click', () => openModal(trigger.dataset.modalTrigger));
+    });
+
+    document.querySelectorAll('[data-modal-close]').forEach((node) => {
+      node.addEventListener('click', closeModal);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modalRoot.hidden) {
+        closeModal();
+      }
+    });
+  </script>
 </body>
 </html>
