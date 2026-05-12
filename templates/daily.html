@@ -167,6 +167,22 @@
       color: var(--ink-soft);
       line-height: 1.76;
     }
+    .topic-stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .topic-stat-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--brand);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
     .meta {
       color: var(--ink-soft);
       font-size: 0.9rem;
@@ -278,6 +294,32 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 10px;
+    }
+    .modal-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .summary-block {
+      padding: 14px 14px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(96, 119, 160, 0.16);
+      background: rgba(255,255,255,0.75);
+    }
+    .summary-label {
+      margin: 0 0 6px;
+      color: var(--brand);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .summary-value {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.65;
+      font-size: 0.94rem;
     }
     @keyframes modalIn {
       from { opacity: 0; transform: translateY(14px) scale(0.98); }

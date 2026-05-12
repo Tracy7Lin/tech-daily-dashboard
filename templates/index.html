@@ -133,6 +133,12 @@
       gap: 12px;
       margin-top: 22px;
     }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
     .metric-pill {
       display: inline-flex;
       align-items: center;
@@ -149,6 +155,32 @@
     .metric-label {
       color: var(--ink-soft);
       font-weight: 500;
+    }
+    .signal-rail {
+      display: grid;
+      gap: 12px;
+      align-self: stretch;
+    }
+    .signal-card {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(96, 119, 160, 0.18);
+      background: rgba(255,255,255,0.74);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+    .signal-label {
+      margin: 0 0 6px;
+      color: var(--brand);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .signal-value {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.6;
+      font-weight: 600;
     }
     .section-head {
       display: flex;
@@ -266,6 +298,22 @@
       line-height: 1.72;
       color: var(--ink-soft);
     }
+    .topic-stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .topic-stat-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--brand);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
     .topic-list-label {
       margin: 14px 0 10px;
     }
@@ -363,6 +411,32 @@
       gap: 12px;
       margin-bottom: 10px;
     }
+    .modal-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .summary-block {
+      padding: 14px 14px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(96, 119, 160, 0.16);
+      background: rgba(255,255,255,0.75);
+    }
+    .summary-label {
+      margin: 0 0 6px;
+      color: var(--brand);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .summary-value {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.65;
+      font-size: 0.94rem;
+    }
     @keyframes modalIn {
       from { opacity: 0; transform: translateY(14px) scale(0.98); }
       to { opacity: 1; transform: translateY(0) scale(1); }
@@ -370,6 +444,7 @@
     @media (max-width: 720px) {
       .site-shell { padding-inline: 16px; }
       .hero { padding: 24px; }
+      .hero-grid { grid-template-columns: 1fr; }
       .topbar,
       .section-head { align-items: flex-start; flex-direction: column; }
       .grid { grid-template-columns: 1fr; }
@@ -398,13 +473,18 @@
     </header>
 
     <section class="hero">
-      <p class="eyebrow">$date</p>
-      <h1>科技巨头每日情报看板</h1>
-      <p class="hero-copy">$headline</p>
-      <div class="hero-stats">
-        <span class="metric-pill"><span class="metric-label">有效新闻</span><strong>$total_entries</strong></span>
-        <span class="metric-pill"><span class="metric-label">覆盖公司</span><strong>$companies_covered</strong></span>
-        <span class="metric-pill"><span class="metric-label">热门主题</span><strong>$hottest_topics</strong></span>
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">$date</p>
+          <h1>科技巨头每日情报看板</h1>
+          <p class="hero-copy">$headline</p>
+          <div class="hero-stats">
+            <span class="metric-pill"><span class="metric-label">有效新闻</span><strong>$total_entries</strong></span>
+            <span class="metric-pill"><span class="metric-label">覆盖公司</span><strong>$companies_covered</strong></span>
+            <span class="metric-pill"><span class="metric-label">热门主题</span><strong>$hottest_topics</strong></span>
+          </div>
+        </div>
+        <aside class="signal-rail">$signal_rail</aside>
       </div>
     </section>
 

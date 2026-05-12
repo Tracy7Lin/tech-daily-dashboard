@@ -56,6 +56,35 @@ def _entry_meta(entry: EnrichedEntry) -> str:
     )
 
 
+def _render_summary_grid(items: list[tuple[str, str]]) -> str:
+    blocks = "".join(
+        "<section class='summary-block'>"
+        f"<p class='summary-label'>{html.escape(label)}</p>"
+        f"<p class='summary-value'>{html.escape(value)}</p>"
+        "</section>"
+        for label, value in items
+        if value
+    )
+    return f"<div class='modal-summary-grid'>{blocks}</div>" if blocks else ""
+
+
+def _render_signal_rail(report: DailyReport) -> str:
+    active_companies = "、".join(report.active_companies[:4]) or "暂无"
+    hottest_topics = " / ".join(report.hottest_topics[:3]) or "暂无"
+    signal_cards = [
+        ("今日主线", hottest_topics),
+        ("活跃公司", active_companies),
+        ("日报判断", _truncate(report.headline, 88)),
+    ]
+    return "".join(
+        "<article class='signal-card'>"
+        f"<p class='signal-label'>{html.escape(label)}</p>"
+        f"<p class='signal-value'>{html.escape(value)}</p>"
+        "</article>"
+        for label, value in signal_cards
+    )
+
+
 def _select_highlights(report: DailyReport, limit: int) -> list[EnrichedEntry]:
     entries = [entry for company in report.company_reports for entry in company.entries]
     entries.sort(key=lambda item: (-item.importance, item.raw.company_name, item.raw.title))
@@ -67,6 +96,7 @@ def _render_entry_detail(entry: EnrichedEntry) -> str:
     return (
         f"<div class='modal-detail-header'><p class='eyebrow'>{html.escape(entry.raw.company_name)}</p><span class='importance-pill'>P{entry.importance}</span></div>"
         f"<h3>{html.escape(entry.raw.title)}</h3>"
+        f"{_render_summary_grid([('核心摘要', entry.summary_cn), ('来源与时间', f'{entry.raw.source_label} · {_format_published_at(entry.raw.published_at)}'), ('分类与角度', f'{entry.category} · {entry.comparison_angle}')])}"
         f"<p class='section-copy'>{html.escape(entry.summary_cn)}</p>"
         f"<p class='meta meta-line'>{_entry_meta(entry)}</p>"
         f"<div class='tag-row'>{tag_badges}</div>"
@@ -114,13 +144,15 @@ def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> st
         "<section class='card topic-card summary-card'>"
         f"<button class='card-trigger' type='button' data-modal-trigger='{html.escape(modal_id)}'>"
         f"<h3>{html.escape(cluster.title)}</h3>"
-        f"<p class='meta meta-line'>涉及公司：{len(companies)} | 条目数：{len(cluster.entries)} | 公司：{html.escape(', '.join(companies))}</p>"
+        f"<div class='topic-stat-row'><span class='topic-stat-chip'>涉及公司 {len(companies)}</span><span class='topic-stat-chip'>条目 {len(cluster.entries)}</span></div>"
+        f"<p class='meta meta-line'>公司：{html.escape(', '.join(companies))}</p>"
         f"<p class='section-copy'>{html.escape(summary)}</p>"
         f"<p class='topic-note'><strong>趋势判断：</strong>{html.escape(_truncate(cluster.trend, 96))}</p>"
         "<span class='trigger-hint'>点击展开完整主题分析</span>"
         "</button>"
         f"<template id='{html.escape(modal_id)}'>"
         f"<h3>{html.escape(cluster.title)}</h3>"
+        f"{_render_summary_grid([('涉及公司', '、'.join(companies)), ('条目数量', str(len(cluster.entries))), ('差异对比', cluster.comparison), ('趋势判断', cluster.trend)])}"
         f"<p class='meta meta-line'>涉及公司：{len(companies)} | 条目数：{len(cluster.entries)} | 公司：{html.escape(', '.join(companies))}</p>"
         f"<p class='section-copy'>{html.escape(cluster.summary)}</p>"
         f"<p class='topic-note'><strong>差异对比：</strong>{html.escape(cluster.comparison)}</p>"
@@ -162,13 +194,14 @@ def _render_company_report(report: CompanyReport, modal_prefix: str = "company")
         "<section class='card company-card summary-card'>"
         f"<button class='card-trigger' type='button' data-modal-trigger='{html.escape(modal_id)}'>"
         f"<h3>{html.escape(report.company_name)}</h3>"
-        f"<p class='meta'>当日动态：{len(report.entries)} 条</p>"
+        f"<div class='topic-stat-row'><span class='topic-stat-chip'>当日动态 {len(report.entries)} 条</span><span class='topic-stat-chip'>最高重要度 P{lead.importance}</span></div>"
         f"<p class='section-copy'>{html.escape(summary)}</p>"
         f"<p class='meta meta-line'>最新来源：{html.escape(lead.raw.source_label)} | 发布时间：{html.escape(_format_published_at(lead.raw.published_at))}</p>"
         "<span class='trigger-hint'>点击查看公司完整动态</span>"
         "</button>"
         f"<template id='{html.escape(modal_id)}'>"
         f"<h3>{html.escape(report.company_name)}</h3>"
+        f"{_render_summary_grid([('动态数量', str(len(report.entries))), ('最新来源', lead.raw.source_label), ('最新发布时间', _format_published_at(lead.raw.published_at))])}"
         f"{body}"
         "</template>"
         "</section>"
@@ -185,6 +218,7 @@ def render_index(report: DailyReport) -> str:
         total_entries=str(report.total_entries),
         companies_covered=str(report.companies_covered),
         hottest_topics=html.escape(" / ".join(report.hottest_topics) or "暂无"),
+        signal_rail=_render_signal_rail(report),
         highlights=_render_highlights(report, limit=5),
         topic_cards=topic_cards,
         company_cards=company_cards,
