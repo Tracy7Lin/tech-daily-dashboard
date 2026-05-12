@@ -11,6 +11,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.command, "generate")
         self.assertEqual(args.date, "2026-05-10")
 
+    def test_build_parser_supports_generate_today_command(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["generate-today"])
+        self.assertEqual(args.command, "generate-today")
+
     def test_build_parser_supports_backfill_command(self) -> None:
         parser = build_parser()
         args = parser.parse_args(["backfill", "--end-date", "2026-05-10", "--days", "7"])

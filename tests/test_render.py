@@ -140,6 +140,23 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Google Health Coach, now available globally", html)
         self.assertNotIn("<img", html)
 
+    def test_render_company_report_empty_state_uses_padded_card(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[CompanyReport(company_slug="apple", company_name="Apple", entries=[], has_updates=False)],
+            source_statuses=[],
+        )
+        html = render_index(report)
+        self.assertIn("<section class='card company-card'>", html)
+        self.assertIn("Apple", html)
+        self.assertIn("今日无有效动态", html)
+        self.assertNotIn("<section class='card company-card summary-card'>", html)
+
     def test_render_preserves_rfc_weekday_and_timezone_in_published_time(self) -> None:
         entry = _entry(
             "openai",

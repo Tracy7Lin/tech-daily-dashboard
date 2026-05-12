@@ -182,7 +182,7 @@ def _render_company_report(report: CompanyReport, modal_prefix: str = "company")
         body = "".join(items)
     if not report.entries:
         return (
-            "<section class='card company-card summary-card'>"
+            "<section class='card company-card'>"
             f"<h3>{html.escape(report.company_name)}</h3>"
             f"{body}"
             "</section>"

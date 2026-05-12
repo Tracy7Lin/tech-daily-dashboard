@@ -56,6 +56,32 @@ python run_dashboard.py generate --date 2026-05-11 --output-dir build/site
 python run_dashboard.py backfill --end-date 2026-05-11 --days 7 --output-dir build/site
 ```
 
+### 5. 生成北京时间“今天”的日报
+
+```bash
+python run_dashboard.py generate-today --output-dir build/site
+```
+
+### 6. 注册 Windows 定时任务
+
+先手动验证一次脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_daily_report.ps1
+```
+
+再注册每天自动运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\register_daily_task.ps1 -ScheduleTime 08:30
+```
+
+如需删除任务：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\unregister_daily_task.ps1
+```
+
 ## Output
 
 默认生成结果位于：
@@ -70,6 +96,7 @@ python run_dashboard.py backfill --end-date 2026-05-11 --days 7 --output-dir bui
 - `config/companies.json`: 公司与信源配置
 - `src/tech_daily`: 核心业务代码
 - `templates/`: 静态页面模板
+- `scripts/`: 本地自动化与定时任务脚本
 - `tests/`: 单元测试与回归测试
 - `docs/`: 需求、设计与实现文档
 - `build/`: 本地生成产物
@@ -126,6 +153,12 @@ python -m unittest discover -s tests -v
 
 ```bash
 python run_dashboard.py generate --date 2026-05-11 --output-dir build/site
+```
+
+验证自动化入口：
+
+```bash
+python run_dashboard.py generate-today --output-dir build/site
 ```
 
 ## Roadmap

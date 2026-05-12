@@ -3,6 +3,7 @@ from __future__ import annotations
 from argparse import ArgumentParser
 from pathlib import Path
 
+from .automation import generate_today_report
 from .backfill import generate_backfill_reports
 from .pipeline import generate_daily_report
 
@@ -13,6 +14,8 @@ def build_parser() -> ArgumentParser:
     generate = subparsers.add_parser("generate", help="Generate daily dashboard")
     generate.add_argument("--date", required=True, help="Report date in YYYY-MM-DD format")
     generate.add_argument("--output-dir", default="", help="Optional site output directory")
+    generate_today = subparsers.add_parser("generate-today", help="Generate today's dashboard in Asia/Shanghai")
+    generate_today.add_argument("--output-dir", default="", help="Optional site output directory")
     backfill = subparsers.add_parser("backfill", help="Generate a range of daily dashboards")
     backfill.add_argument("--end-date", required=True, help="End date in YYYY-MM-DD format")
     backfill.add_argument("--days", required=True, type=int, help="Number of days to generate")
@@ -26,6 +29,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "generate":
         output_dir = Path(args.output_dir) if args.output_dir else None
         generate_daily_report(args.date, output_dir=output_dir)
+        return 0
+    if args.command == "generate-today":
+        output_dir = Path(args.output_dir) if args.output_dir else None
+        generate_today_report(output_dir=output_dir)
         return 0
     if args.command == "backfill":
         output_dir = Path(args.output_dir) if args.output_dir else None
