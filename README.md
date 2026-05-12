@@ -88,6 +88,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\unregister_daily_task.ps1
 python run_dashboard.py health-check
 ```
 
+### 8. 执行 dry-run 预演
+
+```bash
+python run_dashboard.py dry-run --date 2026-05-12
+```
+
 ## Output
 
 默认生成结果位于：
@@ -171,6 +177,12 @@ python run_dashboard.py generate-today --output-dir build/site
 
 ```bash
 python run_dashboard.py health-check
+```
+
+验证某个日报日期按当前配置是否可执行但不真正抓取或写文件：
+
+```bash
+python run_dashboard.py dry-run --date 2026-05-12
 ```
 
 ## Roadmap

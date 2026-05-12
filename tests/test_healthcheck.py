@@ -65,6 +65,42 @@ class HealthCheckTests(unittest.TestCase):
         self.assertTrue(result["data_dir_ready"])
         self.assertEqual(result["notes"], [])
 
+    @patch("tech_daily.healthcheck.load_companies")
+    def test_run_health_check_includes_source_diagnostics_and_validation_issues(self, mock_load_companies) -> None:
+        mock_load_companies.return_value = [
+            Company(
+                slug="meta",
+                name="Meta",
+                region="US",
+                sources=[
+                    Source(
+                        kind="html",
+                        url="https://example.com/news",
+                        label="Newsroom",
+                        require_published_at=True,
+                        fetch_article_details=False,
+                    )
+                ],
+            )
+        ]
+        with TemporaryDirectory() as temp_dir:
+            settings = Settings(
+                site_output_dir=str(Path(temp_dir) / "site"),
+                data_output_dir=str(Path(temp_dir) / "data"),
+                summary_mode="rule",
+                editorial_mode="rule",
+                llm_api_url="",
+                llm_api_key="",
+                llm_model="",
+            )
+            result = run_health_check(settings=settings)
+
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["validation_issue_count"], 1)
+        self.assertEqual(result["source_diagnostics"][0]["company_slug"], "meta")
+        self.assertEqual(result["source_diagnostics"][0]["severity"], "warning")
+        self.assertIn("published_at_requires_article_details", result["source_diagnostics"][0]["issues"])
+
 
 if __name__ == "__main__":
     unittest.main()

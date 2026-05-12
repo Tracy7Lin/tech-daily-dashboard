@@ -25,6 +25,12 @@ class CliTests(unittest.TestCase):
         args = parser.parse_args(["health-check"])
         self.assertEqual(args.command, "health-check")
 
+    def test_build_parser_supports_dry_run_command(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["dry-run", "--date", "2026-05-12"])
+        self.assertEqual(args.command, "dry-run")
+        self.assertEqual(args.date, "2026-05-12")
+
     def test_build_parser_supports_backfill_command(self) -> None:
         parser = build_parser()
         args = parser.parse_args(["backfill", "--end-date", "2026-05-10", "--days", "7"])
@@ -70,6 +76,24 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("ok=True", output.getvalue())
         self.assertIn("company_count=15", output.getvalue())
+
+    @patch("tech_daily.cli.run_dry_run")
+    def test_main_prints_dry_run_summary(self, mock_run_dry_run) -> None:
+        mock_run_dry_run.return_value = {
+            "ok": True,
+            "report_date": "2026-05-12",
+            "company_count": 15,
+            "source_count": 20,
+            "validation_issue_count": 0,
+            "notes": [],
+        }
+        output = StringIO()
+        with redirect_stdout(output):
+            exit_code = main(["dry-run", "--date", "2026-05-12"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("report_date=2026-05-12", output.getvalue())
+        self.assertIn("validation_issue_count=0", output.getvalue())
 
 
 if __name__ == "__main__":
