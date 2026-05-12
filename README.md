@@ -94,6 +94,12 @@ python run_dashboard.py health-check
 python run_dashboard.py dry-run --date 2026-05-12
 ```
 
+或者直接预演北京时间今天：
+
+```bash
+python run_dashboard.py dry-run --today
+```
+
 ## Output
 
 默认生成结果位于：

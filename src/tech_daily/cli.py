@@ -3,7 +3,7 @@ from __future__ import annotations
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .automation import generate_today_report
+from .automation import generate_today_report, resolve_report_date
 from .backfill import generate_backfill_reports
 from .dry_run import run_dry_run
 from .healthcheck import run_health_check
@@ -20,7 +20,9 @@ def build_parser() -> ArgumentParser:
     generate_today.add_argument("--output-dir", default="", help="Optional site output directory")
     subparsers.add_parser("health-check", help="Validate local configuration and runtime readiness")
     dry_run = subparsers.add_parser("dry-run", help="Validate the pipeline plan without fetching or writing output")
-    dry_run.add_argument("--date", required=True, help="Target report date in YYYY-MM-DD format")
+    dry_group = dry_run.add_mutually_exclusive_group(required=True)
+    dry_group.add_argument("--date", help="Target report date in YYYY-MM-DD format")
+    dry_group.add_argument("--today", action="store_true", help="Use today's date in Asia/Shanghai")
     backfill = subparsers.add_parser("backfill", help="Generate a range of daily dashboards")
     backfill.add_argument("--end-date", required=True, help="End date in YYYY-MM-DD format")
     backfill.add_argument("--days", required=True, type=int, help="Number of days to generate")
@@ -59,13 +61,16 @@ def _print_health_check_summary(result: dict) -> None:
                 f"source_diagnostic severity={diagnostic['severity']} "
                 f"company={diagnostic['company_slug']} source={diagnostic['source_label']} issues={issues}"
             )
+            if diagnostic.get("suggestion"):
+                print(f"source_suggestion company={diagnostic['company_slug']} suggestion={diagnostic['suggestion']}")
 
 
 def _print_dry_run_summary(result: dict) -> None:
     print(
         f"ok={result['ok']} report_date={result['report_date']} "
         f"company_count={result['company_count']} source_count={result['source_count']} "
-        f"validation_issue_count={result['validation_issue_count']}"
+        f"validation_issue_count={result['validation_issue_count']} "
+        f"source_diagnostic_count={result.get('source_diagnostic_count', 0)}"
     )
     for issue in result.get("validation_issues", [])[:5]:
         print(
@@ -92,7 +97,8 @@ def main(argv: list[str] | None = None) -> int:
         _print_health_check_summary(result)
         return 0
     if args.command == "dry-run":
-        result = run_dry_run(args.date)
+        report_date = resolve_report_date() if getattr(args, "today", False) else args.date
+        result = run_dry_run(report_date)
         _print_dry_run_summary(result)
         return 0
     if args.command == "backfill":

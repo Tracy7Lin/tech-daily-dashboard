@@ -150,11 +150,11 @@
         "kind": "html",
         "label": "xAI Blog",
         "url": "https://x.ai/blog",
-        "path_prefixes": ["/blog"],
+        "path_prefixes": ["/blog", "/news/"],
         "include_patterns": ["grok", "model", "api", "xai", "agent"],
         "exclude_patterns": ["careers"],
         "fetch_article_details": true,
-        "detail_fetch_limit": 3,
+        "detail_fetch_limit": 5,
         "require_published_at": true
       }
     ]
@@ -204,11 +204,11 @@
         "kind": "html",
         "label": "Alibaba News",
         "url": "https://www.alibabagroup.com/en-US/news",
-        "path_prefixes": ["/en-US/news/"],
+        "path_prefixes": ["/en-US/news/", "/en-US/document-", "/en-US/home"],
         "include_patterns": ["ai", "cloud", "qwen", "alibaba", "taobao"],
         "exclude_patterns": ["esg", "charity", "festival"],
         "fetch_article_details": true,
-        "detail_fetch_limit": 3,
+        "detail_fetch_limit": 5,
         "require_published_at": true
       }
     ]
@@ -240,11 +240,11 @@
         "kind": "html",
         "label": "Xiaomi News",
         "url": "https://www.mi.com/global/discover/news",
-        "path_prefixes": ["/global/discover/"],
+        "path_prefixes": ["/global/discover/news", "/global/discover/article"],
         "include_patterns": ["xiaomi", "hyperos", "ai", "phone", "device"],
         "exclude_patterns": ["fan festival", "lifestyle"],
         "fetch_article_details": true,
-        "detail_fetch_limit": 3,
+        "detail_fetch_limit": 5,
         "require_published_at": true
       }
     ]

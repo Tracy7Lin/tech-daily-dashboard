@@ -31,6 +31,12 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.command, "dry-run")
         self.assertEqual(args.date, "2026-05-12")
 
+    def test_build_parser_supports_dry_run_today_flag(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["dry-run", "--today"])
+        self.assertEqual(args.command, "dry-run")
+        self.assertTrue(args.today)
+
     def test_build_parser_supports_backfill_command(self) -> None:
         parser = build_parser()
         args = parser.parse_args(["backfill", "--end-date", "2026-05-10", "--days", "7"])
@@ -85,6 +91,7 @@ class CliTests(unittest.TestCase):
             "company_count": 15,
             "source_count": 20,
             "validation_issue_count": 0,
+            "source_diagnostic_count": 20,
             "notes": [],
         }
         output = StringIO()
@@ -94,6 +101,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("report_date=2026-05-12", output.getvalue())
         self.assertIn("validation_issue_count=0", output.getvalue())
+        self.assertIn("source_diagnostic_count=20", output.getvalue())
 
 
 if __name__ == "__main__":

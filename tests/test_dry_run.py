@@ -31,6 +31,7 @@ class DryRunTests(unittest.TestCase):
         self.assertEqual(result["report_date"], "2026-05-12")
         self.assertEqual(result["company_count"], 1)
         self.assertEqual(result["validation_issue_count"], 0)
+        self.assertEqual(result["source_diagnostic_count"], 1)
 
 
 if __name__ == "__main__":

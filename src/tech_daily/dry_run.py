@@ -16,6 +16,7 @@ def run_dry_run(report_date: str, settings: Settings | None = None) -> dict:
         "report_date": report_date,
         "company_count": len(companies),
         "source_count": sum(len(company.sources) for company in companies),
+        "source_diagnostic_count": len(source_diagnostics),
         "summary_mode": current_settings.summary_mode,
         "editorial_mode": current_settings.editorial_mode,
         "validation_issue_count": len(validation_issues),

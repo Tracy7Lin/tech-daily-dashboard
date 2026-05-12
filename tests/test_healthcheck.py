@@ -100,6 +100,7 @@ class HealthCheckTests(unittest.TestCase):
         self.assertEqual(result["source_diagnostics"][0]["company_slug"], "meta")
         self.assertEqual(result["source_diagnostics"][0]["severity"], "warning")
         self.assertIn("published_at_requires_article_details", result["source_diagnostics"][0]["issues"])
+        self.assertIn("enable article detail fetching", result["source_diagnostics"][0]["suggestion"])
 
 
 if __name__ == "__main__":
