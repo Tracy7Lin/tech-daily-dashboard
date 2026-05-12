@@ -72,6 +72,7 @@ class CliTests(unittest.TestCase):
             "llm_available": True,
             "summary_mode": "hybrid",
             "editorial_mode": "hybrid",
+            "latest_report_date": "2026-05-13",
             "output_dir": "build/site",
             "notes": [],
         }
@@ -82,6 +83,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("ok=True", output.getvalue())
         self.assertIn("company_count=15", output.getvalue())
+        self.assertIn("latest_report_date=2026-05-13", output.getvalue())
 
     @patch("tech_daily.cli.run_dry_run")
     def test_main_prints_dry_run_summary(self, mock_run_dry_run) -> None:

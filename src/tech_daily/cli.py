@@ -45,6 +45,7 @@ def _print_health_check_summary(result: dict) -> None:
         f"source_count={result['source_count']} llm_available={result['llm_available']} "
         f"summary_mode={result['summary_mode']} editorial_mode={result['editorial_mode']} "
         f"validation_issue_count={result.get('validation_issue_count', 0)} "
+        f"latest_report_date={result.get('latest_report_date', '-') or '-'} "
         f"output_dir={result['output_dir']}"
     )
     for note in result.get("notes", []):
@@ -63,6 +64,14 @@ def _print_health_check_summary(result: dict) -> None:
             )
             if diagnostic.get("suggestion"):
                 print(f"source_suggestion company={diagnostic['company_slug']} suggestion={diagnostic['suggestion']}")
+    for diagnostic in result.get("recent_runtime_diagnostics", [])[:5]:
+        issues = ",".join(diagnostic["issues"]) or "-"
+        print(
+            f"recent_runtime severity={diagnostic['severity']} "
+            f"company={diagnostic['company_slug']} source={diagnostic['source_label']} issues={issues}"
+        )
+        if diagnostic.get("suggestion"):
+            print(f"recent_runtime_suggestion company={diagnostic['company_slug']} suggestion={diagnostic['suggestion']}")
 
 
 def _print_dry_run_summary(result: dict) -> None:
