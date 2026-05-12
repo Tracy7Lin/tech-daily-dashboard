@@ -17,7 +17,8 @@ $reportDate = Get-Date -Format "yyyy-MM-dd"
 $logPath = Join-Path $logDir "$reportDate.log"
 
 "[$(Get-Date -Format s)] Starting daily report generation." | Out-File -FilePath $logPath -Encoding utf8 -Append
-& $PythonCommand "run_dashboard.py" "generate-today" "--output-dir" $OutputDir *>> $logPath
+$commandOutput = & $PythonCommand "run_dashboard.py" "generate-today" "--output-dir" $OutputDir 2>&1
+$commandOutput | ForEach-Object { $_.ToString() } | Out-File -FilePath $logPath -Encoding utf8 -Append
 $exitCode = $LASTEXITCODE
 "[$(Get-Date -Format s)] Finished with exit code $exitCode." | Out-File -FilePath $logPath -Encoding utf8 -Append
 

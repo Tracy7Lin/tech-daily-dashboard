@@ -1,0 +1,70 @@
+import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+from bootstrap import SRC_DIR  # noqa: F401
+from tech_daily.healthcheck import run_health_check
+from tech_daily.models import Company, Source
+from tech_daily.settings import Settings
+
+
+class HealthCheckTests(unittest.TestCase):
+    @patch("tech_daily.healthcheck.load_companies")
+    def test_run_health_check_reports_llm_fallback_note(self, mock_load_companies) -> None:
+        mock_load_companies.return_value = [
+            Company(
+                slug="openai",
+                name="OpenAI",
+                region="US",
+                sources=[Source(kind="rss", url="https://example.com/rss", label="RSS")],
+            )
+        ]
+        with TemporaryDirectory() as temp_dir:
+            settings = Settings(
+                site_output_dir=str(Path(temp_dir) / "site"),
+                data_output_dir=str(Path(temp_dir) / "data"),
+                summary_mode="hybrid",
+                editorial_mode="hybrid",
+                llm_api_url="https://api.deepseek.com",
+                llm_api_key="",
+                llm_model="deepseek-v4-flash",
+            )
+            result = run_health_check(settings=settings)
+
+        self.assertFalse(result["llm_available"])
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["company_count"], 1)
+        self.assertEqual(result["source_count"], 1)
+        self.assertIn("hybrid mode will fall back to rule output until LLM credentials are complete", result["notes"])
+
+    @patch("tech_daily.healthcheck.load_companies")
+    def test_run_health_check_reports_ready_state(self, mock_load_companies) -> None:
+        mock_load_companies.return_value = [
+            Company(
+                slug="google",
+                name="Google",
+                region="US",
+                sources=[Source(kind="rss", url="https://example.com/rss", label="RSS")],
+            )
+        ]
+        with TemporaryDirectory() as temp_dir:
+            settings = Settings(
+                site_output_dir=str(Path(temp_dir) / "site"),
+                data_output_dir=str(Path(temp_dir) / "data"),
+                summary_mode="rule",
+                editorial_mode="rule",
+                llm_api_url="",
+                llm_api_key="",
+                llm_model="",
+            )
+            result = run_health_check(settings=settings)
+
+        self.assertTrue(result["ok"])
+        self.assertTrue(result["output_dir_ready"])
+        self.assertTrue(result["data_dir_ready"])
+        self.assertEqual(result["notes"], [])
+
+
+if __name__ == "__main__":
+    unittest.main()

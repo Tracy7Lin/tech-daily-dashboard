@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .automation import generate_today_report
 from .backfill import generate_backfill_reports
+from .healthcheck import run_health_check
 from .pipeline import generate_daily_report
 
 
@@ -16,6 +17,7 @@ def build_parser() -> ArgumentParser:
     generate.add_argument("--output-dir", default="", help="Optional site output directory")
     generate_today = subparsers.add_parser("generate-today", help="Generate today's dashboard in Asia/Shanghai")
     generate_today.add_argument("--output-dir", default="", help="Optional site output directory")
+    subparsers.add_parser("health-check", help="Validate local configuration and runtime readiness")
     backfill = subparsers.add_parser("backfill", help="Generate a range of daily dashboards")
     backfill.add_argument("--end-date", required=True, help="End date in YYYY-MM-DD format")
     backfill.add_argument("--days", required=True, type=int, help="Number of days to generate")
@@ -23,20 +25,48 @@ def build_parser() -> ArgumentParser:
     return parser
 
 
+def _print_report_summary(report) -> None:
+    active_companies = ",".join(report.active_companies[:3]) or "-"
+    print(
+        f"report_date={report.date} total_entries={report.total_entries} "
+        f"companies_covered={report.companies_covered} topic_count={len(report.topic_clusters)} "
+        f"active_companies={active_companies}"
+    )
+
+
+def _print_health_check_summary(result: dict) -> None:
+    print(
+        f"ok={result['ok']} company_count={result['company_count']} "
+        f"source_count={result['source_count']} llm_available={result['llm_available']} "
+        f"summary_mode={result['summary_mode']} editorial_mode={result['editorial_mode']} "
+        f"output_dir={result['output_dir']}"
+    )
+    for note in result.get("notes", []):
+        print(f"note={note}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command == "generate":
         output_dir = Path(args.output_dir) if args.output_dir else None
-        generate_daily_report(args.date, output_dir=output_dir)
+        report = generate_daily_report(args.date, output_dir=output_dir)
+        _print_report_summary(report)
         return 0
     if args.command == "generate-today":
         output_dir = Path(args.output_dir) if args.output_dir else None
-        generate_today_report(output_dir=output_dir)
+        report = generate_today_report(output_dir=output_dir)
+        _print_report_summary(report)
+        return 0
+    if args.command == "health-check":
+        result = run_health_check()
+        _print_health_check_summary(result)
         return 0
     if args.command == "backfill":
         output_dir = Path(args.output_dir) if args.output_dir else None
-        generate_backfill_reports(args.end_date, args.days, output_dir=output_dir)
+        reports = generate_backfill_reports(args.end_date, args.days, output_dir=output_dir)
+        if reports:
+            _print_report_summary(reports[-1])
         return 0
     parser.error(f"Unsupported command: {args.command}")
     return 1

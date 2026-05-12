@@ -82,6 +82,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\register_daily_task.ps1 -Sche
 powershell -ExecutionPolicy Bypass -File .\scripts\unregister_daily_task.ps1
 ```
 
+### 7. 运行健康检查
+
+```bash
+python run_dashboard.py health-check
+```
+
 ## Output
 
 默认生成结果位于：
@@ -159,6 +165,12 @@ python run_dashboard.py generate --date 2026-05-11 --output-dir build/site
 
 ```bash
 python run_dashboard.py generate-today --output-dir build/site
+```
+
+验证本地运行环境：
+
+```bash
+python run_dashboard.py health-check
 ```
 
 ## Roadmap
