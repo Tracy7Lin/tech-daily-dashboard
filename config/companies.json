@@ -130,11 +130,11 @@
     "sources": [
       {
         "kind": "html",
-        "label": "Tesla Blog",
-        "url": "https://www.tesla.com/blog",
-        "path_prefixes": ["/blog"],
-        "include_patterns": ["tesla", "autopilot", "robot", "software", "model"],
-        "exclude_patterns": ["career", "event registration"],
+        "label": "Tesla IR Press",
+        "url": "https://ir.tesla.com/press?view=all",
+        "path_prefixes": ["/press"],
+        "include_patterns": ["tesla", "autopilot", "robot", "software", "model", "vehicle", "energy"],
+        "exclude_patterns": ["career", "event registration", "investor relations"],
         "fetch_article_details": true,
         "detail_fetch_limit": 3,
         "require_published_at": true
@@ -167,7 +167,7 @@
       {
         "kind": "html",
         "label": "Tencent Articles",
-        "url": "https://www.tencent.com/en-us/articles.html",
+        "url": "https://www.tencent.com/en-us/",
         "path_prefixes": ["/en-us/articles/"],
         "include_patterns": ["ai", "cloud", "wechat", "game", "model"],
         "exclude_patterns": ["culture", "esg", "charity"],
