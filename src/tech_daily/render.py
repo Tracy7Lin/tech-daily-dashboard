@@ -7,7 +7,7 @@ from pathlib import Path
 from string import Template
 
 from .archive import load_report_snapshots
-from .models import CompanyReport, DailyReport, EnrichedEntry, TopicCluster
+from .models import CompanyReport, DailyReport, EnrichedEntry, SourceStatus, TopicCluster
 from .paths import TEMPLATES_DIR
 
 
@@ -83,6 +83,41 @@ def _render_signal_rail(report: DailyReport) -> str:
         "</article>"
         for label, value in signal_cards
     )
+
+
+def _statuses_by_company(statuses: list[SourceStatus]) -> dict[str, list[SourceStatus]]:
+    grouped: dict[str, list[SourceStatus]] = {}
+    for status in statuses:
+        grouped.setdefault(status.company_slug, []).append(status)
+    return grouped
+
+
+def _select_placeholder_status(statuses: list[SourceStatus]) -> SourceStatus | None:
+    if not statuses:
+        return None
+    ranked = sorted(
+        statuses,
+        key=lambda status: (
+            status.ok,
+            status.fetched_count > 0,
+            status.kept_count > 0,
+            status.final_included_count > 0,
+        ),
+    )
+    return ranked[0]
+
+
+def _placeholder_reason(status: SourceStatus) -> str:
+    message = status.message.lower()
+    if "http_error:403" in message:
+        return "官方源当前拒绝抓取请求，已暂时保留占位并等待后续适配。"
+    if "http_error:500" in message:
+        return "官方源当前返回服务错误，后续会继续检查入口稳定性。"
+    if status.fetched_count == 0 or "fetched:0" in message:
+        return "当前入口尚未抓到可用条目，后续会继续升级抓取适配。"
+    if status.kept_count == 0 or status.final_included_count == 0:
+        return "今天没有保留下可发布条目，当前先保留占位方便回看。"
+    return "官方源暂未稳定，后续会继续升级抓取与筛选策略。"
 
 
 def _select_highlights(report: DailyReport, limit: int) -> list[EnrichedEntry]:
@@ -164,9 +199,24 @@ def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> st
     )
 
 
-def _render_company_report(report: CompanyReport, modal_prefix: str = "company") -> str:
+def _render_company_report(
+    report: CompanyReport,
+    statuses_by_company: dict[str, list[SourceStatus]] | None = None,
+    modal_prefix: str = "company",
+) -> str:
     if not report.entries:
-        body = "<p class='empty'>今日无有效动态</p>"
+        statuses = (statuses_by_company or {}).get(report.company_slug, [])
+        placeholder_status = _select_placeholder_status(statuses)
+        if placeholder_status is None:
+            body = "<p class='empty'>今日无有效动态</p>"
+        else:
+            body = (
+                "<div class='placeholder-block'>"
+                "<span class='status-pill'>信源暂未稳定</span>"
+                f"<p class='placeholder-note'>{html.escape(_placeholder_reason(placeholder_status))}</p>"
+                f"<p class='meta meta-line'>当前来源：{html.escape(placeholder_status.source_label)} | 诊断：{html.escape(placeholder_status.message)}</p>"
+                "</div>"
+            )
     else:
         items = []
         for entry in report.entries:
@@ -211,7 +261,11 @@ def _render_company_report(report: CompanyReport, modal_prefix: str = "company")
 def render_index(report: DailyReport) -> str:
     template = _load_template("index.html")
     topic_cards = "".join(_render_topic_card(cluster) for cluster in report.topic_clusters)
-    company_cards = "".join(_render_company_report(company) for company in report.company_reports)
+    statuses_by_company = _statuses_by_company(report.source_statuses)
+    company_cards = "".join(
+        _render_company_report(company, statuses_by_company=statuses_by_company)
+        for company in report.company_reports
+    )
     return template.substitute(
         date=html.escape(report.date),
         headline=html.escape(report.headline),
@@ -227,6 +281,7 @@ def render_index(report: DailyReport) -> str:
 
 def render_daily(report: DailyReport) -> str:
     template = _load_template("daily.html")
+    statuses_by_company = _statuses_by_company(report.source_statuses)
     statuses = "".join(
         f"<li>{html.escape(status.company_name)} - {html.escape(status.source_label)} - {html.escape(status.message)}</li>"
         for status in report.source_statuses
@@ -236,7 +291,10 @@ def render_daily(report: DailyReport) -> str:
         headline=html.escape(report.headline),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
-        company_cards="".join(_render_company_report(company) for company in report.company_reports),
+        company_cards="".join(
+            _render_company_report(company, statuses_by_company=statuses_by_company)
+            for company in report.company_reports
+        ),
         statuses=statuses or "<li>无</li>",
     )
 

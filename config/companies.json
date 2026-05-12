@@ -184,13 +184,13 @@
     "sources": [
       {
         "kind": "html",
-        "label": "ByteDance News",
-        "url": "https://www.bytedance.com/en/news",
-        "path_prefixes": ["/en/news/"],
-        "include_patterns": ["ai", "model", "doubao", "capcut", "byteplus"],
-        "exclude_patterns": ["culture", "campus", "philanthropy"],
+        "label": "ByteDance Seed",
+        "url": "https://seed.bytedance.com/en/blog",
+        "path_prefixes": ["/en/"],
+        "include_patterns": ["seed", "model", "agent", "robot", "multimodal"],
+        "exclude_patterns": ["career", "campus", "disclaimer", "direction"],
         "fetch_article_details": true,
-        "detail_fetch_limit": 3,
+        "detail_fetch_limit": 5,
         "require_published_at": true
       }
     ]
@@ -202,9 +202,9 @@
     "sources": [
       {
         "kind": "html",
-        "label": "Alibaba News",
-        "url": "https://www.alibabagroup.com/en-US/news",
-        "path_prefixes": ["/en-US/news/", "/en-US/document-", "/en-US/home"],
+        "label": "Alibaba News and Resources",
+        "url": "https://www.alibabagroup.com/en-US/news-and-resource",
+        "path_prefixes": ["/en-US/document-"],
         "include_patterns": ["ai", "cloud", "qwen", "alibaba", "taobao"],
         "exclude_patterns": ["esg", "charity", "festival"],
         "fetch_article_details": true,
@@ -220,13 +220,13 @@
     "sources": [
       {
         "kind": "html",
-        "label": "Huawei News",
-        "url": "https://www.huawei.com/en/news",
-        "path_prefixes": ["/en/news/"],
+        "label": "Huawei Media Center",
+        "url": "https://www.huawei.com/en/media-center",
+        "path_prefixes": ["/en/news/", "/en/media-center/our-value/"],
         "include_patterns": ["huawei", "cloud", "ai", "mate", "harmonyos"],
         "exclude_patterns": ["sustainability", "seed for the future"],
         "fetch_article_details": true,
-        "detail_fetch_limit": 3,
+        "detail_fetch_limit": 5,
         "require_published_at": true
       }
     ]

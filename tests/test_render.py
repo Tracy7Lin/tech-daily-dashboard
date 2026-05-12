@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.models import CompanyReport, DailyReport, EnrichedEntry, RawEntry, TopicCluster
+from tech_daily.models import CompanyReport, DailyReport, EnrichedEntry, RawEntry, SourceStatus, TopicCluster
 from tech_daily.render import render_daily, render_index, write_site
 
 
@@ -156,6 +156,58 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Apple", html)
         self.assertIn("今日无有效动态", html)
         self.assertNotIn("<section class='card company-card summary-card'>", html)
+
+    def test_render_company_report_empty_state_surfaces_unstable_source_reason(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[CompanyReport(company_slug="tesla", company_name="Tesla", entries=[], has_updates=False)],
+            source_statuses=[
+                SourceStatus(
+                    company_slug="tesla",
+                    company_name="Tesla",
+                    source_label="Tesla IR Press",
+                    source_url="https://ir.tesla.com/press?view=all",
+                    ok=False,
+                    message="http_error:403;kept:0;date_matched:0;final_included:0",
+                )
+            ],
+        )
+        html = render_index(report)
+        self.assertIn("信源暂未稳定", html)
+        self.assertIn("官方源当前拒绝抓取请求", html)
+        self.assertIn("Tesla IR Press", html)
+
+    def test_render_company_report_empty_state_surfaces_zero_fetched_placeholder(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[CompanyReport(company_slug="xiaomi", company_name="Xiaomi", entries=[], has_updates=False)],
+            source_statuses=[
+                SourceStatus(
+                    company_slug="xiaomi",
+                    company_name="Xiaomi",
+                    source_label="Xiaomi Newsroom",
+                    source_url="https://www.mi.com/global/discover/newsroom",
+                    ok=True,
+                    message="ok;fetched:0;kept:0;date_matched:0;final_included:0",
+                    fetched_count=0,
+                    kept_count=0,
+                )
+            ],
+        )
+        html = render_daily(report)
+        self.assertIn("信源暂未稳定", html)
+        self.assertIn("当前入口尚未抓到可用条目", html)
+        self.assertIn("Xiaomi Newsroom", html)
 
     def test_render_preserves_rfc_weekday_and_timezone_in_published_time(self) -> None:
         entry = _entry(
