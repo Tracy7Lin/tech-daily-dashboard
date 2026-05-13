@@ -58,6 +58,20 @@ def _load_latest_runtime_diagnostics(output_dir: Path) -> tuple[str, list[dict]]
     return payload.get("date", latest_path.parent.name), diagnostics
 
 
+def _load_latest_runtime_statuses(output_dir: Path) -> dict[str, dict]:
+    report_paths = sorted(output_dir.glob("*/report.json"))
+    if not report_paths:
+        return {}
+
+    latest_path = max(report_paths, key=lambda path: path.parent.name)
+    payload = json.loads(latest_path.read_text(encoding="utf-8"))
+    statuses = {}
+    for status in payload.get("source_statuses", []):
+        diagnostic = _build_runtime_diagnostic(status)
+        statuses[diagnostic["company_slug"]] = diagnostic
+    return statuses
+
+
 def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[dict]:
     report_paths = sorted(output_dir.glob("*/report.json"), reverse=True)
     if not report_paths:
@@ -118,9 +132,15 @@ def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[d
     )
 
 
-def _build_high_priority_runtime_issues(runtime_history_summary: list[dict]) -> list[dict]:
+def _build_high_priority_runtime_issues(
+    runtime_history_summary: list[dict],
+    latest_runtime_statuses: dict[str, dict],
+) -> list[dict]:
     items = []
     for summary in runtime_history_summary:
+        latest_status = latest_runtime_statuses.get(summary["company_slug"])
+        if latest_status and latest_status["severity"] == "ok":
+            continue
         if summary["severity"] == "error" and summary["occurrence_count"] >= 2:
             items.append(summary)
             continue
@@ -148,8 +168,12 @@ def run_health_check(settings: Settings | None = None) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
     latest_report_date, recent_runtime_diagnostics = _load_latest_runtime_diagnostics(output_dir)
+    latest_runtime_statuses = _load_latest_runtime_statuses(output_dir)
     runtime_history_summary = _load_runtime_history_summary(output_dir)
-    high_priority_runtime_issues = _build_high_priority_runtime_issues(runtime_history_summary)
+    high_priority_runtime_issues = _build_high_priority_runtime_issues(
+        runtime_history_summary,
+        latest_runtime_statuses,
+    )
 
     llm_available = build_llm_client(current_settings).is_available()
     notes: list[str] = []
