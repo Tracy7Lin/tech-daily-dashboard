@@ -20,6 +20,8 @@
 - 跨公司主题聚合与差异对比
 - 当日首页、详情页与历史归档产物
 - LLM 不可用时自动回退到规则表达
+- `health-check` 支持最近一次与最近几天的源级运行诊断
+- 本地自动化脚本会在生成后追加一次健康检查并写入日志
 
 ## Quick Start
 
@@ -88,6 +90,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\unregister_daily_task.ps1
 python run_dashboard.py health-check
 ```
 
+该命令当前会输出三层信息：
+
+- 当前环境与配置是否 ready
+- 最近一次日报运行中的源问题
+- 最近几天重复出现的源问题汇总
+
 ### 8. 执行 dry-run 预演
 
 ```bash
@@ -108,6 +116,7 @@ python run_dashboard.py dry-run --today
 - `build/site/archive.html`
 - `build/site/<date>/index.html`
 - `build/site/<date>/report.json`
+- `build/logs/<date>.log`
 
 ## Project Layout
 
@@ -185,6 +194,12 @@ python run_dashboard.py generate-today --output-dir build/site
 python run_dashboard.py health-check
 ```
 
+验证自动化脚本会同时完成日报生成与健康检查日志记录：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_daily_report.ps1
+```
+
 验证某个日报日期按当前配置是否可执行但不真正抓取或写文件：
 
 ```bash
@@ -196,4 +211,6 @@ python run_dashboard.py dry-run --date 2026-05-12
 - 继续提升摘要与主题分析的稳定性
 - 精修不同公司站点的发布时间与正文提取
 - 增加更强的历史检索与筛选能力
+- 继续增强源级运维观测，例如失败趋势、重复异常与长期低产出提醒
 - 为未来的科技情报分析 agent 保留可复用 skill 边界
+- 增加兄弟日报：`GitHub 今日 Highlight 日报`，聚焦当天或最近热门的 GitHub 项目、趋势仓库与高讨论度开源动态
