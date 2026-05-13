@@ -72,6 +72,15 @@ def _print_health_check_summary(result: dict) -> None:
         )
         if diagnostic.get("suggestion"):
             print(f"recent_runtime_suggestion company={diagnostic['company_slug']} suggestion={diagnostic['suggestion']}")
+    for summary in result.get("high_priority_runtime_issues", [])[:5]:
+        issues = ",".join(summary["issues"]) or "-"
+        print(
+            f"high_priority_runtime severity={summary['severity']} company={summary['company_slug']} "
+            f"source={summary['source_label']} occurrences={summary['occurrence_count']} "
+            f"latest_report_date={summary['latest_report_date']} issues={issues}"
+        )
+        if summary.get("suggestion"):
+            print(f"high_priority_runtime_suggestion company={summary['company_slug']} suggestion={summary['suggestion']}")
     for summary in result.get("runtime_history_summary", [])[:5]:
         issues = ",".join(summary["issues"]) or "-"
         print(

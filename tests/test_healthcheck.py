@@ -270,6 +270,113 @@ class HealthCheckTests(unittest.TestCase):
         self.assertEqual(summary["source_label"], "Tesla IR Press")
         self.assertEqual(summary["occurrence_count"], 2)
 
+    @patch("tech_daily.healthcheck.load_companies")
+    def test_run_health_check_marks_recurring_failures_as_high_priority(self, mock_load_companies) -> None:
+        mock_load_companies.return_value = [
+            Company(
+                slug="tesla",
+                name="Tesla",
+                region="US",
+                sources=[Source(kind="html", url="https://ir.tesla.com/press", label="Tesla IR Press")],
+            ),
+            Company(
+                slug="xiaomi",
+                name="Xiaomi",
+                region="CN",
+                sources=[Source(kind="html", url="https://www.mi.com/global/discover/news", label="Xiaomi News")],
+            ),
+        ]
+        with TemporaryDirectory() as temp_dir:
+            site_dir = Path(temp_dir) / "site"
+            payloads = {
+                "2026-05-11": [
+                    {
+                        "company_slug": "tesla",
+                        "company_name": "Tesla",
+                        "source_label": "Tesla IR Press",
+                        "source_url": "https://ir.tesla.com/press",
+                        "ok": False,
+                        "message": "http_error:403;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    },
+                    {
+                        "company_slug": "xiaomi",
+                        "company_name": "Xiaomi",
+                        "source_label": "Xiaomi News",
+                        "source_url": "https://www.mi.com/global/discover/news",
+                        "ok": True,
+                        "message": "fetched:0;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    },
+                ],
+                "2026-05-12": [
+                    {
+                        "company_slug": "tesla",
+                        "company_name": "Tesla",
+                        "source_label": "Tesla IR Press",
+                        "source_url": "https://ir.tesla.com/press",
+                        "ok": False,
+                        "message": "http_error:403;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+                "2026-05-13": [
+                    {
+                        "company_slug": "tesla",
+                        "company_name": "Tesla",
+                        "source_label": "Tesla IR Press",
+                        "source_url": "https://ir.tesla.com/press",
+                        "ok": False,
+                        "message": "http_error:403;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    },
+                    {
+                        "company_slug": "xiaomi",
+                        "company_name": "Xiaomi",
+                        "source_label": "Xiaomi News",
+                        "source_url": "https://www.mi.com/global/discover/news",
+                        "ok": True,
+                        "message": "fetched:0;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    },
+                ],
+            }
+            for report_date, statuses in payloads.items():
+                report_dir = site_dir / report_date
+                report_dir.mkdir(parents=True)
+                payload = {"date": report_date, "headline": "headline", "source_statuses": statuses}
+                (report_dir / "report.json").write_text(json.dumps(payload), encoding="utf-8")
+
+            settings = Settings(
+                site_output_dir=str(site_dir),
+                data_output_dir=str(Path(temp_dir) / "data"),
+                summary_mode="rule",
+                editorial_mode="rule",
+                llm_api_url="",
+                llm_api_key="",
+                llm_model="",
+            )
+            result = run_health_check(settings=settings)
+
+        company_slugs = [item["company_slug"] for item in result["high_priority_runtime_issues"]]
+        self.assertIn("tesla", company_slugs)
+        self.assertIn("xiaomi", company_slugs)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -118,6 +118,24 @@ def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[d
     )
 
 
+def _build_high_priority_runtime_issues(runtime_history_summary: list[dict]) -> list[dict]:
+    items = []
+    for summary in runtime_history_summary:
+        if summary["severity"] == "error" and summary["occurrence_count"] >= 2:
+            items.append(summary)
+            continue
+        if "zero_fetched_entries" in summary["issues"] and summary["occurrence_count"] >= 2:
+            items.append(summary)
+    return sorted(
+        items,
+        key=lambda item: (
+            item["severity"] != "error",
+            -item["occurrence_count"],
+            item["company_slug"],
+        ),
+    )
+
+
 def run_health_check(settings: Settings | None = None) -> dict:
     current_settings = settings or DEFAULT_SETTINGS
     companies = load_companies()
@@ -131,6 +149,7 @@ def run_health_check(settings: Settings | None = None) -> dict:
     data_dir.mkdir(parents=True, exist_ok=True)
     latest_report_date, recent_runtime_diagnostics = _load_latest_runtime_diagnostics(output_dir)
     runtime_history_summary = _load_runtime_history_summary(output_dir)
+    high_priority_runtime_issues = _build_high_priority_runtime_issues(runtime_history_summary)
 
     llm_available = build_llm_client(current_settings).is_available()
     notes: list[str] = []
@@ -161,6 +180,7 @@ def run_health_check(settings: Settings | None = None) -> dict:
         "latest_report_date": latest_report_date,
         "recent_runtime_diagnostics": recent_runtime_diagnostics,
         "runtime_history_summary": runtime_history_summary,
+        "high_priority_runtime_issues": high_priority_runtime_issues,
         "validation_issue_count": len(validation_issues),
         "validation_issues": validation_issues,
         "source_diagnostics": source_diagnostics,

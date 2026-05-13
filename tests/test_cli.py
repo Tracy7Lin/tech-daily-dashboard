@@ -85,6 +85,16 @@ class CliTests(unittest.TestCase):
                     "issues": ["zero_fetched_entries"],
                 }
             ],
+            "high_priority_runtime_issues": [
+                {
+                    "severity": "error",
+                    "company_slug": "tesla",
+                    "source_label": "Tesla IR Press",
+                    "occurrence_count": 3,
+                    "latest_report_date": "2026-05-13",
+                    "issues": ["http_403_blocked"],
+                }
+            ],
         }
         output = StringIO()
         with redirect_stdout(output):
@@ -94,6 +104,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("ok=True", output.getvalue())
         self.assertIn("company_count=15", output.getvalue())
         self.assertIn("latest_report_date=2026-05-13", output.getvalue())
+        self.assertIn("high_priority_runtime severity=error company=tesla", output.getvalue())
         self.assertIn("runtime_history severity=warning company=xiaomi", output.getvalue())
 
     @patch("tech_daily.cli.run_dry_run")
