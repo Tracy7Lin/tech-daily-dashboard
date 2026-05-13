@@ -63,7 +63,7 @@ def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[d
     if not report_paths:
         return []
 
-    grouped: dict[tuple[str, str], dict] = {}
+    grouped: dict[str, dict] = {}
     for report_path in report_paths[:limit]:
         payload = json.loads(report_path.read_text(encoding="utf-8"))
         report_date = payload.get("date", report_path.parent.name)
@@ -71,7 +71,7 @@ def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[d
             diagnostic = _build_runtime_diagnostic(status)
             if diagnostic["severity"] == "ok":
                 continue
-            key = (diagnostic["company_slug"], diagnostic["source_label"])
+            key = diagnostic["company_slug"]
             current = grouped.setdefault(
                 key,
                 {
@@ -91,6 +91,7 @@ def _load_runtime_history_summary(output_dir: Path, *, limit: int = 7) -> list[d
                 current["severity"] = "error"
             if report_date >= current["latest_report_date"]:
                 current["latest_report_date"] = report_date
+                current["source_label"] = diagnostic["source_label"]
                 current["suggestion"] = diagnostic.get("suggestion", "") or current["suggestion"]
 
     summaries = []
