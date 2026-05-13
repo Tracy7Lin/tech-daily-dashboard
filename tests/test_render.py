@@ -179,7 +179,7 @@ class RenderTests(unittest.TestCase):
         )
         html = render_index(report)
         self.assertIn("信源暂未稳定", html)
-        self.assertIn("官方源当前拒绝抓取请求", html)
+        self.assertIn("Tesla 官方新闻入口当前持续拒绝抓取请求", html)
         self.assertIn("Tesla IR Press", html)
 
     def test_render_company_report_empty_state_surfaces_zero_fetched_placeholder(self) -> None:
@@ -195,7 +195,7 @@ class RenderTests(unittest.TestCase):
                 SourceStatus(
                     company_slug="xiaomi",
                     company_name="Xiaomi",
-                    source_label="Xiaomi Newsroom",
+                    source_label="Xiaomi News",
                     source_url="https://www.mi.com/global/discover/newsroom",
                     ok=True,
                     message="ok;fetched:0;kept:0;date_matched:0;final_included:0",
@@ -206,8 +206,8 @@ class RenderTests(unittest.TestCase):
         )
         html = render_daily(report)
         self.assertIn("信源暂未稳定", html)
-        self.assertIn("当前入口尚未抓到可用条目", html)
-        self.assertIn("Xiaomi Newsroom", html)
+        self.assertIn("Xiaomi Global Discover 当前以动态渲染为主", html)
+        self.assertIn("Xiaomi News", html)
 
     def test_render_preserves_rfc_weekday_and_timezone_in_published_time(self) -> None:
         entry = _entry(

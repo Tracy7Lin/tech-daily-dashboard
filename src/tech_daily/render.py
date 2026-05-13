@@ -110,9 +110,13 @@ def _select_placeholder_status(statuses: list[SourceStatus]) -> SourceStatus | N
 def _placeholder_reason(status: SourceStatus) -> str:
     message = status.message.lower()
     if "http_error:403" in message:
+        if "tesla" in status.company_slug:
+            return "Tesla 官方新闻入口当前持续拒绝抓取请求，先保留占位，后续再评估更稳的官方接入方式。"
         return "官方源当前拒绝抓取请求，已暂时保留占位并等待后续适配。"
     if "http_error:500" in message:
         return "官方源当前返回服务错误，后续会继续检查入口稳定性。"
+    if "mi.com/global/discover" in status.source_url and (status.fetched_count == 0 or "fetched:0" in message):
+        return "Xiaomi Global Discover 当前以动态渲染为主，静态抓取器尚未拿到稳定文章链接，先保留占位。"
     if status.fetched_count == 0 or "fetched:0" in message:
         return "当前入口尚未抓到可用条目，后续会继续升级抓取适配。"
     if status.kept_count == 0 or status.final_included_count == 0:
