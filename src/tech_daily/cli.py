@@ -46,7 +46,8 @@ def _print_health_check_summary(result: dict) -> None:
         f"summary_mode={result['summary_mode']} editorial_mode={result['editorial_mode']} "
         f"validation_issue_count={result.get('validation_issue_count', 0)} "
         f"latest_report_date={result.get('latest_report_date', '-') or '-'} "
-        f"output_dir={result['output_dir']}"
+        f"output_dir={result['output_dir']} "
+        f"snapshot_path={result.get('snapshot_path', '-') or '-'}"
     )
     for note in result.get("notes", []):
         print(f"note={note}")

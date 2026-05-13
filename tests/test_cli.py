@@ -74,6 +74,7 @@ class CliTests(unittest.TestCase):
             "editorial_mode": "hybrid",
             "latest_report_date": "2026-05-13",
             "output_dir": "build/site",
+            "snapshot_path": "build/data/health_snapshot.json",
             "notes": [],
             "runtime_history_summary": [
                 {
@@ -115,6 +116,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("ok=True", output.getvalue())
         self.assertIn("company_count=15", output.getvalue())
         self.assertIn("latest_report_date=2026-05-13", output.getvalue())
+        self.assertIn("snapshot_path=build/data/health_snapshot.json", output.getvalue())
         self.assertIn("high_priority_runtime severity=error company=tesla", output.getvalue())
         self.assertIn("recently_recovered_runtime company=alibaba", output.getvalue())
         self.assertIn("runtime_history severity=warning company=xiaomi", output.getvalue())

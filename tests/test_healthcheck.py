@@ -60,11 +60,17 @@ class HealthCheckTests(unittest.TestCase):
                 llm_model="",
             )
             result = run_health_check(settings=settings)
-
-        self.assertTrue(result["ok"])
-        self.assertTrue(result["output_dir_ready"])
-        self.assertTrue(result["data_dir_ready"])
-        self.assertEqual(result["notes"], [])
+            self.assertTrue(result["ok"])
+            self.assertTrue(result["output_dir_ready"])
+            self.assertTrue(result["data_dir_ready"])
+            self.assertEqual(result["notes"], [])
+            snapshot_path = Path(result["snapshot_path"])
+            self.assertTrue(snapshot_path.exists())
+            snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            self.assertEqual(snapshot_payload["ok"], True)
+            self.assertEqual(snapshot_payload["company_count"], 1)
+            self.assertEqual(snapshot_payload["source_count"], 1)
+            self.assertEqual(snapshot_payload["latest_report_date"], "")
 
     @patch("tech_daily.healthcheck.load_companies")
     def test_run_health_check_includes_source_diagnostics_and_validation_issues(self, mock_load_companies) -> None:
@@ -525,12 +531,14 @@ class HealthCheckTests(unittest.TestCase):
                 llm_model="",
             )
             result = run_health_check(settings=settings)
-
-        self.assertEqual(len(result["recently_recovered_runtime_issues"]), 1)
-        recovered = result["recently_recovered_runtime_issues"][0]
-        self.assertEqual(recovered["company_slug"], "alibaba")
-        self.assertEqual(recovered["recovered_report_date"], "2026-05-13")
-        self.assertEqual(recovered["last_issue_report_date"], "2026-05-12")
+            self.assertEqual(len(result["recently_recovered_runtime_issues"]), 1)
+            recovered = result["recently_recovered_runtime_issues"][0]
+            self.assertEqual(recovered["company_slug"], "alibaba")
+            self.assertEqual(recovered["recovered_report_date"], "2026-05-13")
+            self.assertEqual(recovered["last_issue_report_date"], "2026-05-12")
+            snapshot_path = Path(result["snapshot_path"])
+            snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            self.assertEqual(snapshot_payload["recently_recovered_runtime_issues"][0]["company_slug"], "alibaba")
 
 
 if __name__ == "__main__":

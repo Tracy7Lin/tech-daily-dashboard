@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 from .config_loader import load_companies
@@ -184,6 +185,36 @@ def _build_recently_recovered_runtime_issues(
     return sorted(items, key=lambda item: (-item["occurrence_count"], item["company_slug"]))
 
 
+def _build_health_snapshot(result: dict) -> dict:
+    return {
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "ok": result["ok"],
+        "company_count": result["company_count"],
+        "source_count": result["source_count"],
+        "summary_mode": result["summary_mode"],
+        "editorial_mode": result["editorial_mode"],
+        "llm_available": result["llm_available"],
+        "latest_report_date": result["latest_report_date"],
+        "validation_issue_count": result["validation_issue_count"],
+        "validation_issues": result["validation_issues"],
+        "source_diagnostics": result["source_diagnostics"],
+        "recent_runtime_diagnostics": result["recent_runtime_diagnostics"],
+        "high_priority_runtime_issues": result["high_priority_runtime_issues"],
+        "recently_recovered_runtime_issues": result["recently_recovered_runtime_issues"],
+        "runtime_history_summary": result["runtime_history_summary"],
+        "notes": result["notes"],
+    }
+
+
+def _write_health_snapshot(snapshot: dict, data_dir: Path) -> str:
+    snapshot_path = data_dir / "health_snapshot.json"
+    snapshot_path.write_text(
+        json.dumps(snapshot, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return str(snapshot_path)
+
+
 def run_health_check(settings: Settings | None = None) -> dict:
     current_settings = settings or DEFAULT_SETTINGS
     companies = load_companies()
@@ -223,7 +254,7 @@ def run_health_check(settings: Settings | None = None) -> dict:
         and not validation_issues
     )
 
-    return {
+    result = {
         "ok": ok,
         "company_count": len(companies),
         "source_count": source_count,
@@ -244,3 +275,5 @@ def run_health_check(settings: Settings | None = None) -> dict:
         "source_diagnostics": source_diagnostics,
         "notes": notes,
     }
+    result["snapshot_path"] = _write_health_snapshot(_build_health_snapshot(result), data_dir)
+    return result
