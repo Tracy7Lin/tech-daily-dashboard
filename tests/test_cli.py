@@ -75,6 +75,16 @@ class CliTests(unittest.TestCase):
             "latest_report_date": "2026-05-13",
             "output_dir": "build/site",
             "notes": [],
+            "runtime_history_summary": [
+                {
+                    "severity": "warning",
+                    "company_slug": "xiaomi",
+                    "source_label": "Xiaomi News",
+                    "occurrence_count": 2,
+                    "latest_report_date": "2026-05-13",
+                    "issues": ["zero_fetched_entries"],
+                }
+            ],
         }
         output = StringIO()
         with redirect_stdout(output):
@@ -84,6 +94,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("ok=True", output.getvalue())
         self.assertIn("company_count=15", output.getvalue())
         self.assertIn("latest_report_date=2026-05-13", output.getvalue())
+        self.assertIn("runtime_history severity=warning company=xiaomi", output.getvalue())
 
     @patch("tech_daily.cli.run_dry_run")
     def test_main_prints_dry_run_summary(self, mock_run_dry_run) -> None:
