@@ -453,6 +453,85 @@ class HealthCheckTests(unittest.TestCase):
         company_slugs = [item["company_slug"] for item in result["high_priority_runtime_issues"]]
         self.assertNotIn("alibaba", company_slugs)
 
+    @patch("tech_daily.healthcheck.load_companies")
+    def test_run_health_check_reports_recently_recovered_sources(self, mock_load_companies) -> None:
+        mock_load_companies.return_value = [
+            Company(
+                slug="alibaba",
+                name="Alibaba",
+                region="CN",
+                sources=[Source(kind="html", url="https://www.alibabagroup.com/en-US/news-and-resource", label="Alibaba News")],
+            )
+        ]
+        with TemporaryDirectory() as temp_dir:
+            site_dir = Path(temp_dir) / "site"
+            payloads = {
+                "2026-05-11": [
+                    {
+                        "company_slug": "alibaba",
+                        "company_name": "Alibaba",
+                        "source_label": "Alibaba News",
+                        "source_url": "https://www.alibabagroup.com/en-US/news-and-resource",
+                        "ok": True,
+                        "message": "fetched:0;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+                "2026-05-12": [
+                    {
+                        "company_slug": "alibaba",
+                        "company_name": "Alibaba",
+                        "source_label": "Alibaba News",
+                        "source_url": "https://www.alibabagroup.com/en-US/news-and-resource",
+                        "ok": True,
+                        "message": "fetched:0;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+                "2026-05-13": [
+                    {
+                        "company_slug": "alibaba",
+                        "company_name": "Alibaba",
+                        "source_label": "Alibaba News and Resources",
+                        "source_url": "https://www.alibabagroup.com/en-US/news-and-resource",
+                        "ok": True,
+                        "message": "fetched:5;kept:5;date_matched:0;final_included:0",
+                        "fetched_count": 5,
+                        "kept_count": 5,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+            }
+            for report_date, statuses in payloads.items():
+                report_dir = site_dir / report_date
+                report_dir.mkdir(parents=True)
+                payload = {"date": report_date, "headline": "headline", "source_statuses": statuses}
+                (report_dir / "report.json").write_text(json.dumps(payload), encoding="utf-8")
+
+            settings = Settings(
+                site_output_dir=str(site_dir),
+                data_output_dir=str(Path(temp_dir) / "data"),
+                summary_mode="rule",
+                editorial_mode="rule",
+                llm_api_url="",
+                llm_api_key="",
+                llm_model="",
+            )
+            result = run_health_check(settings=settings)
+
+        self.assertEqual(len(result["recently_recovered_runtime_issues"]), 1)
+        recovered = result["recently_recovered_runtime_issues"][0]
+        self.assertEqual(recovered["company_slug"], "alibaba")
+        self.assertEqual(recovered["recovered_report_date"], "2026-05-13")
+        self.assertEqual(recovered["last_issue_report_date"], "2026-05-12")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -46,25 +46,29 @@ def _build_runtime_diagnostic(status: dict) -> dict:
     }
 
 
-def _load_latest_runtime_diagnostics(output_dir: Path) -> tuple[str, list[dict]]:
+def _load_latest_report_payload(output_dir: Path) -> tuple[str, dict]:
     report_paths = sorted(output_dir.glob("*/report.json"))
     if not report_paths:
-        return "", []
+        return "", {}
 
     latest_path = max(report_paths, key=lambda path: path.parent.name)
     payload = json.loads(latest_path.read_text(encoding="utf-8"))
+    return payload.get("date", latest_path.parent.name), payload
+
+
+def _load_latest_runtime_diagnostics(output_dir: Path) -> tuple[str, list[dict]]:
+    report_date, payload = _load_latest_report_payload(output_dir)
+    if not payload:
+        return "", []
     diagnostics = [_build_runtime_diagnostic(status) for status in payload.get("source_statuses", [])]
     diagnostics = [item for item in diagnostics if item["severity"] != "ok"]
-    return payload.get("date", latest_path.parent.name), diagnostics
+    return report_date, diagnostics
 
 
 def _load_latest_runtime_statuses(output_dir: Path) -> dict[str, dict]:
-    report_paths = sorted(output_dir.glob("*/report.json"))
-    if not report_paths:
+    _, payload = _load_latest_report_payload(output_dir)
+    if not payload:
         return {}
-
-    latest_path = max(report_paths, key=lambda path: path.parent.name)
-    payload = json.loads(latest_path.read_text(encoding="utf-8"))
     statuses = {}
     for status in payload.get("source_statuses", []):
         diagnostic = _build_runtime_diagnostic(status)
@@ -156,6 +160,30 @@ def _build_high_priority_runtime_issues(
     )
 
 
+def _build_recently_recovered_runtime_issues(
+    runtime_history_summary: list[dict],
+    latest_runtime_statuses: dict[str, dict],
+    recovered_report_date: str,
+) -> list[dict]:
+    items = []
+    for summary in runtime_history_summary:
+        latest_status = latest_runtime_statuses.get(summary["company_slug"])
+        if not latest_status or latest_status["severity"] != "ok":
+            continue
+        items.append(
+            {
+                "company_slug": summary["company_slug"],
+                "company_name": summary["company_name"],
+                "source_label": latest_status["source_label"],
+                "recovered_report_date": recovered_report_date,
+                "last_issue_report_date": summary["latest_report_date"],
+                "occurrence_count": summary["occurrence_count"],
+                "issues": summary["issues"],
+            }
+        )
+    return sorted(items, key=lambda item: (-item["occurrence_count"], item["company_slug"]))
+
+
 def run_health_check(settings: Settings | None = None) -> dict:
     current_settings = settings or DEFAULT_SETTINGS
     companies = load_companies()
@@ -173,6 +201,11 @@ def run_health_check(settings: Settings | None = None) -> dict:
     high_priority_runtime_issues = _build_high_priority_runtime_issues(
         runtime_history_summary,
         latest_runtime_statuses,
+    )
+    recently_recovered_runtime_issues = _build_recently_recovered_runtime_issues(
+        runtime_history_summary,
+        latest_runtime_statuses,
+        latest_report_date,
     )
 
     llm_available = build_llm_client(current_settings).is_available()
@@ -205,6 +238,7 @@ def run_health_check(settings: Settings | None = None) -> dict:
         "recent_runtime_diagnostics": recent_runtime_diagnostics,
         "runtime_history_summary": runtime_history_summary,
         "high_priority_runtime_issues": high_priority_runtime_issues,
+        "recently_recovered_runtime_issues": recently_recovered_runtime_issues,
         "validation_issue_count": len(validation_issues),
         "validation_issues": validation_issues,
         "source_diagnostics": source_diagnostics,

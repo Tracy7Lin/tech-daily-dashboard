@@ -81,6 +81,14 @@ def _print_health_check_summary(result: dict) -> None:
         )
         if summary.get("suggestion"):
             print(f"high_priority_runtime_suggestion company={summary['company_slug']} suggestion={summary['suggestion']}")
+    for recovered in result.get("recently_recovered_runtime_issues", [])[:5]:
+        issues = ",".join(recovered["issues"]) or "-"
+        print(
+            f"recently_recovered_runtime company={recovered['company_slug']} "
+            f"source={recovered['source_label']} recovered_report_date={recovered['recovered_report_date']} "
+            f"last_issue_report_date={recovered['last_issue_report_date']} "
+            f"occurrences={recovered['occurrence_count']} issues={issues}"
+        )
     for summary in result.get("runtime_history_summary", [])[:5]:
         issues = ",".join(summary["issues"]) or "-"
         print(

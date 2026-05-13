@@ -95,6 +95,17 @@ class CliTests(unittest.TestCase):
                     "issues": ["http_403_blocked"],
                 }
             ],
+            "recently_recovered_runtime_issues": [
+                {
+                    "company_slug": "alibaba",
+                    "company_name": "Alibaba",
+                    "source_label": "Alibaba News and Resources",
+                    "recovered_report_date": "2026-05-13",
+                    "last_issue_report_date": "2026-05-12",
+                    "occurrence_count": 2,
+                    "issues": ["zero_fetched_entries"],
+                }
+            ],
         }
         output = StringIO()
         with redirect_stdout(output):
@@ -105,6 +116,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("company_count=15", output.getvalue())
         self.assertIn("latest_report_date=2026-05-13", output.getvalue())
         self.assertIn("high_priority_runtime severity=error company=tesla", output.getvalue())
+        self.assertIn("recently_recovered_runtime company=alibaba", output.getvalue())
         self.assertIn("runtime_history severity=warning company=xiaomi", output.getvalue())
 
     @patch("tech_daily.cli.run_dry_run")
