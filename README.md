@@ -160,8 +160,13 @@ python run_dashboard.py dry-run --today
 - `collector.py`: 采集与基础去重
 - `normalize.py` / `quality.py`: 归一化与质量过滤
 - `classifier.py`: 标签、分类与重要度判定
+- `capabilities/brief_generation.py`: 单条摘要能力边界
+- `capabilities/topic_comparison.py`: 主题对比能力边界
+- `capabilities/daily_editorial.py`: 日报顶部编辑能力边界
+- `capabilities/ops_status_analysis.py`: 运维状态分析能力边界
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
+- `healthcheck.py`: 运维状态产出与 snapshot 落盘
 - `topics.py`: 主题聚合
 - `render.py`: 静态页面渲染
 - `pipeline.py`: 日报生成编排

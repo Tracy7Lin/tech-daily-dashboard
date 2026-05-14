@@ -41,6 +41,11 @@
 - DeepSeek 兼容接入
 - 单条摘要、首页判断、主题对比的 LLM 化表达层
 - LLM 输出后处理与 fallback
+- agent-ready capability layer 基线：
+  - `brief_generation`
+  - `topic_comparison`
+  - `daily_editorial`
+  - `ops_status_analysis`
 
 ### 3.3 前端基线
 

@@ -49,6 +49,9 @@ def _print_health_check_summary(result: dict) -> None:
         f"output_dir={result['output_dir']} "
         f"snapshot_path={result.get('snapshot_path', '-') or '-'}"
     )
+    ops_analysis = result.get("ops_status_analysis", {})
+    if ops_analysis.get("operator_brief"):
+        print(f"operator_brief={ops_analysis['operator_brief']}")
     for note in result.get("notes", []):
         print(f"note={note}")
     for issue in result.get("validation_issues", [])[:5]:

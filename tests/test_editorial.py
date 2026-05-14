@@ -190,6 +190,19 @@ class EditorialTests(unittest.TestCase):
         self.assertEqual(result, "rule headline")
         rule.build_daily_headline.assert_called_once()
 
+    def test_editorial_service_rule_mode_still_returns_strings_when_delegating(self) -> None:
+        clusters = [
+            type("Cluster", (), {"title": "安全与治理", "entries": [1, 2, 3]})(),
+        ]
+        company_reports = [
+            type("Report", (), {"company_name": "OpenAI", "has_updates": True})(),
+        ]
+
+        headline = self.rule_service.build_daily_headline(clusters, company_reports, 3)
+
+        self.assertIsInstance(headline, str)
+        self.assertTrue(headline)
+
 
 if __name__ == "__main__":
     unittest.main()

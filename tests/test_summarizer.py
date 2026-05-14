@@ -124,6 +124,22 @@ class SummarizerTests(unittest.TestCase):
         result = summarizer.summarize(entry, ["ai", "model"], "product")
         self.assertEqual(result, "rule summary")
 
+    def test_summarizer_rule_mode_still_returns_text_when_delegating(self) -> None:
+        entry = RawEntry(
+            company_slug="openai",
+            company_name="OpenAI",
+            source_label="OpenAI News",
+            title="OpenAI launches GPT-5.5 Instant for ChatGPT",
+            url="https://example.com",
+            summary="Smarter, clearer and more personalized responses for everyday use.",
+        )
+        summarizer = Summarizer(mode="rule")
+
+        result = summarizer.summarize(entry, ["ai", "model"], "product")
+
+        self.assertIsInstance(result, str)
+        self.assertTrue(result)
+
 
 if __name__ == "__main__":
     unittest.main()

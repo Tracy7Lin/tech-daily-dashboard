@@ -64,6 +64,8 @@ class HealthCheckTests(unittest.TestCase):
             self.assertTrue(result["output_dir_ready"])
             self.assertTrue(result["data_dir_ready"])
             self.assertEqual(result["notes"], [])
+            self.assertIn("ops_status_analysis", result)
+            self.assertIn("operator_brief", result["ops_status_analysis"])
             snapshot_path = Path(result["snapshot_path"])
             self.assertTrue(snapshot_path.exists())
             snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
@@ -71,6 +73,7 @@ class HealthCheckTests(unittest.TestCase):
             self.assertEqual(snapshot_payload["company_count"], 1)
             self.assertEqual(snapshot_payload["source_count"], 1)
             self.assertEqual(snapshot_payload["latest_report_date"], "")
+            self.assertIn("ops_status_analysis", snapshot_payload)
 
     @patch("tech_daily.healthcheck.load_companies")
     def test_run_health_check_includes_source_diagnostics_and_validation_issues(self, mock_load_companies) -> None:
@@ -536,6 +539,7 @@ class HealthCheckTests(unittest.TestCase):
             self.assertEqual(recovered["company_slug"], "alibaba")
             self.assertEqual(recovered["recovered_report_date"], "2026-05-13")
             self.assertEqual(recovered["last_issue_report_date"], "2026-05-12")
+            self.assertIn("alibaba", result["ops_status_analysis"]["operator_brief"].lower())
             snapshot_path = Path(result["snapshot_path"])
             snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
             self.assertEqual(snapshot_payload["recently_recovered_runtime_issues"][0]["company_slug"], "alibaba")

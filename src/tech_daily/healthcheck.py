@@ -5,6 +5,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+from .capabilities.ops_status_analysis import OpsStatusAnalysisCapability
 from .config_loader import load_companies
 from .config_validation import build_source_diagnostics, validate_companies
 from .llm_runtime import build_llm_client
@@ -186,7 +187,7 @@ def _build_recently_recovered_runtime_issues(
 
 
 def _build_health_snapshot(result: dict) -> dict:
-    return {
+    snapshot = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "ok": result["ok"],
         "company_count": result["company_count"],
@@ -204,6 +205,9 @@ def _build_health_snapshot(result: dict) -> dict:
         "runtime_history_summary": result["runtime_history_summary"],
         "notes": result["notes"],
     }
+    if "ops_status_analysis" in result:
+        snapshot["ops_status_analysis"] = result["ops_status_analysis"]
+    return snapshot
 
 
 def _write_health_snapshot(snapshot: dict, data_dir: Path) -> str:
@@ -275,5 +279,6 @@ def run_health_check(settings: Settings | None = None) -> dict:
         "source_diagnostics": source_diagnostics,
         "notes": notes,
     }
+    result["ops_status_analysis"] = OpsStatusAnalysisCapability().analyze(result).to_dict()
     result["snapshot_path"] = _write_health_snapshot(_build_health_snapshot(result), data_dir)
     return result
