@@ -81,6 +81,22 @@ class CompanyReport:
 
 
 @dataclass(frozen=True)
+class DailyIntelBrief:
+    report_date: str
+    editorial_signal: str
+    ops_signal: str
+    top_content_themes: list[str] = field(default_factory=list)
+    watchlist: list[str] = field(default_factory=list)
+    source_risks: list[str] = field(default_factory=list)
+    recoveries: list[str] = field(default_factory=list)
+    tomorrow_focus: list[str] = field(default_factory=list)
+    mode_used: str = "rule"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class DailyReport:
     date: str
     headline: str
@@ -91,6 +107,7 @@ class DailyReport:
     topic_clusters: list[TopicCluster] = field(default_factory=list)
     company_reports: list[CompanyReport] = field(default_factory=list)
     source_statuses: list[SourceStatus] = field(default_factory=list)
+    agent_brief: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

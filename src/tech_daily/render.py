@@ -168,6 +168,25 @@ def _render_highlights(report: DailyReport, limit: int) -> str:
     return "".join(_render_highlight_card(entry) for entry in highlights)
 
 
+def _render_agent_brief(brief: dict) -> str:
+    if not brief:
+        return ""
+    tomorrow_focus = "、".join(brief.get("tomorrow_focus", [])) or "暂无"
+    markdown_link = "./agent-brief.md"
+    return (
+        "<section class='section'>"
+        "<h2>情报判断</h2>"
+        "<p class='section-hint'>这一部分由最小情报分析 agent 基于当日日报与运维状态生成，用于快速提取内容与运维层面的关键信号。</p>"
+        "<div class='card'>"
+        f"<p class='section-copy'><strong>今日核心判断：</strong>{html.escape(brief.get('editorial_signal', ''))}</p>"
+        f"<p class='section-copy'><strong>运维提示：</strong>{html.escape(brief.get('ops_signal', ''))}</p>"
+        f"<p class='section-copy'><strong>明日关注：</strong>{html.escape(tomorrow_focus)}</p>"
+        f"<p><a class='inline-link' href='{markdown_link}'>查看完整 Markdown 报告</a></p>"
+        "</div>"
+        "</section>"
+    )
+
+
 def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     modal_id = f"{modal_prefix}-{cluster.topic_id}"
@@ -293,6 +312,7 @@ def render_daily(report: DailyReport) -> str:
     return template.substitute(
         date=html.escape(report.date),
         headline=html.escape(report.headline),
+        agent_brief_section=_render_agent_brief(report.agent_brief),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(

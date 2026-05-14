@@ -116,6 +116,8 @@ python run_dashboard.py dry-run --today
 - `build/site/archive.html`
 - `build/site/<date>/index.html`
 - `build/site/<date>/report.json`
+- `build/site/<date>/daily_intel_brief.json`
+- `build/site/<date>/agent-brief.md`
 - `build/logs/<date>.log`
 
 ## Project Layout
@@ -164,6 +166,7 @@ python run_dashboard.py dry-run --today
 - `capabilities/topic_comparison.py`: 主题对比能力边界
 - `capabilities/daily_editorial.py`: 日报顶部编辑能力边界
 - `capabilities/ops_status_analysis.py`: 运维状态分析能力边界
+- `agent_pipeline.py`: 最小情报分析 agent 编排入口
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
 - `healthcheck.py`: 运维状态产出与 snapshot 落盘

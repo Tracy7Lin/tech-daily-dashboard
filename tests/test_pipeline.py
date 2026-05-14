@@ -126,6 +126,35 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(report.date, "2026-05-10")
             self.assertTrue((Path(temp_dir) / "index.html").exists())
 
+    @patch("tech_daily.pipeline.run_agent_pipeline")
+    @patch("tech_daily.pipeline.collect_entries")
+    @patch("tech_daily.pipeline.load_companies")
+    def test_generate_daily_report_keeps_working_when_agent_pipeline_fails(
+        self,
+        mock_load_companies,
+        mock_collect_entries,
+        mock_run_agent_pipeline,
+    ) -> None:
+        mock_load_companies.return_value = [Company(slug="openai", name="OpenAI", region="us", sources=[])]
+        mock_collect_entries.return_value = (
+            [
+                RawEntry(
+                    company_slug="openai",
+                    company_name="OpenAI",
+                    source_label="news",
+                    title="OpenAI launches new agent APIs",
+                    url="https://example.com/today",
+                    published_at="Sat, 10 May 2026 08:00:00 GMT",
+                )
+            ],
+            [],
+        )
+        mock_run_agent_pipeline.side_effect = RuntimeError("boom")
+        with TemporaryDirectory() as temp_dir:
+            report = generate_daily_report("2026-05-10", output_dir=Path(temp_dir))
+            self.assertEqual(report.date, "2026-05-10")
+            self.assertEqual(report.agent_brief, {})
+
     def test_filter_high_signal_entries_drops_noise(self) -> None:
         kept = RawEntry(
             company_slug="openai",

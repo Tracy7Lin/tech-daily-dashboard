@@ -46,6 +46,10 @@
   - `topic_comparison`
   - `daily_editorial`
   - `ops_status_analysis`
+- 最小情报分析 agent 基线：
+  - `daily_intel_brief.json`
+  - `agent-brief.md`
+  - 日报详情页中的 `情报判断` 区块
 
 ### 3.3 前端基线
 

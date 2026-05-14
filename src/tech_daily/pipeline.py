@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import replace
 from pathlib import Path
 
+from .agent_pipeline import run_agent_pipeline
 from .classifier import classify_entry
 from .collector import collect_entries
 from .config_loader import load_companies
@@ -127,4 +128,13 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
     report = build_daily_report(date_str)
     destination = output_dir or Path(DEFAULT_SETTINGS.site_output_dir)
     write_site(report, destination)
+    report_json_path = destination / report.date / "report.json"
+    snapshot_path = Path(DEFAULT_SETTINGS.data_output_dir) / "health_snapshot.json"
+    if report_json_path.exists() and snapshot_path.exists():
+        try:
+            agent_result = run_agent_pipeline(report_json_path, snapshot_path)
+            report = replace(report, agent_brief=agent_result["page_block"])
+            write_site(report, destination)
+        except Exception:
+            pass
     return report

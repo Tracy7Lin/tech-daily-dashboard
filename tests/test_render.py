@@ -140,6 +140,28 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Google Health Coach, now available globally", html)
         self.assertNotIn("<img", html)
 
+    def test_render_daily_includes_agent_brief_block_when_present(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=["安全与治理"],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[],
+            source_statuses=[],
+            agent_brief={
+                "editorial_signal": "内容层最值得关注的是安全与治理。",
+                "ops_signal": "当前优先处理 tesla。",
+                "tomorrow_focus": ["安全与治理", "tesla"],
+            },
+        )
+        html = render_daily(report)
+        self.assertIn("情报判断", html)
+        self.assertIn("今日核心判断", html)
+        self.assertIn("当前优先处理 tesla", html)
+        self.assertIn("查看完整 Markdown 报告", html)
+
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(
             date="2026-05-10",
