@@ -97,6 +97,23 @@ class DailyIntelBrief:
 
 
 @dataclass(frozen=True)
+class CrossDayIntelBrief:
+    date_range: tuple[str, str]
+    warming_themes: list[str] = field(default_factory=list)
+    cooling_themes: list[str] = field(default_factory=list)
+    steady_companies: list[str] = field(default_factory=list)
+    swing_companies: list[str] = field(default_factory=list)
+    persistent_source_risks: list[str] = field(default_factory=list)
+    recent_source_recoveries: list[str] = field(default_factory=list)
+    watchlist: list[str] = field(default_factory=list)
+    next_day_focus: list[str] = field(default_factory=list)
+    mode_used: str = "rule"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class DailyReport:
     date: str
     headline: str
