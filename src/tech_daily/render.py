@@ -187,6 +187,31 @@ def _render_agent_brief(brief: dict) -> str:
     )
 
 
+def _render_cross_day_brief(brief: dict) -> str:
+    if not brief:
+        return ""
+    warming = "、".join(brief.get("warming_themes", [])) or "暂无明显升温主题"
+    steady_companies = "、".join(brief.get("steady_companies", [])) or "暂无"
+    risks = "、".join(brief.get("persistent_source_risks", [])) or "暂无"
+    recoveries = "、".join(brief.get("recent_source_recoveries", [])) or "暂无"
+    next_focus = "、".join(brief.get("next_day_focus", [])) or "暂无"
+    markdown_link = "./cross-day-brief.md"
+    return (
+        "<section class='section'>"
+        "<h2>跨日观察</h2>"
+        "<p class='section-hint'>这一部分基于最近几天的日报与 health snapshot 历史生成，用于快速提取持续升温主题、连续活跃公司和持续运维风险。</p>"
+        "<div class='card'>"
+        f"<p class='section-copy'><strong>最近几天主线：</strong>{html.escape(warming)}</p>"
+        f"<p class='section-copy'><strong>连续活跃公司：</strong>{html.escape(steady_companies)}</p>"
+        f"<p class='section-copy'><strong>持续风险：</strong>{html.escape(risks)}</p>"
+        f"<p class='section-copy'><strong>最近恢复：</strong>{html.escape(recoveries)}</p>"
+        f"<p class='section-copy'><strong>明日关注：</strong>{html.escape(next_focus)}</p>"
+        f"<p><a class='inline-link' href='{markdown_link}'>查看完整跨日 Markdown 报告</a></p>"
+        "</div>"
+        "</section>"
+    )
+
+
 def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     modal_id = f"{modal_prefix}-{cluster.topic_id}"
@@ -313,6 +338,7 @@ def render_daily(report: DailyReport) -> str:
         date=html.escape(report.date),
         headline=html.escape(report.headline),
         agent_brief_section=_render_agent_brief(report.agent_brief),
+        cross_day_brief_section=_render_cross_day_brief(report.cross_day_brief),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(

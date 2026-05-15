@@ -9,6 +9,7 @@ from .classifier import classify_entry
 from .collector import collect_entries
 from .config_loader import load_companies
 from .editorial import build_daily_headline
+from .cross_day_pipeline import run_cross_day_pipeline
 from .models import CompanyReport, DailyReport, EnrichedEntry
 from .quality import filter_high_signal_entries, matches_report_date
 from .render import write_site
@@ -134,6 +135,14 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
         try:
             agent_result = run_agent_pipeline(report_json_path, snapshot_path)
             report = replace(report, agent_brief=agent_result["page_block"])
+            write_site(report, destination)
+        except Exception:
+            pass
+    snapshot_history_dir = Path(DEFAULT_SETTINGS.data_output_dir) / "health_snapshots"
+    if report_json_path.exists() and snapshot_history_dir.exists():
+        try:
+            cross_day_result = run_cross_day_pipeline(destination, snapshot_history_dir, report.date, days=3)
+            report = replace(report, cross_day_brief=cross_day_result["page_block"])
             write_site(report, destination)
         except Exception:
             pass

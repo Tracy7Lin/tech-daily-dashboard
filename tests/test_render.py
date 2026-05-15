@@ -162,6 +162,30 @@ class RenderTests(unittest.TestCase):
         self.assertIn("当前优先处理 tesla", html)
         self.assertIn("查看完整 Markdown 报告", html)
 
+    def test_render_daily_includes_cross_day_brief_block_when_present(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=["安全与治理"],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[],
+            source_statuses=[],
+            cross_day_brief={
+                "warming_themes": ["安全与治理"],
+                "steady_companies": ["OpenAI"],
+                "persistent_source_risks": ["tesla"],
+                "recent_source_recoveries": ["alibaba"],
+                "next_day_focus": ["安全与治理", "tesla"],
+            },
+        )
+        html = render_daily(report)
+        self.assertIn("跨日观察", html)
+        self.assertIn("连续活跃公司", html)
+        self.assertIn("OpenAI", html)
+        self.assertIn("查看完整跨日 Markdown 报告", html)
+
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(
             date="2026-05-10",

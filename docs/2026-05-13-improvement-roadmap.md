@@ -50,6 +50,10 @@
   - `daily_intel_brief.json`
   - `agent-brief.md`
   - 日报详情页中的 `情报判断` 区块
+- 跨日追踪 agent 基线：
+  - `cross_day_intel_brief.json`
+  - `cross-day-brief.md`
+  - 日报详情页中的 `跨日观察` 区块
 
 ### 3.3 前端基线
 

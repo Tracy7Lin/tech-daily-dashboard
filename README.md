@@ -118,6 +118,10 @@ python run_dashboard.py dry-run --today
 - `build/site/<date>/report.json`
 - `build/site/<date>/daily_intel_brief.json`
 - `build/site/<date>/agent-brief.md`
+- `build/site/<date>/cross_day_intel_brief.json`
+- `build/site/<date>/cross-day-brief.md`
+- `build/data/health_snapshot.json`
+- `build/data/health_snapshots/<date>.json`
 - `build/logs/<date>.log`
 
 ## Project Layout
@@ -167,6 +171,7 @@ python run_dashboard.py dry-run --today
 - `capabilities/daily_editorial.py`: 日报顶部编辑能力边界
 - `capabilities/ops_status_analysis.py`: 运维状态分析能力边界
 - `agent_pipeline.py`: 最小情报分析 agent 编排入口
+- `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
 - `healthcheck.py`: 运维状态产出与 snapshot 落盘
@@ -221,4 +226,5 @@ python run_dashboard.py dry-run --date 2026-05-12
 - 增加更强的历史检索与筛选能力
 - 继续增强源级运维观测，例如失败趋势、重复异常与长期低产出提醒
 - 为未来的科技情报分析 agent 保留可复用 skill 边界
+- 增加跨日追踪 agent，强化最近几天主题、公司与信源状态的连续观察能力
 - 增加兄弟日报：`GitHub 今日 Highlight 日报`，聚焦当天或最近热门的 GitHub 项目、趋势仓库与高讨论度开源动态

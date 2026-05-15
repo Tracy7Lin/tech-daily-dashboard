@@ -125,6 +125,7 @@ class DailyReport:
     company_reports: list[CompanyReport] = field(default_factory=list)
     source_statuses: list[SourceStatus] = field(default_factory=list)
     agent_brief: dict = field(default_factory=dict)
+    cross_day_brief: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)
