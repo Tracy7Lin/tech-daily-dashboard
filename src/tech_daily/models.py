@@ -114,6 +114,23 @@ class CrossDayIntelBrief:
 
 
 @dataclass(frozen=True)
+class ThemeTrackingBrief:
+    date_range: tuple[str, str]
+    candidate_themes: list[str] = field(default_factory=list)
+    primary_theme: str = ""
+    theme_summary: str = ""
+    participating_companies: list[str] = field(default_factory=list)
+    company_angles: dict[str, str] = field(default_factory=dict)
+    theme_evolution: str = ""
+    continue_tracking: bool = False
+    next_day_theme_focus: list[str] = field(default_factory=list)
+    mode_used: str = "rule"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class DailyReport:
     date: str
     headline: str
@@ -126,6 +143,7 @@ class DailyReport:
     source_statuses: list[SourceStatus] = field(default_factory=list)
     agent_brief: dict = field(default_factory=dict)
     cross_day_brief: dict = field(default_factory=dict)
+    theme_tracking_brief: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)
