@@ -2,7 +2,7 @@ import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.chat_agent_input import ChatAgentInputs
-from tech_daily.chat_agent_response import ChatAgentResponder, build_chat_context, answer_chat_question
+from tech_daily.chat_agent_response import ChatAgentResponder, build_chat_context, answer_chat_question, build_chat_response_bank
 from tech_daily.llm_client import LLMClient
 
 
@@ -92,6 +92,15 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = responder.answer("今天最值得关注什么？", context)
         self.assertEqual(answer["mode_used"], "llm")
         self.assertIn("安全与治理", answer["answer"])
+
+    def test_build_chat_response_bank_uses_python_generated_answers(self) -> None:
+        context = build_chat_context(self.inputs)
+        responder = ChatAgentResponder(mode="rule", client=None)
+        bank = build_chat_response_bank(context, responder)
+        self.assertIn("daily_summary", bank)
+        self.assertIn("theme_focus", bank)
+        self.assertIn("ops_status", bank)
+        self.assertIn("google", bank["company_focus"])
 
 
 if __name__ == "__main__":

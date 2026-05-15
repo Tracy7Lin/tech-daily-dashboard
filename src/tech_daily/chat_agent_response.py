@@ -98,6 +98,24 @@ def answer_chat_question(question: str, context: dict) -> dict:
     }
 
 
+def build_chat_response_bank(context: dict, responder: "ChatAgentResponder") -> dict:
+    primary_theme = context.get("theme_tracking", {}).get("primary_theme", "")
+    company_bank = {}
+    for company in context.get("companies", []):
+        company_bank[company.lower()] = responder.answer(f"{company} 最近几天在做什么？", context)
+
+    return {
+        "daily_summary": responder.answer("今天最值得关注什么？", context),
+        "theme_focus": responder.answer(
+            f"为什么今天的主专题是{primary_theme or '这个主题'}？",
+            context,
+        ),
+        "ops_status": responder.answer("现在哪些信源还有问题？", context),
+        "company_focus": company_bank,
+        "out_of_scope": responder.answer("我还可以问别的吗？", context),
+    }
+
+
 class ChatAgentResponder:
     def __init__(self, mode: str = "rule", client: LLMClient | None = None) -> None:
         self.mode = mode

@@ -237,6 +237,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("今天最值得关注什么？", html)
         self.assertIn("chat-status", html)
         self.assertIn("正在整理回答", html)
+        self.assertIn("aria-live='polite'", html)
+        self.assertIn("aria-expanded='false'", html)
 
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(
