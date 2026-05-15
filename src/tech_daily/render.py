@@ -124,6 +124,24 @@ def _placeholder_reason(status: SourceStatus) -> str:
     return "官方源暂未稳定，后续会继续升级抓取与筛选策略。"
 
 
+def _is_stable_no_news_status(status: SourceStatus) -> bool:
+    return (
+        status.ok
+        and status.fetched_count > 0
+        and status.kept_count > 0
+        and status.date_matched_count == 0
+        and status.final_included_count == 0
+    )
+
+
+def _is_stable_filtered_status(status: SourceStatus) -> bool:
+    return (
+        status.ok
+        and status.date_matched_count > 0
+        and status.final_included_count == 0
+    )
+
+
 def _select_highlights(report: DailyReport, limit: int) -> list[EnrichedEntry]:
     entries = [entry for company in report.company_reports for entry in company.entries]
     entries.sort(key=lambda item: (-item.importance, item.raw.company_name, item.raw.title))
@@ -413,6 +431,22 @@ def _render_company_report(
         placeholder_status = _select_placeholder_status(statuses)
         if placeholder_status is None:
             body = "<p class='empty'>今日无有效动态</p>"
+        elif _is_stable_no_news_status(placeholder_status):
+            body = (
+                "<div class='placeholder-block'>"
+                "<span class='status-pill stable'>当日无动态</span>"
+                "<p class='placeholder-note'>官方信源抓取正常，但今天没有落在日报日期范围内的有效动态。</p>"
+                f"<p class='meta meta-line'>当前来源：{html.escape(placeholder_status.source_label)} | 诊断：{html.escape(placeholder_status.message)}</p>"
+                "</div>"
+            )
+        elif _is_stable_filtered_status(placeholder_status):
+            body = (
+                "<div class='placeholder-block'>"
+                "<span class='status-pill stable'>当日无可发布动态</span>"
+                "<p class='placeholder-note'>官方信源抓取正常，也抓到了同日内容，但今天没有保留下可发布条目。</p>"
+                f"<p class='meta meta-line'>当前来源：{html.escape(placeholder_status.source_label)} | 诊断：{html.escape(placeholder_status.message)}</p>"
+                "</div>"
+            )
         else:
             body = (
                 "<div class='placeholder-block'>"

@@ -309,6 +309,35 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Xiaomi Global Discover 当前以动态渲染为主", html)
         self.assertIn("Xiaomi News", html)
 
+    def test_render_company_report_empty_state_distinguishes_stable_no_news(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[CompanyReport(company_slug="openai", company_name="OpenAI", entries=[], has_updates=False)],
+            source_statuses=[
+                SourceStatus(
+                    company_slug="openai",
+                    company_name="OpenAI",
+                    source_label="OpenAI News",
+                    source_url="https://openai.com/news/rss.xml",
+                    ok=True,
+                    message="fetched:10;kept:10;date_matched:0;final_included:0",
+                    fetched_count=10,
+                    kept_count=10,
+                    date_matched_count=0,
+                    final_included_count=0,
+                )
+            ],
+        )
+        html = render_daily(report)
+        self.assertIn("当日无动态", html)
+        self.assertIn("官方信源抓取正常", html)
+        self.assertNotIn("信源暂未稳定", html)
+
     def test_render_preserves_rfc_weekday_and_timezone_in_published_time(self) -> None:
         entry = _entry(
             "openai",
