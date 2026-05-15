@@ -44,6 +44,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.end_date, "2026-05-10")
         self.assertEqual(args.days, 7)
 
+    def test_build_parser_supports_chat_command(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["chat", "--date", "2026-05-15", "--question", "今天最值得关注什么？"])
+        self.assertEqual(args.command, "chat")
+        self.assertEqual(args.date, "2026-05-15")
+        self.assertEqual(args.question, "今天最值得关注什么？")
+
     @patch("tech_daily.cli.generate_today_report")
     def test_main_prints_generation_summary_for_generate_today(self, mock_generate_today_report) -> None:
         mock_generate_today_report.return_value = DailyReport(
@@ -144,6 +151,23 @@ class CliTests(unittest.TestCase):
         self.assertIn("report_date=2026-05-12", output.getvalue())
         self.assertIn("validation_issue_count=0", output.getvalue())
         self.assertIn("source_diagnostic_count=20", output.getvalue())
+
+    @patch("tech_daily.cli.run_chat_agent")
+    def test_main_prints_chat_answer(self, mock_run_chat_agent) -> None:
+        mock_run_chat_agent.return_value = {
+            "answer": "今天最值得关注的是安全与治理。",
+            "question_type": "daily_summary",
+            "sources_used": ["report.json"],
+            "follow_up_suggestions": ["Google 最近几天在做什么？"],
+            "mode_used": "rule",
+        }
+        output = StringIO()
+        with redirect_stdout(output):
+            exit_code = main(["chat", "--date", "2026-05-15", "--question", "今天最值得关注什么？"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("question_type=daily_summary", output.getvalue())
+        self.assertIn("今天最值得关注的是安全与治理。", output.getvalue())
 
 
 if __name__ == "__main__":

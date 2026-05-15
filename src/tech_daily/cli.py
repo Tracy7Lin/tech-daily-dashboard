@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .automation import generate_today_report, resolve_report_date
 from .backfill import generate_backfill_reports
+from .chat_agent_pipeline import run_chat_agent
 from .dry_run import run_dry_run
 from .healthcheck import run_health_check
 from .pipeline import generate_daily_report
@@ -27,6 +28,10 @@ def build_parser() -> ArgumentParser:
     backfill.add_argument("--end-date", required=True, help="End date in YYYY-MM-DD format")
     backfill.add_argument("--days", required=True, type=int, help="Number of days to generate")
     backfill.add_argument("--output-dir", default="", help="Optional site output directory")
+    chat = subparsers.add_parser("chat", help="Ask the local chat agent about a generated report")
+    chat.add_argument("--date", required=True, help="Report date in YYYY-MM-DD format")
+    chat.add_argument("--question", required=True, help="Question to ask about the report")
+    chat.add_argument("--output-dir", default="", help="Optional site output directory")
     return parser
 
 
@@ -118,6 +123,13 @@ def _print_dry_run_summary(result: dict) -> None:
         )
 
 
+def _print_chat_answer(result: dict) -> None:
+    print(f"question_type={result['question_type']} mode_used={result['mode_used']}")
+    print(f"answer={result['answer']}")
+    for suggestion in result.get("follow_up_suggestions", [])[:3]:
+        print(f"follow_up={suggestion}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -145,6 +157,11 @@ def main(argv: list[str] | None = None) -> int:
         reports = generate_backfill_reports(args.end_date, args.days, output_dir=output_dir)
         if reports:
             _print_report_summary(reports[-1])
+        return 0
+    if args.command == "chat":
+        output_dir = Path(args.output_dir) if args.output_dir else Path("build/site")
+        result = run_chat_agent(output_dir, args.date, args.question)
+        _print_chat_answer(result)
         return 0
     parser.error(f"Unsupported command: {args.command}")
     return 1

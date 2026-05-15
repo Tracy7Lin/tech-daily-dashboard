@@ -209,6 +209,33 @@ class RenderTests(unittest.TestCase):
         self.assertIn("主专题", html)
         self.assertIn("查看完整专题 Markdown 报告", html)
 
+    def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
+        report = DailyReport(
+            date="2026-05-15",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[],
+            source_statuses=[],
+            chat_agent_context={
+                "report_date": "2026-05-15",
+                "daily_summary": {"answer": "今天最值得关注的是安全与治理。"},
+                "theme_tracking": {"primary_theme": "安全与治理", "answer": "安全与治理仍是主专题。"},
+                "ops_status": {"answer": "当前优先处理 tesla。"},
+                "companies": ["Google"],
+                "company_answers": {"google": "Google 最近几天仍有动作。"},
+                "quick_questions": ["今天最值得关注什么？"],
+                "follow_up_suggestions": ["Google 最近几天在做什么？"],
+                "mode_used": "rule",
+            },
+        )
+        html = render_daily(report)
+        self.assertIn("情报问答", html)
+        self.assertIn("chat-drawer", html)
+        self.assertIn("今天最值得关注什么？", html)
+
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(
             date="2026-05-10",

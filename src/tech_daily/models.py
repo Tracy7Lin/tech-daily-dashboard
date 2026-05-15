@@ -144,6 +144,7 @@ class DailyReport:
     agent_brief: dict = field(default_factory=dict)
     cross_day_brief: dict = field(default_factory=dict)
     theme_tracking_brief: dict = field(default_factory=dict)
+    chat_agent_context: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

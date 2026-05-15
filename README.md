@@ -108,6 +108,12 @@ python run_dashboard.py dry-run --date 2026-05-12
 python run_dashboard.py dry-run --today
 ```
 
+### 9. 使用本地情报问答
+
+```bash
+python run_dashboard.py chat --date 2026-05-15 --question "今天最值得关注什么？"
+```
+
 ## Output
 
 默认生成结果位于：
@@ -175,6 +181,7 @@ python run_dashboard.py dry-run --today
 - `agent_pipeline.py`: 最小情报分析 agent 编排入口
 - `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `theme_tracking_pipeline.py`: 专题跟踪 agent 编排入口
+- `chat_agent_pipeline.py`: 页面与 CLI 共享的本地问答 agent 编排入口
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
 - `healthcheck.py`: 运维状态产出与 snapshot 落盘

@@ -5,6 +5,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from .agent_pipeline import run_agent_pipeline
+from .chat_agent_pipeline import build_embedded_chat_context
 from .classifier import classify_entry
 from .collector import collect_entries
 from .config_loader import load_companies
@@ -153,4 +154,6 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
             write_site(report, destination)
         except Exception:
             pass
+    report = replace(report, chat_agent_context=build_embedded_chat_context(report))
+    write_site(report, destination)
     return report

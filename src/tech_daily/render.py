@@ -237,6 +237,96 @@ def _render_theme_tracking_brief(brief: dict) -> str:
     )
 
 
+def _json_script_payload(value: dict) -> str:
+    return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
+
+
+def _render_chat_agent_shell(context: dict) -> str:
+    if not context:
+        return ""
+    return (
+        "<button class='chat-launcher' type='button' id='chat-launcher'>情报问答</button>"
+        "<aside class='chat-drawer' id='chat-drawer' hidden>"
+        "<div class='chat-drawer-header'>"
+        "<div><p class='chat-kicker'>Agent v1</p><h3>情报问答</h3><p class='chat-subtitle'>基于今日日报、跨日观察与专题跟踪回答</p></div>"
+        "<button class='chat-close' type='button' id='chat-close' aria-label='关闭问答'>×</button>"
+        "</div>"
+        "<div class='chat-quick-questions' id='chat-quick-questions'></div>"
+        "<div class='chat-messages' id='chat-messages'></div>"
+        "<div class='chat-input-row'>"
+        "<input class='chat-input' id='chat-input' type='text' placeholder='问我：今天最值得关注什么？' />"
+        "<button class='chat-send' type='button' id='chat-send'>发送</button>"
+        "</div>"
+        "</aside>"
+        "<script id='chat-agent-context' type='application/json'>"
+        f"{_json_script_payload(context)}"
+        "</script>"
+        "<script>"
+        "(() => {"
+        "const launcher = document.getElementById('chat-launcher');"
+        "const drawer = document.getElementById('chat-drawer');"
+        "const closeButton = document.getElementById('chat-close');"
+        "const input = document.getElementById('chat-input');"
+        "const send = document.getElementById('chat-send');"
+        "const messages = document.getElementById('chat-messages');"
+        "const quickContainer = document.getElementById('chat-quick-questions');"
+        "const rawContext = document.getElementById('chat-agent-context');"
+        "if (!launcher || !drawer || !input || !send || !messages || !rawContext) { return; }"
+        "const context = JSON.parse(rawContext.textContent || '{}');"
+        "const companies = context.companies || [];"
+        "const primaryTheme = (context.theme_tracking || {}).primary_theme || '';"
+        "const companyAnswers = context.company_answers || {};"
+        "function addMessage(role, text) {"
+        "  const bubble = document.createElement('div');"
+        "  bubble.className = role === 'user' ? 'chat-message user' : 'chat-message agent';"
+        "  bubble.textContent = text;"
+        "  messages.appendChild(bubble);"
+        "  messages.scrollTop = messages.scrollHeight;"
+        "}"
+        "function classify(question) {"
+        "  const normalized = (question || '').trim();"
+        "  const lowered = normalized.toLowerCase();"
+        "  for (const company of companies) {"
+        "    if (company && lowered.includes(company.toLowerCase())) return { type: 'company_focus', entity: company };"
+        "  }"
+        "  if (['信源','抓取','异常','问题','恢复','运维'].some((token) => normalized.includes(token))) return { type: 'ops_status', entity: '' };"
+        "  if (primaryTheme && normalized.includes(primaryTheme)) return { type: 'theme_focus', entity: primaryTheme };"
+        "  if (['主题','专题'].some((token) => normalized.includes(token))) return { type: 'theme_focus', entity: primaryTheme };"
+        "  if (['今天','关注','主线','值得看','总结','重点'].some((token) => normalized.includes(token))) return { type: 'daily_summary', entity: '' };"
+        "  return { type: 'out_of_scope', entity: '' };"
+        "}"
+        "function answer(question) {"
+        "  const route = classify(question);"
+        "  if (route.type === 'daily_summary') return (context.daily_summary || {}).answer || '今天还没有可直接回答的日报摘要。';"
+        "  if (route.type === 'company_focus') return companyAnswers[(route.entity || '').toLowerCase()] || '当前还没有足够明确的公司上下文。';"
+        "  if (route.type === 'theme_focus') return (context.theme_tracking || {}).answer || '当前还没有形成明确主专题。';"
+        "  if (route.type === 'ops_status') return (context.ops_status || {}).answer || '当前没有额外运维提示。';"
+        "  return '当前问答主要基于今日日报、跨日观察、专题跟踪和运维状态。你可以继续问今天重点、某家公司、主专题或信源状态。';"
+        "}"
+        "function ask(question) {"
+        "  if (!question.trim()) return;"
+        "  addMessage('user', question);"
+        "  addMessage('agent', answer(question));"
+        "  input.value = '';"
+        "}"
+        "launcher.addEventListener('click', () => { drawer.hidden = false; input.focus(); });"
+        "closeButton?.addEventListener('click', () => { drawer.hidden = true; });"
+        "send.addEventListener('click', () => ask(input.value));"
+        "input.addEventListener('keydown', (event) => { if (event.key === 'Enter') ask(input.value); });"
+        "for (const question of (context.quick_questions || [])) {"
+        "  const chip = document.createElement('button');"
+        "  chip.type = 'button';"
+        "  chip.className = 'chat-chip';"
+        "  chip.textContent = question;"
+        "  chip.addEventListener('click', () => ask(question));"
+        "  quickContainer.appendChild(chip);"
+        "}"
+        "addMessage('agent', '可以直接问我今天重点、主专题、某家公司最近几天的动作，或者当前信源状态。');"
+        "})();"
+        "</script>"
+    )
+
+
 def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     modal_id = f"{modal_prefix}-{cluster.topic_id}"
@@ -349,6 +439,7 @@ def render_index(report: DailyReport) -> str:
         highlights=_render_highlights(report, limit=5),
         topic_cards=topic_cards,
         company_cards=company_cards,
+        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
     )
 
 
@@ -372,6 +463,7 @@ def render_daily(report: DailyReport) -> str:
             for company in report.company_reports
         ),
         statuses=statuses or "<li>无</li>",
+        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
     )
 
 
