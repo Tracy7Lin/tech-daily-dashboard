@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .llm_client import LLMClient, LLMClientError
 from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
 
@@ -95,3 +96,55 @@ def answer_chat_question(question: str, context: dict) -> dict:
         "follow_up_suggestions": context.get("follow_up_suggestions", []),
         "mode_used": context.get("mode_used", "rule"),
     }
+
+
+class ChatAgentResponder:
+    def __init__(self, mode: str = "rule", client: LLMClient | None = None) -> None:
+        self.mode = mode
+        self.client = client
+
+    def answer(self, question: str, context: dict) -> dict:
+        rule_answer = answer_chat_question(question, context)
+        if self.mode == "rule":
+            return rule_answer
+        if self.client is None or not self.client.is_available():
+            return rule_answer
+        try:
+            payload = self.client.generate_json(
+                instructions=(
+                    "你是科技日报的情报助理。请基于给定上下文回答用户问题。"
+                    "回答必须简洁、可信、中文自然，不能引入上下文之外的新事实。"
+                    "先给结论，再给 1-2 个依据。"
+                ),
+                input_text=(
+                    f"用户问题：{question}\n"
+                    f"问题类型：{rule_answer['question_type']}\n"
+                    f"规则回答：{rule_answer['answer']}\n"
+                    f"可用上下文：{context}\n"
+                ),
+                schema_name="chat_answer_payload",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "answer": {"type": "string"},
+                        "follow_up_suggestions": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                    },
+                    "required": ["answer", "follow_up_suggestions"],
+                    "additionalProperties": False,
+                },
+            )
+        except (LLMClientError, KeyError, TypeError, ValueError):
+            return rule_answer
+
+        answer = (payload.get("answer") or "").strip()
+        if not answer:
+            return rule_answer
+        return {
+            **rule_answer,
+            "answer": answer,
+            "follow_up_suggestions": payload.get("follow_up_suggestions") or rule_answer["follow_up_suggestions"],
+            "mode_used": "llm",
+        }

@@ -235,6 +235,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("情报问答", html)
         self.assertIn("chat-drawer", html)
         self.assertIn("今天最值得关注什么？", html)
+        self.assertIn("chat-status", html)
+        self.assertIn("正在整理回答", html)
 
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(

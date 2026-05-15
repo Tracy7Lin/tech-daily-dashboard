@@ -431,6 +431,12 @@
       overflow: auto;
       padding-right: 4px;
     }
+    .chat-status {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
     .chat-message {
       max-width: 92%;
       padding: 12px 14px;
@@ -473,6 +479,11 @@
       font: inherit;
       font-weight: 700;
       cursor: pointer;
+    }
+    .chat-send:disabled,
+    .chat-input:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
     }
     @keyframes modalIn {
       from { opacity: 0; transform: translateY(14px) scale(0.98); }

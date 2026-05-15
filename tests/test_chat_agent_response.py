@@ -2,7 +2,8 @@ import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.chat_agent_input import ChatAgentInputs
-from tech_daily.chat_agent_response import build_chat_context, answer_chat_question
+from tech_daily.chat_agent_response import ChatAgentResponder, build_chat_context, answer_chat_question
+from tech_daily.llm_client import LLMClient
 
 
 class ChatAgentResponseTests(unittest.TestCase):
@@ -58,6 +59,39 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("现在哪些信源还有问题？", context)
         self.assertEqual(answer["question_type"], "ops_status")
         self.assertIn("tesla", answer["answer"].lower())
+
+    def test_chat_responder_hybrid_falls_back_to_rule_when_llm_unavailable(self) -> None:
+        context = build_chat_context(self.inputs)
+        responder = ChatAgentResponder(mode="hybrid", client=None)
+        answer = responder.answer("今天最值得关注什么？", context)
+        self.assertEqual(answer["question_type"], "daily_summary")
+        self.assertEqual(answer["mode_used"], "rule")
+
+    def test_chat_responder_uses_llm_when_available(self) -> None:
+        context = build_chat_context(self.inputs)
+
+        def fake_transport(url, headers, body, timeout):
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "content": '{"answer":"今天最值得关注的是安全与治理，因为最近几天这一主题持续出现。","follow_up_suggestions":["为什么今天的主专题是这个？","Google 最近几天在做什么？"]}'
+                        }
+                    }
+                ]
+            }
+
+        client = LLMClient(
+            api_url="https://api.deepseek.com/chat/completions",
+            api_key="test-key",
+            model="deepseek-v4-flash",
+            timeout_seconds=10,
+            transport=fake_transport,
+        )
+        responder = ChatAgentResponder(mode="hybrid", client=client)
+        answer = responder.answer("今天最值得关注什么？", context)
+        self.assertEqual(answer["mode_used"], "llm")
+        self.assertIn("安全与治理", answer["answer"])
 
 
 if __name__ == "__main__":
