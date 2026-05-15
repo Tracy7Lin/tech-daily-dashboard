@@ -54,6 +54,10 @@
   - `cross_day_intel_brief.json`
   - `cross-day-brief.md`
   - 日报详情页中的 `跨日观察` 区块
+- 专题跟踪 agent 基线：
+  - `theme_tracking_brief.json`
+  - `theme-tracking-brief.md`
+  - 日报详情页中的 `专题跟踪` 区块
 
 ### 3.3 前端基线
 

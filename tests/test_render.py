@@ -186,6 +186,29 @@ class RenderTests(unittest.TestCase):
         self.assertIn("OpenAI", html)
         self.assertIn("查看完整跨日 Markdown 报告", html)
 
+    def test_render_daily_includes_theme_tracking_brief_block_when_present(self) -> None:
+        report = DailyReport(
+            date="2026-05-15",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[],
+            source_statuses=[],
+            theme_tracking_brief={
+                "primary_theme": "安全与治理",
+                "theme_summary": "安全与治理仍是最近几天最值得继续跟踪的专题。",
+                "participating_companies": ["OpenAI", "Google"],
+                "continue_tracking": True,
+                "next_day_theme_focus": ["安全与治理"],
+            },
+        )
+        html = render_daily(report)
+        self.assertIn("专题跟踪", html)
+        self.assertIn("主专题", html)
+        self.assertIn("查看完整专题 Markdown 报告", html)
+
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(
             date="2026-05-10",

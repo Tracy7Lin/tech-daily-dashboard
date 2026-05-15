@@ -42,15 +42,27 @@ def analyze_theme_tracking(
     primary_theme = candidate_themes[0] if candidate_themes else ""
     participating_companies = companies_by_theme.get(primary_theme, [])
     next_day_theme_focus = [primary_theme] if primary_theme else []
+    summary_companies = "、".join(participating_companies[:3]) or "相关公司"
+    theme_summary = (
+        f"{primary_theme} 是最近几天最值得继续跟踪的专题，当前重点集中在 {summary_companies} 的持续参与。"
+        if primary_theme
+        else ""
+    )
+    if len(participating_companies) >= 2:
+        theme_evolution = "这个专题最近几天持续出现，且参与公司开始形成差异化切入。"
+    elif primary_theme:
+        theme_evolution = "这个专题最近几天持续出现，但目前仍以单一公司动作为主。"
+    else:
+        theme_evolution = ""
 
     return ThemeTrackingBrief(
         date_range=date_range,
         candidate_themes=candidate_themes,
         primary_theme=primary_theme,
-        theme_summary=f"{primary_theme} 是最近几天最值得继续跟踪的专题。" if primary_theme else "",
+        theme_summary=theme_summary,
         participating_companies=participating_companies,
         company_angles={company: company_angles.get(company, "") for company in participating_companies},
-        theme_evolution="该专题最近几天持续出现，值得继续观察。" if primary_theme else "",
+        theme_evolution=theme_evolution,
         continue_tracking=bool(primary_theme and len(participating_companies) >= 1),
         next_day_theme_focus=next_day_theme_focus,
         mode_used="hybrid",

@@ -8,12 +8,13 @@ from .agent_pipeline import run_agent_pipeline
 from .classifier import classify_entry
 from .collector import collect_entries
 from .config_loader import load_companies
-from .editorial import build_daily_headline
 from .cross_day_pipeline import run_cross_day_pipeline
+from .editorial import build_daily_headline
 from .models import CompanyReport, DailyReport, EnrichedEntry
 from .quality import filter_high_signal_entries, matches_report_date
 from .render import write_site
 from .settings import DEFAULT_SETTINGS
+from .theme_tracking_pipeline import run_theme_tracking_pipeline
 from .topics import build_topic_clusters
 
 
@@ -143,6 +144,12 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
         try:
             cross_day_result = run_cross_day_pipeline(destination, snapshot_history_dir, report.date, days=3)
             report = replace(report, cross_day_brief=cross_day_result["page_block"])
+            write_site(report, destination)
+        except Exception:
+            pass
+        try:
+            theme_tracking_result = run_theme_tracking_pipeline(destination, report.date, days=3)
+            report = replace(report, theme_tracking_brief=theme_tracking_result["page_block"])
             write_site(report, destination)
         except Exception:
             pass

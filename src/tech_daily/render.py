@@ -212,6 +212,31 @@ def _render_cross_day_brief(brief: dict) -> str:
     )
 
 
+def _render_theme_tracking_brief(brief: dict) -> str:
+    if not brief:
+        return ""
+    primary_theme = brief.get("primary_theme", "") or "暂无"
+    participating_companies = "、".join(brief.get("participating_companies", [])) or "暂无"
+    next_focus = "、".join(brief.get("next_day_theme_focus", [])) or "暂无"
+    continue_tracking = "建议继续跟踪" if brief.get("continue_tracking") else "暂不需要继续加重跟踪"
+    markdown_link = "./theme-tracking-brief.md"
+    return (
+        "<section class='section'>"
+        "<h2>专题跟踪</h2>"
+        "<p class='section-hint'>这一部分聚焦最近几天最值得继续盯住的主专题，强调主题演化和公司切入点，而不是重复罗列单日新闻。</p>"
+        "<div class='card'>"
+        f"<p class='section-copy'><strong>主专题：</strong>{html.escape(primary_theme)}</p>"
+        f"<p class='section-copy'><strong>主题摘要：</strong>{html.escape(brief.get('theme_summary', ''))}</p>"
+        f"<p class='section-copy'><strong>参与公司：</strong>{html.escape(participating_companies)}</p>"
+        f"<p class='section-copy'><strong>主题演化：</strong>{html.escape(brief.get('theme_evolution', ''))}</p>"
+        f"<p class='section-copy'><strong>继续跟踪：</strong>{html.escape(continue_tracking)}</p>"
+        f"<p class='section-copy'><strong>明日关注：</strong>{html.escape(next_focus)}</p>"
+        f"<p><a class='inline-link' href='{markdown_link}'>查看完整专题 Markdown 报告</a></p>"
+        "</div>"
+        "</section>"
+    )
+
+
 def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     modal_id = f"{modal_prefix}-{cluster.topic_id}"
@@ -339,6 +364,7 @@ def render_daily(report: DailyReport) -> str:
         headline=html.escape(report.headline),
         agent_brief_section=_render_agent_brief(report.agent_brief),
         cross_day_brief_section=_render_cross_day_brief(report.cross_day_brief),
+        theme_tracking_brief_section=_render_theme_tracking_brief(report.theme_tracking_brief),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(

@@ -94,6 +94,40 @@ class ThemeTrackingAnalysisTests(unittest.TestCase):
 
         self.assertEqual(len(brief.candidate_themes), 3)
 
+    def test_analyze_theme_tracking_generates_bounded_summary_and_evolution(self) -> None:
+        reports = [
+            {
+                "date": "2026-05-15",
+                "hottest_topics": ["AI Agent"],
+                "topic_clusters": [
+                    {
+                        "title": "AI Agent",
+                        "entries": [
+                            {
+                                "raw": {"company_name": "OpenAI"},
+                                "comparison_angle": "平台能力外放",
+                            },
+                            {
+                                "raw": {"company_name": "Microsoft"},
+                                "comparison_angle": "企业场景落地",
+                            },
+                        ],
+                    }
+                ],
+            }
+        ]
+
+        brief = analyze_theme_tracking(
+            date_range=("2026-05-15", "2026-05-15"),
+            reports=reports,
+            daily_briefs=[{"top_content_themes": ["AI Agent"]}],
+            cross_day_briefs=[],
+        )
+
+        self.assertIn("AI Agent", brief.theme_summary)
+        self.assertIn("OpenAI", brief.theme_summary)
+        self.assertIn("差异化切入", brief.theme_evolution)
+
 
 if __name__ == "__main__":
     unittest.main()
