@@ -187,8 +187,11 @@ def _build_recently_recovered_runtime_issues(
 
 
 def _build_health_snapshot(result: dict) -> dict:
+    generated_at = datetime.now().isoformat(timespec="seconds")
+    report_date = result["latest_report_date"] or generated_at[:10]
     snapshot = {
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "generated_at": generated_at,
+        "report_date": report_date,
         "ok": result["ok"],
         "company_count": result["company_count"],
         "source_count": result["source_count"],
@@ -213,6 +216,13 @@ def _build_health_snapshot(result: dict) -> dict:
 def _write_health_snapshot(snapshot: dict, data_dir: Path) -> str:
     snapshot_path = data_dir / "health_snapshot.json"
     snapshot_path.write_text(
+        json.dumps(snapshot, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    history_dir = data_dir / "health_snapshots"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    dated_snapshot_path = history_dir / f"{snapshot['report_date']}.json"
+    dated_snapshot_path.write_text(
         json.dumps(snapshot, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )

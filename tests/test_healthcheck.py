@@ -74,6 +74,8 @@ class HealthCheckTests(unittest.TestCase):
             self.assertEqual(snapshot_payload["source_count"], 1)
             self.assertEqual(snapshot_payload["latest_report_date"], "")
             self.assertIn("ops_status_analysis", snapshot_payload)
+            dated_snapshot_path = Path(temp_dir) / "data" / "health_snapshots" / f"{snapshot_payload['generated_at'][:10]}.json"
+            self.assertTrue(dated_snapshot_path.exists())
 
     @patch("tech_daily.healthcheck.load_companies")
     def test_run_health_check_includes_source_diagnostics_and_validation_issues(self, mock_load_companies) -> None:
