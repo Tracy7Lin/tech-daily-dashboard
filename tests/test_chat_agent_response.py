@@ -1,6 +1,7 @@
 import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401
+from tech_daily.chat_agent_analysis import classify_chat_question
 from tech_daily.chat_agent_input import ChatAgentInputs
 from tech_daily.chat_agent_response import ChatAgentResponder, build_chat_context, answer_chat_question, build_chat_response_bank
 from tech_daily.llm_client import LLMClient
@@ -37,6 +38,23 @@ class ChatAgentResponseTests(unittest.TestCase):
                 "theme_evolution": "这个专题最近几天持续出现，但目前仍以单一公司动作为主。",
                 "next_day_theme_focus": ["安全与治理"],
             },
+            theme_dossier_brief={
+                "primary_theme": "安全与治理",
+                "theme_definition": "安全与治理主题聚焦于把约束和控制前置到真实产品场景中。",
+                "theme_state": "emerging",
+                "theme_summary": "安全与治理仍是最近几天最值得继续看的主专题。",
+                "company_positions": {"Google": "产品功能约束"},
+                "timeline_events": [
+                    {
+                        "date": "2026-05-15",
+                        "company": "Google",
+                        "title": "Google expands education safeguards",
+                        "why_it_matters": "说明安全要求开始进入更具体的产品场景。",
+                    }
+                ],
+                "tracking_decision": "建议继续跟踪，因为主题仍在向更具体场景扩展。",
+                "next_day_focus": ["安全与治理", "Google"],
+            },
             health_snapshot={
                 "ops_status_analysis": {"operator_brief": "当前优先处理 tesla、xiaomi。"},
                 "high_priority_runtime_issues": [{"company_slug": "tesla"}, {"company_slug": "xiaomi"}],
@@ -60,6 +78,50 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("现在哪些信源还有问题？", context)
         self.assertEqual(answer["question_type"], "ops_status")
         self.assertIn("tesla", answer["answer"].lower())
+
+    def test_classify_chat_question_supports_dossier_types(self) -> None:
+        companies = ["Google"]
+        primary_theme = "安全与治理"
+        self.assertEqual(
+            classify_chat_question("这个主专题现在怎么理解？", companies, primary_theme),
+            ("dossier_summary", primary_theme),
+        )
+        self.assertEqual(
+            classify_chat_question("为什么现在是 emerging？", companies, primary_theme),
+            ("theme_state", primary_theme),
+        )
+        self.assertEqual(
+            classify_chat_question("Google 在这个专题里处于什么位置？", companies, primary_theme),
+            ("company_position", "Google"),
+        )
+        self.assertEqual(
+            classify_chat_question("最近几天关键时间线说明了什么？", companies, primary_theme),
+            ("timeline_focus", primary_theme),
+        )
+
+    def test_answer_chat_question_routes_dossier_summary_question(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("这个主专题现在怎么理解？", context)
+        self.assertEqual(answer["question_type"], "dossier_summary")
+        self.assertIn("安全与治理", answer["answer"])
+
+    def test_answer_chat_question_routes_theme_state_question(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("为什么现在是 emerging？", context)
+        self.assertEqual(answer["question_type"], "theme_state")
+        self.assertIn("emerging", answer["answer"])
+
+    def test_answer_chat_question_routes_company_position_question(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("Google 在这个专题里处于什么位置？", context)
+        self.assertEqual(answer["question_type"], "company_position")
+        self.assertIn("Google", answer["answer"])
+
+    def test_answer_chat_question_routes_timeline_focus_question(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("最近几天关键时间线说明了什么？", context)
+        self.assertEqual(answer["question_type"], "timeline_focus")
+        self.assertIn("Google", answer["answer"])
 
     def test_chat_responder_hybrid_falls_back_to_rule_when_llm_unavailable(self) -> None:
         context = build_chat_context(self.inputs)
@@ -102,6 +164,9 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("theme_focus", bank)
         self.assertIn("ops_status", bank)
         self.assertIn("google", bank["company_focus"])
+        self.assertIn("dossier_summary", bank)
+        self.assertIn("timeline_focus", bank)
+        self.assertIn("google", bank["company_position_answers"])
 
     def test_build_chat_context_distinguishes_stable_no_news_company(self) -> None:
         inputs = ChatAgentInputs(
@@ -128,6 +193,7 @@ class ChatAgentResponseTests(unittest.TestCase):
             daily_brief={},
             cross_day_brief={},
             theme_tracking_brief={},
+            theme_dossier_brief={},
             health_snapshot={},
         )
         context = build_chat_context(inputs)
@@ -159,6 +225,7 @@ class ChatAgentResponseTests(unittest.TestCase):
             daily_brief={},
             cross_day_brief={},
             theme_tracking_brief={},
+            theme_dossier_brief={},
             health_snapshot={},
         )
         context = build_chat_context(inputs)

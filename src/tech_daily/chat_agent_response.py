@@ -95,6 +95,16 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
     theme_summary = inputs.theme_tracking_brief.get("theme_summary", "") or "当前还没有形成明确主专题。"
     theme_evolution = inputs.theme_tracking_brief.get("theme_evolution", "")
     participating_companies = inputs.theme_tracking_brief.get("participating_companies", [])
+    theme_dossier = {
+        "primary_theme": inputs.theme_dossier_brief.get("primary_theme", ""),
+        "theme_definition": inputs.theme_dossier_brief.get("theme_definition", ""),
+        "theme_state": inputs.theme_dossier_brief.get("theme_state", ""),
+        "theme_summary": inputs.theme_dossier_brief.get("theme_summary", ""),
+        "company_positions": inputs.theme_dossier_brief.get("company_positions", {}),
+        "timeline_events": inputs.theme_dossier_brief.get("timeline_events", []),
+        "tracking_decision": inputs.theme_dossier_brief.get("tracking_decision", ""),
+        "next_day_focus": inputs.theme_dossier_brief.get("next_day_focus", []),
+    }
     ops_brief = inputs.health_snapshot.get("ops_status_analysis", {}).get("operator_brief", "") or "当前没有额外运维提示。"
     high_priority = [issue.get("company_slug", "") for issue in inputs.health_snapshot.get("high_priority_runtime_issues", [])]
 
@@ -110,6 +120,7 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
             "answer": f"{theme_summary} {theme_evolution}".strip(),
             "participating_companies": participating_companies,
         },
+        "theme_dossier": theme_dossier,
         "ops_status": {
             "answer": ops_brief,
             "high_priority": high_priority,
@@ -118,12 +129,16 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
         "companies": company_names,
         "quick_questions": [
             "今天最值得关注什么？",
-            "为什么今天的主专题是这个？",
+            "这个主专题现在怎么理解？",
+            "为什么现在是 emerging？",
+            "最近几天关键时间线说明了什么？",
             "现在哪些信源还有问题？",
         ],
         "follow_up_suggestions": [
             "OpenAI 最近几天在做什么？",
-            "为什么今天的主专题是这个？",
+            "这个主专题现在怎么理解？",
+            "为什么现在是 emerging？",
+            "最近几天关键时间线说明了什么？",
             "现在哪些信源还有问题？",
         ],
         "mode_used": "rule",
@@ -144,8 +159,45 @@ def answer_chat_question(question: str, context: dict) -> dict:
             entity.lower(),
             "当前还没有足够明确的公司上下文，建议直接问某家公司最近几天在做什么。",
         )
+    elif question_type == "company_position":
+        dossier = context.get("theme_dossier", {})
+        primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
+        position = dossier.get("company_positions", {}).get(entity, "")
+        if position:
+            answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。"
+        else:
+            answer = f"当前 dossier 里还没有足够明确地定义 {entity} 在这个专题中的位置。"
     elif question_type == "theme_focus":
         answer = context.get("theme_tracking", {}).get("answer", "当前还没有形成明确主专题。")
+    elif question_type == "dossier_summary":
+        dossier = context.get("theme_dossier", {})
+        primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
+        theme_definition = dossier.get("theme_definition", "")
+        tracking_decision = dossier.get("tracking_decision", "")
+        if primary_theme:
+            answer = f"{primary_theme} 目前可以理解为：{theme_definition or context.get('theme_tracking', {}).get('answer', '')} {tracking_decision}".strip()
+        else:
+            answer = "当前还没有形成足够清晰的专题档案。"
+    elif question_type == "theme_state":
+        dossier = context.get("theme_dossier", {})
+        state = dossier.get("theme_state", "")
+        summary = dossier.get("theme_summary", "")
+        decision = dossier.get("tracking_decision", "")
+        if state:
+            answer = f"这个主题当前处于 {state}。{summary} {decision}".strip()
+        else:
+            answer = "当前还没有足够明确的专题阶段判断。"
+    elif question_type == "timeline_focus":
+        dossier = context.get("theme_dossier", {})
+        timeline = dossier.get("timeline_events", [])
+        if timeline:
+            lead = timeline[-1]
+            answer = (
+                f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
+                f"{lead.get('why_it_matters', '')}"
+            )
+        else:
+            answer = "当前 dossier 里还没有足够明确的关键时间线。"
     elif question_type == "ops_status":
         answer = context.get("ops_status", {}).get("answer", "当前没有额外运维提示。")
     else:
@@ -159,6 +211,7 @@ def answer_chat_question(question: str, context: dict) -> dict:
             "daily_intel_brief.json",
             "cross_day_intel_brief.json",
             "theme_tracking_brief.json",
+            "theme_dossier.json",
             "health_snapshot.json",
         ],
         "follow_up_suggestions": context.get("follow_up_suggestions", []),
@@ -178,8 +231,15 @@ def build_chat_response_bank(context: dict, responder: "ChatAgentResponder") -> 
             f"为什么今天的主专题是{primary_theme or '这个主题'}？",
             context,
         ),
+        "dossier_summary": responder.answer("这个主专题现在怎么理解？", context),
+        "theme_state": responder.answer("为什么现在是 emerging？", context),
+        "timeline_focus": responder.answer("最近几天关键时间线说明了什么？", context),
         "ops_status": responder.answer("现在哪些信源还有问题？", context),
         "company_focus": company_bank,
+        "company_position_answers": {
+            company.lower(): responder.answer(f"{company} 在这个专题里处于什么位置？", context)
+            for company in context.get("companies", [])
+        },
         "out_of_scope": responder.answer("我还可以问别的吗？", context),
     }
 

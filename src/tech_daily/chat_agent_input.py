@@ -14,6 +14,7 @@ class ChatAgentInputs:
     daily_brief: dict
     cross_day_brief: dict
     theme_tracking_brief: dict
+    theme_dossier_brief: dict
     health_snapshot: dict
 
 
@@ -32,5 +33,6 @@ def load_chat_agent_inputs(site_dir: Path, report_date: str, data_dir: Path | No
         daily_brief=_read_json(daily_dir / "daily_intel_brief.json"),
         cross_day_brief=_read_json(daily_dir / "cross_day_intel_brief.json"),
         theme_tracking_brief=_read_json(daily_dir / "theme_tracking_brief.json"),
+        theme_dossier_brief=_read_json(daily_dir / "theme_dossier.json"),
         health_snapshot=_read_json(resolved_data_dir / "health_snapshot.json"),
     )

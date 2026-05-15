@@ -21,6 +21,21 @@ class ChatAgentPipelineTests(unittest.TestCase):
                 "theme_evolution": "这个专题最近几天持续出现。",
                 "participating_companies": ["Google"],
             },
+            theme_dossier_brief={
+                "primary_theme": "安全与治理",
+                "theme_state": "emerging",
+                "theme_summary": "安全与治理仍是最近几天最值得继续看的主专题。",
+                "tracking_decision": "建议继续跟踪，因为主题还在演化。",
+                "company_positions": {"Google": "产品功能约束"},
+                "timeline_events": [
+                    {
+                        "date": "2026-05-15",
+                        "company": "Google",
+                        "title": "Google expands education safeguards",
+                        "why_it_matters": "说明安全要求开始进入更具体的产品场景。",
+                    }
+                ],
+            },
         )
 
         context = build_embedded_chat_context(report)
@@ -29,6 +44,9 @@ class ChatAgentPipelineTests(unittest.TestCase):
         self.assertIn("daily_summary", context["response_bank"])
         self.assertIn("theme_focus", context["response_bank"])
         self.assertIn("ops_status", context["response_bank"])
+        self.assertIn("dossier_summary", context["response_bank"])
+        self.assertIn("theme_state", context["response_bank"])
+        self.assertIn("timeline_focus", context["response_bank"])
 
 
 if __name__ == "__main__":

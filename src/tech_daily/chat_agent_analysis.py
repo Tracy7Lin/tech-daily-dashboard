@@ -11,7 +11,18 @@ def classify_chat_question(question: str, companies: list[str], primary_theme: s
     normalized = normalize_question(question)
     lowered = normalized.lower()
 
+    if any(token in normalized for token in ("时间线", "演化", "关键事件")):
+        return "timeline_focus", primary_theme
+
+    if any(token in lowered for token in ("emerging", "active", "fragmenting", "cooling")) or "阶段" in normalized:
+        return "theme_state", primary_theme
+
+    if any(token in normalized for token in ("怎么理解", "值得跟踪", "值得继续跟踪", "主专题现在")):
+        return "dossier_summary", primary_theme
+
     for company in companies:
+        if company and company.lower() in lowered and any(token in normalized for token in ("位置", "角色", "专题里")):
+            return "company_position", company
         if company and company.lower() in lowered:
             return "company_focus", company
 

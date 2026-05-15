@@ -34,6 +34,7 @@ def build_embedded_chat_context(report: DailyReport) -> dict:
         daily_brief=report.agent_brief,
         cross_day_brief=report.cross_day_brief,
         theme_tracking_brief=report.theme_tracking_brief,
+        theme_dossier_brief=report.theme_dossier_brief,
         health_snapshot={
             "ops_status_analysis": {"operator_brief": report.agent_brief.get("ops_signal", "")},
             "high_priority_runtime_issues": [],

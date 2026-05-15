@@ -26,6 +26,10 @@ class ChatAgentInputTests(unittest.TestCase):
             (daily_dir / "theme_tracking_brief.json").write_text(
                 json.dumps({"primary_theme": "安全与治理"}, ensure_ascii=False), encoding="utf-8"
             )
+            (daily_dir / "theme_dossier.json").write_text(
+                json.dumps({"primary_theme": "安全与治理", "theme_state": "emerging"}, ensure_ascii=False),
+                encoding="utf-8",
+            )
             (data_dir / "health_snapshot.json").write_text(
                 json.dumps({"ops_status_analysis": {"operator_brief": "tesla still blocked"}}, ensure_ascii=False),
                 encoding="utf-8",
@@ -37,6 +41,7 @@ class ChatAgentInputTests(unittest.TestCase):
         self.assertEqual(inputs.daily_brief["editorial_signal"], "signal")
         self.assertEqual(inputs.cross_day_brief["warming_themes"], ["安全与治理"])
         self.assertEqual(inputs.theme_tracking_brief["primary_theme"], "安全与治理")
+        self.assertEqual(inputs.theme_dossier_brief["theme_state"], "emerging")
         self.assertEqual(inputs.health_snapshot["ops_status_analysis"]["operator_brief"], "tesla still blocked")
 
 
