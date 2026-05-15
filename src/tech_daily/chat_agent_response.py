@@ -5,23 +5,91 @@ from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
 
 
+def _select_placeholder_status(statuses: list[dict]) -> dict | None:
+    if not statuses:
+        return None
+    statuses = sorted(
+        statuses,
+        key=lambda status: (
+            0 if not status.get("ok", True) else 1,
+            status.get("final_included_count", 0),
+            status.get("date_matched_count", 0),
+            status.get("kept_count", 0),
+            status.get("fetched_count", 0),
+        ),
+    )
+    return statuses[0]
+
+
+def _is_stable_no_news_status(status: dict) -> bool:
+    return (
+        status.get("ok", False)
+        and status.get("fetched_count", 0) > 0
+        and status.get("kept_count", 0) > 0
+        and status.get("date_matched_count", 0) == 0
+        and status.get("final_included_count", 0) == 0
+    )
+
+
+def _is_stable_filtered_status(status: dict) -> bool:
+    return (
+        status.get("ok", False)
+        and status.get("date_matched_count", 0) > 0
+        and status.get("final_included_count", 0) == 0
+    )
+
+
+def _placeholder_reason(status: dict) -> str:
+    company_name = status.get("company_name", "")
+    source_label = status.get("source_label", "")
+    message = status.get("message", "")
+    lowered = message.lower()
+
+    if "http_error:403" in lowered and company_name.lower() == "tesla":
+        return "Tesla 官方新闻入口当前持续拒绝抓取请求，先保留占位，后续再评估更稳的官方接入方式。"
+    if status.get("fetched_count", 0) == 0 and company_name.lower() == "xiaomi":
+        return "Xiaomi Global Discover 当前以动态渲染为主，静态抓取器尚未拿到稳定文章链接，先保留占位。"
+    if not status.get("ok", True):
+        return f"{company_name or source_label} 当前抓取异常，建议优先检查官方入口是否可访问。"
+    if status.get("fetched_count", 0) == 0:
+        return f"{company_name or source_label} 当前没有抓到稳定条目，先保留占位，后续再继续调优信源。"
+    return f"{company_name or source_label} 今天没有形成可发布动态，建议结合源状态继续观察。"
+
+
+def _build_company_answer(company_name: str, entries: list[dict], statuses: list[dict]) -> str:
+    latest_title = entries[0].get("raw", {}).get("title", "") if entries else ""
+    if entries:
+        return f"{company_name} 最近几天仍有动作，当前最值得看的更新是“{latest_title}”。"
+    status = _select_placeholder_status(statuses)
+    if status is None:
+        return f"{company_name} 今天没有保留下可发布的动态。"
+    if _is_stable_no_news_status(status):
+        return f"{company_name} 官方信源抓取正常，但今天没有落在日报日期范围内的有效动态。"
+    if _is_stable_filtered_status(status):
+        return f"{company_name} 官方信源抓取正常，也抓到了同日内容，但今天没有保留下可发布条目。"
+    return f"{company_name} 信源暂未稳定。{_placeholder_reason(status)}"
+
+
 def build_chat_context(inputs: ChatAgentInputs) -> dict:
     company_reports = inputs.report.get("company_reports", [])
+    source_statuses = inputs.report.get("source_statuses", [])
+    statuses_by_company = {}
+    for status in source_statuses:
+        statuses_by_company.setdefault(status.get("company_slug", ""), []).append(status)
     company_answers = {}
     company_names = []
     for report in company_reports:
+        company_slug = report.get("company_slug", "")
         company_name = report.get("company_name", "")
         if not company_name:
             continue
         company_names.append(company_name)
         entries = report.get("entries", [])
-        latest_title = entries[0].get("raw", {}).get("title", "") if entries else ""
-        if entries:
-            company_answers[company_name.lower()] = (
-                f"{company_name} 最近几天仍有动作，当前最值得看的更新是“{latest_title}”。"
-            )
-        else:
-            company_answers[company_name.lower()] = f"{company_name} 最近几天没有保留下可发布的动态。"
+        company_answers[company_name.lower()] = _build_company_answer(
+            company_name,
+            entries,
+            statuses_by_company.get(company_slug, []),
+        )
 
     primary_theme = inputs.theme_tracking_brief.get("primary_theme", "")
     theme_summary = inputs.theme_tracking_brief.get("theme_summary", "") or "当前还没有形成明确主专题。"

@@ -20,6 +20,7 @@ class ChatAgentResponseTests(unittest.TestCase):
                         ],
                     }
                 ],
+                "source_statuses": [],
             },
             daily_brief={
                 "editorial_signal": "安全与治理成为内容主线。",
@@ -101,6 +102,68 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("theme_focus", bank)
         self.assertIn("ops_status", bank)
         self.assertIn("google", bank["company_focus"])
+
+    def test_build_chat_context_distinguishes_stable_no_news_company(self) -> None:
+        inputs = ChatAgentInputs(
+            report_date="2026-05-15",
+            report={
+                "headline": "headline",
+                "company_reports": [
+                    {"company_slug": "openai", "company_name": "OpenAI", "entries": []}
+                ],
+                "source_statuses": [
+                    {
+                        "company_slug": "openai",
+                        "company_name": "OpenAI",
+                        "source_label": "OpenAI News",
+                        "ok": True,
+                        "message": "fetched:10;kept:10;date_matched:0;final_included:0",
+                        "fetched_count": 10,
+                        "kept_count": 10,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+            },
+            daily_brief={},
+            cross_day_brief={},
+            theme_tracking_brief={},
+            health_snapshot={},
+        )
+        context = build_chat_context(inputs)
+        self.assertIn("官方信源抓取正常", context["company_answers"]["openai"])
+        self.assertIn("今天没有落在日报日期范围内的有效动态", context["company_answers"]["openai"])
+
+    def test_build_chat_context_distinguishes_unstable_company(self) -> None:
+        inputs = ChatAgentInputs(
+            report_date="2026-05-15",
+            report={
+                "headline": "headline",
+                "company_reports": [
+                    {"company_slug": "tesla", "company_name": "Tesla", "entries": []}
+                ],
+                "source_statuses": [
+                    {
+                        "company_slug": "tesla",
+                        "company_name": "Tesla",
+                        "source_label": "Tesla IR Press",
+                        "ok": False,
+                        "message": "http_error:403;kept:0;date_matched:0;final_included:0",
+                        "fetched_count": 0,
+                        "kept_count": 0,
+                        "date_matched_count": 0,
+                        "final_included_count": 0,
+                    }
+                ],
+            },
+            daily_brief={},
+            cross_day_brief={},
+            theme_tracking_brief={},
+            health_snapshot={},
+        )
+        context = build_chat_context(inputs)
+        self.assertIn("信源暂未稳定", context["company_answers"]["tesla"])
+        self.assertIn("Tesla 官方新闻入口当前持续拒绝抓取请求", context["company_answers"]["tesla"])
 
 
 if __name__ == "__main__":
