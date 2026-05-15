@@ -255,6 +255,29 @@ def _render_theme_tracking_brief(brief: dict) -> str:
     )
 
 
+def _render_theme_dossier_brief(brief: dict) -> str:
+    if not brief:
+        return ""
+    primary_theme = brief.get("primary_theme", "") or "暂无"
+    theme_state = brief.get("theme_state", "") or "暂无"
+    next_focus = "、".join(brief.get("next_day_focus", [])) or "暂无"
+    markdown_link = "./theme-dossier.md"
+    return (
+        "<section class='section'>"
+        "<h2>主题档案</h2>"
+        "<p class='section-hint'>这一部分把当前主专题沉淀成一个轻量 dossier，用于快速判断这个主题现在处于什么阶段，以及明天是否仍值得继续盯。</p>"
+        "<div class='card'>"
+        f"<p class='section-copy'><strong>主专题：</strong>{html.escape(primary_theme)}</p>"
+        f"<p class='section-copy'><strong>当前阶段：</strong>{html.escape(theme_state)}</p>"
+        f"<p class='section-copy'><strong>主题判断：</strong>{html.escape(brief.get('theme_summary', ''))}</p>"
+        f"<p class='section-copy'><strong>跟踪决策：</strong>{html.escape(brief.get('tracking_decision', ''))}</p>"
+        f"<p class='section-copy'><strong>明日关注：</strong>{html.escape(next_focus)}</p>"
+        f"<p><a class='inline-link' href='{markdown_link}'>查看完整 dossier Markdown</a></p>"
+        "</div>"
+        "</section>"
+    )
+
+
 def _json_script_payload(value: dict) -> str:
     return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
 
@@ -543,6 +566,7 @@ def render_daily(report: DailyReport) -> str:
         agent_brief_section=_render_agent_brief(report.agent_brief),
         cross_day_brief_section=_render_cross_day_brief(report.cross_day_brief),
         theme_tracking_brief_section=_render_theme_tracking_brief(report.theme_tracking_brief),
+        theme_dossier_brief_section=_render_theme_dossier_brief(report.theme_dossier_brief),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(

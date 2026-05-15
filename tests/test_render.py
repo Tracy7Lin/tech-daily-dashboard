@@ -209,6 +209,28 @@ class RenderTests(unittest.TestCase):
         self.assertIn("主专题", html)
         self.assertIn("查看完整专题 Markdown 报告", html)
 
+    def test_render_daily_includes_theme_dossier_brief_block_when_present(self) -> None:
+        report = DailyReport(
+            date="2026-05-15",
+            headline="headline",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+            topic_clusters=[],
+            company_reports=[],
+            source_statuses=[],
+            theme_dossier_brief={
+                "primary_theme": "安全与治理",
+                "theme_state": "active",
+                "theme_summary": "安全与治理已从单点动作变成持续主线。",
+                "tracking_decision": "建议继续跟踪，因为多家公司都在通过不同切入点推进这一主题。",
+            },
+        )
+        html = render_daily(report)
+        self.assertIn("主题档案", html)
+        self.assertIn("当前阶段", html)
+        self.assertIn("查看完整 dossier Markdown", html)
+
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(
             date="2026-05-15",

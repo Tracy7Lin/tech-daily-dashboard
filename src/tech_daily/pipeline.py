@@ -15,6 +15,7 @@ from .models import CompanyReport, DailyReport, EnrichedEntry
 from .quality import filter_high_signal_entries, matches_report_date
 from .render import write_site
 from .settings import DEFAULT_SETTINGS
+from .theme_dossier_pipeline import run_theme_dossier_pipeline
 from .theme_tracking_pipeline import run_theme_tracking_pipeline
 from .topics import build_topic_clusters
 
@@ -151,6 +152,12 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
         try:
             theme_tracking_result = run_theme_tracking_pipeline(destination, report.date, days=3)
             report = replace(report, theme_tracking_brief=theme_tracking_result["page_block"])
+            write_site(report, destination)
+        except Exception:
+            pass
+        try:
+            theme_dossier_result = run_theme_dossier_pipeline(destination, report.date, days=3)
+            report = replace(report, theme_dossier_brief=theme_dossier_result["page_block"])
             write_site(report, destination)
         except Exception:
             pass

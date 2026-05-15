@@ -131,6 +131,32 @@ class ThemeTrackingBrief:
 
 
 @dataclass(frozen=True)
+class ThemeDossierTimelineEvent:
+    date: str
+    company: str
+    title: str
+    why_it_matters: str = ""
+
+
+@dataclass(frozen=True)
+class ThemeDossierBrief:
+    date_range: tuple[str, str]
+    primary_theme: str = ""
+    theme_definition: str = ""
+    theme_state: str = ""
+    theme_summary: str = ""
+    participating_companies: list[str] = field(default_factory=list)
+    company_positions: dict[str, str] = field(default_factory=dict)
+    timeline_events: list[ThemeDossierTimelineEvent] = field(default_factory=list)
+    tracking_decision: str = ""
+    next_day_focus: list[str] = field(default_factory=list)
+    mode_used: str = "rule"
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class DailyReport:
     date: str
     headline: str
@@ -144,6 +170,7 @@ class DailyReport:
     agent_brief: dict = field(default_factory=dict)
     cross_day_brief: dict = field(default_factory=dict)
     theme_tracking_brief: dict = field(default_factory=dict)
+    theme_dossier_brief: dict = field(default_factory=dict)
     chat_agent_context: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
