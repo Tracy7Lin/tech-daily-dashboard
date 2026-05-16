@@ -141,6 +141,9 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
             "最近几天关键时间线说明了什么？",
             "现在哪些信源还有问题？",
         ],
+        "runtime_chat": {
+            "endpoint": "/api/chat",
+        },
         "mode_used": "rule",
     }
 

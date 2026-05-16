@@ -9,6 +9,7 @@ from .chat_agent_pipeline import run_chat_agent
 from .dry_run import run_dry_run
 from .healthcheck import run_health_check
 from .pipeline import generate_daily_report
+from .web_chat_server import serve_dashboard
 
 
 def build_parser() -> ArgumentParser:
@@ -32,6 +33,10 @@ def build_parser() -> ArgumentParser:
     chat.add_argument("--date", required=True, help="Report date in YYYY-MM-DD format")
     chat.add_argument("--question", required=True, help="Question to ask about the report")
     chat.add_argument("--output-dir", default="", help="Optional site output directory")
+    serve = subparsers.add_parser("serve", help="Serve the generated dashboard with runtime chat APIs")
+    serve.add_argument("--host", default="127.0.0.1", help="Host to bind the local server to")
+    serve.add_argument("--port", default=8080, type=int, help="Port to bind the local server to")
+    serve.add_argument("--output-dir", default="", help="Optional site output directory")
     return parser
 
 
@@ -162,6 +167,11 @@ def main(argv: list[str] | None = None) -> int:
         output_dir = Path(args.output_dir) if args.output_dir else Path("build/site")
         result = run_chat_agent(output_dir, args.date, args.question)
         _print_chat_answer(result)
+        return 0
+    if args.command == "serve":
+        output_dir = Path(args.output_dir) if args.output_dir else Path("build/site")
+        print(f"serving=http://{args.host}:{args.port}")
+        serve_dashboard(output_dir, host=args.host, port=args.port)
         return 0
     parser.error(f"Unsupported command: {args.command}")
     return 1

@@ -114,6 +114,24 @@ python run_dashboard.py dry-run --today
 python run_dashboard.py chat --date 2026-05-15 --question "今天最值得关注什么？"
 ```
 
+### 10. 以真实运行时问答方式打开网页
+
+如果你只是直接双击 `build/site/*.html`，页面右下角的问答入口会回退到内嵌回答，因此会更像静态 mock。
+
+要让网页里的问答真正调用本地 Python / LLM 链路，请先生成日报，再启动本地服务：
+
+```bash
+python run_dashboard.py generate-today --output-dir build/site
+python run_dashboard.py serve --port 8080
+```
+
+然后访问：
+
+- [http://127.0.0.1:8080](http://127.0.0.1:8080)
+- [http://127.0.0.1:8080/2026-05-16/index.html](http://127.0.0.1:8080/2026-05-16/index.html)
+
+这时页面 chat 会优先调用 `/api/chat`，服务不可用时才回退到内嵌 response bank。
+
 ## Output
 
 默认生成结果位于：
@@ -128,6 +146,8 @@ python run_dashboard.py chat --date 2026-05-15 --question "今天最值得关注
 - `build/site/<date>/cross-day-brief.md`
 - `build/site/<date>/theme_tracking_brief.json`
 - `build/site/<date>/theme-tracking-brief.md`
+- `build/site/<date>/theme_dossier.json`
+- `build/site/<date>/theme-dossier.md`
 - `build/data/health_snapshot.json`
 - `build/data/health_snapshots/<date>.json`
 - `build/logs/<date>.log`
@@ -182,6 +202,7 @@ python run_dashboard.py chat --date 2026-05-15 --question "今天最值得关注
 - `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `theme_tracking_pipeline.py`: 专题跟踪 agent 编排入口
 - `chat_agent_pipeline.py`: 页面与 CLI 共享的本地问答 agent 编排入口
+- `web_chat_server.py`: 本地静态站点 + 运行时 `/api/chat` 服务入口
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
 - `healthcheck.py`: 运维状态产出与 snapshot 落盘

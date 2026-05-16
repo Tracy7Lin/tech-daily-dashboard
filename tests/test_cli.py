@@ -51,6 +51,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(args.date, "2026-05-15")
         self.assertEqual(args.question, "今天最值得关注什么？")
 
+    def test_build_parser_supports_serve_command(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["serve", "--port", "8080"])
+        self.assertEqual(args.command, "serve")
+        self.assertEqual(args.port, 8080)
+        self.assertEqual(args.host, "127.0.0.1")
+
     @patch("tech_daily.cli.generate_today_report")
     def test_main_prints_generation_summary_for_generate_today(self, mock_generate_today_report) -> None:
         mock_generate_today_report.return_value = DailyReport(
@@ -168,6 +175,16 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("question_type=daily_summary", output.getvalue())
         self.assertIn("今天最值得关注的是安全与治理。", output.getvalue())
+
+    @patch("tech_daily.cli.serve_dashboard")
+    def test_main_starts_runtime_server(self, mock_serve_dashboard) -> None:
+        output = StringIO()
+        with redirect_stdout(output):
+            exit_code = main(["serve", "--port", "8080"])
+
+        self.assertEqual(exit_code, 0)
+        mock_serve_dashboard.assert_called_once()
+        self.assertIn("serving=http://127.0.0.1:8080", output.getvalue())
 
 
 if __name__ == "__main__":
