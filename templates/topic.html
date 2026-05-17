@@ -20,17 +20,19 @@
     body { margin: 0; color: var(--ink); font-family: Georgia, "Noto Serif SC", "Songti SC", serif; background: linear-gradient(180deg, #fbf8f4 0%, var(--bg) 100%); }
     a { color: var(--accent); text-decoration: none; }
     .site-shell { max-width: 1080px; margin: 0 auto; padding: 28px 20px 72px; }
-    body[data-page-state="staging"] .site-shell { opacity: 0; transform: translateY(16px); }
-    body[data-page-state="ready"] .site-shell { opacity: 1; transform: translateY(0); transition: opacity 380ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1); }
-    body[data-page-state="leaving"] .site-shell { opacity: 0.14; transform: translateY(-8px); }
-    .page-curtain { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; pointer-events: none; opacity: 1; transition: opacity 320ms ease; }
-    .page-curtain-ink, .page-curtain-accent { position: absolute; inset: 0; transform: scaleY(1); transform-origin: top; transition: transform 420ms cubic-bezier(0.76, 0, 0.24, 1); }
-    .page-curtain-ink { background: linear-gradient(180deg, #0b1322 0%, #0f2448 100%); }
-    .page-curtain-accent { inset: auto 0 0; height: 28vh; background: linear-gradient(90deg, rgba(61, 145, 255, 0.8), rgba(61, 145, 255, 0)); transform-origin: bottom; }
-    .page-curtain-label { position: relative; z-index: 1; color: rgba(246, 242, 234, 0.86); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; opacity: 0.88; transition: opacity 220ms ease; }
+    body[data-page-state="staging"] .site-shell { opacity: 0; transform: translateY(10px) scale(0.992); }
+    body[data-page-state="ready"] .site-shell { opacity: 1; transform: translateY(0) scale(1); transition: opacity 320ms ease, transform 440ms cubic-bezier(0.22, 1, 0.36, 1); }
+    body[data-page-state="leaving"] .site-shell { opacity: 0.62; transform: translateX(16px) scale(0.998); }
+    .page-curtain { position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 1; overflow: hidden; transition: opacity 240ms ease; }
+    .page-curtain-ink, .page-curtain-accent { position: absolute; inset: 0 auto 0 0; transform: translateX(-110%); transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+    .page-curtain-ink { width: clamp(34px, 5vw, 62px); background: linear-gradient(180deg, #0b1322 0%, #0f2448 100%); box-shadow: 10px 0 30px rgba(8, 17, 32, 0.18); }
+    .page-curtain-accent { width: clamp(120px, 18vw, 220px); background: linear-gradient(90deg, rgba(61, 145, 255, 0.32), rgba(61, 145, 255, 0)); }
+    .page-curtain-label { position: fixed; left: 26px; top: 22px; color: rgba(246, 242, 234, 0.86); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0; transform: translateX(-10px); transition: opacity 180ms ease, transform 220ms ease; }
     .page-curtain[data-state="revealed"] { opacity: 0; }
-    .page-curtain[data-state="revealed"] .page-curtain-ink, .page-curtain[data-state="revealed"] .page-curtain-accent { transform: scaleY(0); }
-    .page-curtain[data-state="revealed"] .page-curtain-label { opacity: 0; }
+    .page-curtain[data-state="revealed"] .page-curtain-ink, .page-curtain[data-state="revealed"] .page-curtain-accent { transform: translateX(-110%); }
+    .page-curtain[data-state="revealed"] .page-curtain-label { opacity: 0; transform: translateX(-10px); }
+    .page-curtain[data-state="covering"] .page-curtain-ink, .page-curtain[data-state="covering"] .page-curtain-accent { transform: translateX(0); }
+    .page-curtain[data-state="covering"] .page-curtain-label { opacity: 0.88; transform: translateX(0); }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; color: var(--ink-soft); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .hero, .section { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
     .page-frame { position: relative; }
