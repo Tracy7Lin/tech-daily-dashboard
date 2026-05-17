@@ -222,14 +222,22 @@ class RenderTests(unittest.TestCase):
             theme_dossier_brief={
                 "primary_theme": "安全与治理",
                 "theme_state": "active",
+                "theme_definition": "不同公司正在把安全与治理从原则讨论推进到更具体的产品与平台动作。",
                 "theme_summary": "安全与治理已从单点动作变成持续主线。",
                 "tracking_decision": "建议继续跟踪，因为多家公司都在通过不同切入点推进这一主题。",
+                "lead_positions": [
+                    "OpenAI：更偏平台与安全控制前置",
+                    "Google：更偏产品功能约束",
+                ],
+                "timeline_highlight": "2026-05-15 · Google · Google expands education safeguards",
             },
         )
         html = render_daily(report)
         self.assertIn("主题档案", html)
         self.assertIn("当前阶段", html)
         self.assertIn("查看完整 dossier Markdown", html)
+        self.assertIn("公司位置观察", html)
+        self.assertIn("时间线焦点", html)
 
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(

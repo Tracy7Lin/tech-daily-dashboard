@@ -5,10 +5,39 @@ from tempfile import TemporaryDirectory
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.models import ThemeDossierBrief, ThemeDossierTimelineEvent
-from tech_daily.theme_dossier_outputs import write_theme_dossier_outputs
+from tech_daily.theme_dossier_outputs import render_theme_dossier_markdown, write_theme_dossier_outputs
 
 
 class ThemeDossierOutputsTests(unittest.TestCase):
+    def test_render_theme_dossier_markdown_reads_like_research_brief(self) -> None:
+        brief = ThemeDossierBrief(
+            date_range=("2026-05-13", "2026-05-15"),
+            primary_theme="安全与治理",
+            theme_definition="安全与治理主题聚焦于让模型和产品在进入用户场景前就加入约束与控制。",
+            theme_state="active",
+            theme_summary="安全与治理仍是最近几天最值得继续跟踪的主专题。",
+            participating_companies=["OpenAI", "Google"],
+            company_positions={"OpenAI": "平台与安全控制", "Google": "产品功能约束"},
+            timeline_events=[
+                ThemeDossierTimelineEvent(
+                    date="2026-05-15",
+                    company="Google",
+                    title="Google expands education safeguards",
+                    why_it_matters="说明安全要求开始进入更具体的产品场景。",
+                )
+            ],
+            tracking_decision="这个主题仍建议继续跟踪，因为它已经从单点动作转向持续主线。",
+            next_day_focus=["安全与治理", "Google"],
+            mode_used="hybrid",
+        )
+
+        markdown = render_theme_dossier_markdown(brief)
+
+        self.assertIn("## 核心结论", markdown)
+        self.assertIn("## 公司位置观察", markdown)
+        self.assertIn("## 下一步研究提示", markdown)
+        self.assertIn("Google expands education safeguards", markdown)
+
     def test_write_theme_dossier_outputs_persists_json_and_markdown(self) -> None:
         brief = ThemeDossierBrief(
             date_range=("2026-05-13", "2026-05-15"),
@@ -40,6 +69,9 @@ class ThemeDossierOutputsTests(unittest.TestCase):
         self.assertEqual(result["markdown_path"].name, "theme-dossier.md")
         self.assertEqual(payload["theme_state"], "active")
         self.assertIn("page_block", result)
+        self.assertIn("theme_definition", result["page_block"])
+        self.assertIn("lead_positions", result["page_block"])
+        self.assertIn("timeline_highlight", result["page_block"])
 
 
 if __name__ == "__main__":
