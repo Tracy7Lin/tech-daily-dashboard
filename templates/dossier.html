@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #f7f2eb;
-      --surface: rgba(255,255,255,0.8);
+      --surface: rgba(255,255,255,0.84);
       --ink: #1c160f;
       --ink-soft: #6b6258;
       --accent: #0f5bd8;
@@ -34,6 +34,32 @@
     .page-curtain[data-state="covering"] .page-curtain-ink, .page-curtain[data-state="covering"] .page-curtain-accent { transform: translateX(0); }
     .page-curtain[data-state="covering"] .page-curtain-label { opacity: 0.88; transform: translateX(0); }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; color: var(--ink-soft); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .magazine-nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .magazine-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 30, 20, 0.10);
+      background: rgba(255,255,255,0.58);
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .magazine-nav a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 91, 216, 0.20);
+      background: rgba(255,255,255,0.74);
+      text-decoration: none;
+    }
     .hero, .section { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
     .dossier-frame { position: relative; }
     .dossier-accent-band {
@@ -127,8 +153,12 @@
   <main class="site-shell dossier-frame">
     <div class="dossier-accent-band" aria-hidden="true"></div>
     <header class="topbar">
-      <a href="../index.html" data-page-link>返回主刊首页</a>
-      <a href="./topic.html" data-page-link>回到专题页</a>
+      <nav class="magazine-nav">
+        <a href="$home_href" data-page-link>主刊首页</a>
+        <a href="$daily_href" data-page-link>当日日报</a>
+        <a href="$topic_href" data-page-link>专题页</a>
+        <a href="$archive_href" data-page-link>历史归档</a>
+      </nav>
     </header>
     <section class="hero">
       <p class="eyebrow">主题档案</p>

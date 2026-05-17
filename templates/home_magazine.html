@@ -121,6 +121,32 @@
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       color: var(--ink-soft);
     }
+    .magazine-nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .magazine-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 30, 20, 0.10);
+      background: rgba(255,255,255,0.58);
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .magazine-nav a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 91, 216, 0.20);
+      background: rgba(255,255,255,0.74);
+      text-decoration: none;
+    }
     .publication {
       display: grid;
       gap: 4px;
@@ -534,7 +560,12 @@
         <strong>Tech Intelligence Review</strong>
         <span>持续更新的科技情报主刊</span>
       </div>
-      <nav><a href="$latest_daily_href" data-page-link>最新日报</a></nav>
+      <nav class="magazine-nav">
+        <a href="$latest_daily_href" data-page-link>最新日报</a>
+        <a href="$topic_href" data-page-link>专题页</a>
+        <a href="$dossier_href" data-page-link>主题档案</a>
+        <a href="$archive_href" data-page-link>历史归档</a>
+      </nav>
     </header>
 
     <section class="cover-grid cover-frame">

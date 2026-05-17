@@ -6,27 +6,28 @@
   <title>$date - 科技巨头日报详情</title>
   <style>
     :root {
-      --bg: #f4f7fb;
-      --surface: rgba(255, 255, 255, 0.8);
-      --surface-strong: #ffffff;
-      --ink: #102033;
-      --ink-soft: #516173;
-      --line: rgba(117, 138, 173, 0.22);
-      --brand: #2563eb;
-      --brand-soft: rgba(37, 99, 235, 0.12);
-      --shadow: 0 24px 60px rgba(15, 23, 42, 0.10);
-      --radius-xl: 28px;
+      --bg: #f5f0e8;
+      --paper: #fbf7f1;
+      --paper-strong: #fffdf9;
+      --surface: rgba(255,255,255,0.86);
+      --ink: #1c160f;
+      --ink-soft: #675f56;
+      --brand: #0f5bd8;
+      --brand-soft: rgba(15, 91, 216, 0.10);
+      --line: rgba(40, 30, 20, 0.12);
+      --shadow: 0 24px 60px rgba(28, 22, 15, 0.10);
+      --radius-xl: 30px;
       --radius-lg: 22px;
+      --radius-md: 16px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       color: var(--ink);
-      font-family: "Segoe UI Variable", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: Georgia, "Iowan Old Style", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
-        radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 24%),
-        linear-gradient(180deg, #f9fbff 0%, var(--bg) 55%, #eef3f9 100%);
+        radial-gradient(circle at top right, rgba(15, 91, 216, 0.10), transparent 22%),
+        linear-gradient(180deg, #f8f3ec 0%, var(--bg) 100%);
     }
     body[data-page-state="staging"] .site-shell { opacity: 0; transform: translateY(10px) scale(0.992); }
     body[data-page-state="ready"] .site-shell { opacity: 1; transform: translateY(0) scale(1); transition: opacity 320ms ease, transform 440ms cubic-bezier(0.22, 1, 0.36, 1); }
@@ -36,18 +37,54 @@
     .site-shell {
       max-width: 1180px;
       margin: 0 auto;
-      padding: 28px 20px 72px;
+      padding: 28px 20px 80px;
     }
-    .page-curtain { position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 1; overflow: hidden; transition: opacity 240ms ease; }
-    .page-curtain-ink, .page-curtain-accent { position: absolute; inset: 0 auto 0 0; transform: translateX(-110%); transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
-    .page-curtain-ink { width: clamp(34px, 5vw, 62px); background: linear-gradient(180deg, #081120 0%, #12315b 100%); box-shadow: 10px 0 30px rgba(8, 17, 32, 0.18); }
-    .page-curtain-accent { width: clamp(120px, 18vw, 220px); background: linear-gradient(90deg, rgba(96, 165, 250, 0.32), rgba(96, 165, 250, 0)); }
-    .page-curtain-label { position: fixed; left: 26px; top: 22px; color: rgba(243, 248, 255, 0.88); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0; transform: translateX(-10px); transition: opacity 180ms ease, transform 220ms ease; }
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      pointer-events: none;
+      opacity: 1;
+      overflow: hidden;
+      transition: opacity 240ms ease;
+    }
+    .page-curtain-ink, .page-curtain-accent {
+      position: absolute;
+      inset: 0 auto 0 0;
+      transform: translateX(-110%);
+      transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .page-curtain-ink {
+      width: clamp(34px, 5vw, 62px);
+      background: linear-gradient(180deg, #101821 0%, #132d54 100%);
+      box-shadow: 10px 0 30px rgba(8, 17, 32, 0.18);
+    }
+    .page-curtain-accent {
+      width: clamp(120px, 18vw, 220px);
+      background: linear-gradient(90deg, rgba(61, 145, 255, 0.32), rgba(61, 145, 255, 0));
+    }
+    .page-curtain-label {
+      position: fixed;
+      left: 26px;
+      top: 22px;
+      color: rgba(246, 242, 234, 0.86);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 180ms ease, transform 220ms ease;
+    }
     .page-curtain[data-state="revealed"] { opacity: 0; }
-    .page-curtain[data-state="revealed"] .page-curtain-ink, .page-curtain[data-state="revealed"] .page-curtain-accent { transform: translateX(-110%); }
+    .page-curtain[data-state="revealed"] .page-curtain-ink,
+    .page-curtain[data-state="revealed"] .page-curtain-accent { transform: translateX(-110%); }
     .page-curtain[data-state="revealed"] .page-curtain-label { opacity: 0; transform: translateX(-10px); }
-    .page-curtain[data-state="covering"] .page-curtain-ink, .page-curtain[data-state="covering"] .page-curtain-accent { transform: translateX(0); }
+    .page-curtain[data-state="covering"] .page-curtain-ink,
+    .page-curtain[data-state="covering"] .page-curtain-accent { transform: translateX(0); }
     .page-curtain[data-state="covering"] .page-curtain-label { opacity: 0.88; transform: translateX(0); }
+
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -55,37 +92,63 @@
       gap: 16px;
       margin-bottom: 20px;
       color: var(--ink-soft);
-      font-size: 0.95rem;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.94rem;
     }
     .brand-lockup {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 600;
+      font-weight: 700;
     }
     .brand-mark {
       width: 12px;
       height: 12px;
       border-radius: 999px;
-      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      background: linear-gradient(135deg, #0f5bd8, #2c8fff);
       box-shadow: 0 0 0 8px var(--brand-soft);
     }
-    .top-links {
+    .magazine-nav {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .magazine-nav a,
+    .issue-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.62);
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .magazine-nav a:hover,
+    .issue-nav a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 91, 216, 0.22);
+      background: rgba(255,255,255,0.78);
+      text-decoration: none;
     }
     .page-header {
-      padding: 30px;
+      padding: 34px 32px;
       border-radius: var(--radius-xl);
       border: 1px solid var(--line);
-      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(244,248,255,0.86));
+      background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(255,250,244,0.88));
       box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
+      backdrop-filter: blur(16px);
     }
     .eyebrow {
       margin: 0 0 12px;
       color: var(--brand);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -93,16 +156,22 @@
     }
     .page-header h1 {
       margin: 0;
-      font-size: clamp(2rem, 3.8vw, 3.1rem);
-      line-height: 1.06;
-      letter-spacing: -0.04em;
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
     }
     .hero-copy {
       margin: 16px 0 0;
-      max-width: 780px;
+      max-width: 760px;
       color: var(--ink-soft);
-      font-size: 1.04rem;
-      line-height: 1.78;
+      font-size: 1.02rem;
+      line-height: 1.76;
+    }
+    .issue-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
     }
     .section {
       margin-top: 24px;
@@ -111,44 +180,30 @@
       border: 1px solid var(--line);
       background: var(--surface);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px);
     }
     .section h2 {
       margin: 0 0 8px;
       letter-spacing: -0.03em;
     }
-    .issue-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .issue-nav a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(117, 138, 173, 0.18);
-      background: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-decoration: none;
-    }
     .section-hint {
-      margin: 0 0 18px;
+      margin: 0 0 12px;
       color: var(--ink-soft);
-      line-height: 1.7;
+      line-height: 1.66;
+      font-size: 0.95rem;
     }
-    .stack {
+    .stack { display: grid; gap: 18px; }
+    .depth-grid {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
     }
     .card {
-      border-radius: 18px;
+      border-radius: var(--radius-md);
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.9);
       padding: 22px;
-      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 16px 32px rgba(28, 22, 15, 0.08);
     }
     .summary-card { padding: 0; overflow: hidden; }
     .card-trigger {
@@ -161,11 +216,9 @@
       cursor: pointer;
       font: inherit;
     }
-    .card-trigger:hover {
-      background: rgba(255,255,255,0.3);
-    }
+    .card-trigger:hover { background: rgba(255,255,255,0.36); }
     .highlight-card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,249,255,0.84));
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,250,244,0.86));
     }
     .card-topline {
       display: flex;
@@ -181,6 +234,7 @@
       border-radius: 999px;
       background: var(--brand-soft);
       color: var(--brand);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.78rem;
       font-weight: 700;
     }
@@ -197,46 +251,53 @@
       color: var(--ink-soft);
       line-height: 1.76;
     }
-    .topic-stat-row {
+    .topic-stat-row,
+    .tag-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 10px;
     }
-    .topic-stat-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: rgba(37, 99, 235, 0.08);
-      color: var(--brand);
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-    .meta {
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-    }
-    .meta-line {
-      margin: 0;
-      padding-top: 12px;
-      border-top: 1px solid rgba(117, 138, 173, 0.16);
-    }
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 14px 0 0;
-    }
-    .tag-chip {
+    .tag-row { margin: 14px 0 0; }
+    .topic-stat-chip,
+    .tag-chip,
+    .status-pill {
       display: inline-flex;
       align-items: center;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(148, 163, 184, 0.12);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .topic-stat-chip {
+      background: rgba(15, 91, 216, 0.08);
+      color: var(--brand);
+    }
+    .tag-chip {
+      background: rgba(107, 98, 88, 0.08);
       color: var(--ink);
       font-size: 0.82rem;
       font-weight: 600;
+    }
+    .status-pill {
+      background: rgba(245, 158, 11, 0.12);
+      color: #b45309;
+      letter-spacing: 0.03em;
+    }
+    .status-pill.stable {
+      background: rgba(15, 91, 216, 0.12);
+      color: var(--brand);
+    }
+    .meta {
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    }
+    .meta-line {
+      margin: 0;
+      padding-top: 12px;
+      border-top: 1px solid rgba(40, 30, 20, 0.12);
     }
     .topic-list-label { margin: 14px 0 10px; }
     .topic-event-list,
@@ -250,7 +311,7 @@
     .company-card .entry {
       padding-top: 12px;
       margin-top: 12px;
-      border-top: 1px solid rgba(117, 138, 173, 0.16);
+      border-top: 1px solid rgba(40, 30, 20, 0.12);
     }
     .topic-event:first-child,
     .status-list li:first-child,
@@ -270,28 +331,13 @@
       display: inline-flex;
       margin-top: 14px;
       color: var(--brand);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.86rem;
       font-weight: 700;
     }
     .placeholder-block {
       display: grid;
       gap: 12px;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(245, 158, 11, 0.12);
-      color: #b45309;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-    .status-pill.stable {
-      background: rgba(37, 99, 235, 0.12);
-      color: var(--brand);
     }
     .placeholder-note {
       margin: 0;
@@ -311,7 +357,7 @@
     .modal-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(28, 22, 15, 0.46);
       backdrop-filter: blur(8px);
     }
     .modal-panel {
@@ -320,9 +366,9 @@
       max-height: min(88vh, 920px);
       overflow: auto;
       border-radius: var(--radius-xl);
-      border: 1px solid rgba(117, 138, 173, 0.3);
-      background: rgba(248, 251, 255, 0.96);
-      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+      border: 1px solid rgba(40, 30, 20, 0.16);
+      background: rgba(251, 247, 241, 0.96);
+      box-shadow: 0 30px 80px rgba(28, 22, 15, 0.22);
       padding: 26px;
       animation: modalIn 220ms ease;
     }
@@ -337,7 +383,7 @@
       height: 36px;
       border: 0;
       border-radius: 999px;
-      background: rgba(148, 163, 184, 0.14);
+      background: rgba(107, 98, 88, 0.10);
       color: var(--ink);
       cursor: pointer;
       font-size: 1.1rem;
@@ -359,12 +405,13 @@
     .summary-block {
       padding: 14px 14px 12px;
       border-radius: 16px;
-      border: 1px solid rgba(96, 119, 160, 0.16);
-      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(40, 30, 20, 0.12);
+      background: rgba(255,255,255,0.78);
     }
     .summary-label {
       margin: 0 0 6px;
       color: var(--brand);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.08em;
@@ -376,6 +423,9 @@
       line-height: 1.65;
       font-size: 0.94rem;
     }
+    .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note {
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    }
     .chat-launcher {
       position: fixed;
       right: 24px;
@@ -384,11 +434,10 @@
       border: 0;
       border-radius: 999px;
       padding: 14px 18px;
-      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      background: linear-gradient(135deg, #115ee0, #0a8bc8);
       color: #fff;
-      font: inherit;
       font-weight: 700;
-      box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
+      box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24);
       cursor: pointer;
     }
     .chat-drawer[hidden] { display: none; }
@@ -403,9 +452,9 @@
       grid-template-rows: auto auto 1fr auto;
       gap: 14px;
       padding: 22px 20px 20px;
-      border-left: 1px solid rgba(117, 138, 173, 0.24);
-      background: rgba(248, 251, 255, 0.96);
-      box-shadow: -18px 0 48px rgba(15, 23, 42, 0.12);
+      border-left: 1px solid rgba(40, 30, 20, 0.12);
+      background: rgba(251, 247, 241, 0.96);
+      box-shadow: -18px 0 48px rgba(28, 22, 15, 0.12);
       backdrop-filter: blur(18px);
     }
     .chat-drawer-header {
@@ -414,10 +463,7 @@
       align-items: flex-start;
       gap: 12px;
     }
-    .chat-drawer-header h3 {
-      margin: 4px 0 6px;
-      letter-spacing: -0.02em;
-    }
+    .chat-drawer-header h3 { margin: 4px 0 6px; letter-spacing: -0.02em; }
     .chat-kicker {
       margin: 0;
       color: var(--brand);
@@ -426,40 +472,33 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .chat-subtitle {
+    .chat-subtitle, .chat-status, .chat-note {
       margin: 0;
       color: var(--ink-soft);
-      font-size: 0.9rem;
       line-height: 1.6;
+      font-size: 0.9rem;
     }
     .chat-close {
       border: 0;
       border-radius: 999px;
       width: 36px;
       height: 36px;
-      background: rgba(148, 163, 184, 0.14);
+      background: rgba(40, 30, 20, 0.08);
       color: var(--ink);
       font-size: 1.1rem;
       cursor: pointer;
     }
-    .chat-quick-questions {
+    .chat-quick-questions, .chat-follow-ups {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
-    .chat-note {
-      margin: 0;
-      color: var(--ink-soft);
-      font-size: 0.84rem;
-      line-height: 1.6;
-    }
-    .chat-chip {
-      border: 1px solid rgba(37, 99, 235, 0.14);
+    .chat-chip, .chat-follow-up {
+      border: 1px solid rgba(15, 91, 216, 0.14);
       border-radius: 999px;
-      background: rgba(37, 99, 235, 0.08);
+      background: rgba(15, 91, 216, 0.08);
       color: var(--brand);
       padding: 8px 12px;
-      font: inherit;
       font-size: 0.84rem;
       font-weight: 600;
       cursor: pointer;
@@ -471,41 +510,21 @@
       overflow: auto;
       padding-right: 4px;
     }
-    .chat-status {
-      margin: 0;
-      color: var(--ink-soft);
-      font-size: 0.88rem;
-      line-height: 1.6;
-    }
-    .chat-status[data-state='loading'] {
-      color: var(--brand);
-    }
-    .chat-status[data-state='fallback'] {
-      color: #b45309;
-    }
-    .chat-status[data-state='error'] {
-      color: #b91c1c;
-    }
+    .chat-status[data-state='loading'] { color: var(--brand); }
+    .chat-status[data-state='fallback'] { color: #b45309; }
+    .chat-status[data-state='error'] { color: #b91c1c; }
     .chat-message {
       max-width: 92%;
       padding: 12px 14px;
       border-radius: 16px;
       line-height: 1.7;
       font-size: 0.94rem;
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 10px 20px rgba(28, 22, 15, 0.05);
     }
-    .chat-message.agent {
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(117, 138, 173, 0.18);
-      color: var(--ink);
-    }
-    .chat-message.user {
-      justify-self: end;
-      background: rgba(37, 99, 235, 0.12);
-      color: #12315b;
-      border: 1px solid rgba(37, 99, 235, 0.16);
-    }
-    .chat-evidence {
+    .chat-message.agent { background: rgba(255,255,255,0.92); border: 1px solid rgba(40, 30, 20, 0.10); color: var(--ink); }
+    .chat-message.user { justify-self: end; background: rgba(15, 91, 216, 0.10); color: var(--ink); border: 1px solid rgba(15, 91, 216, 0.14); }
+    .chat-evidence,
+    .chat-follow-ups {
       display: grid;
       gap: 8px;
       margin-top: -2px;
@@ -513,10 +532,11 @@
       padding: 12px 14px;
       border-radius: 14px;
       background: rgba(255,255,255,0.78);
-      border: 1px solid rgba(117, 138, 173, 0.16);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(40, 30, 20, 0.10);
+      box-shadow: 0 8px 18px rgba(28, 22, 15, 0.05);
     }
-    .chat-evidence-title {
+    .chat-evidence-title,
+    .chat-follow-ups-title {
       margin: 0;
       color: var(--brand);
       font-size: 0.76rem;
@@ -524,26 +544,14 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
-    .chat-evidence-list {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--ink-soft);
-      font-size: 0.88rem;
-      line-height: 1.65;
-    }
-    .chat-evidence-item {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-    .chat-evidence-item:last-child {
-      margin-bottom: 0;
-    }
+    .chat-evidence-list { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.65; }
+    .chat-evidence-item { display: grid; gap: 6px; margin-bottom: 8px; }
+    .chat-evidence-item:last-child { margin-bottom: 0; }
     .chat-evidence-source {
       width: fit-content;
       padding: 4px 8px;
       border-radius: 999px;
-      background: rgba(37, 99, 235, 0.08);
+      background: rgba(15, 91, 216, 0.08);
       color: var(--brand);
       font-size: 0.75rem;
       font-weight: 700;
@@ -555,107 +563,45 @@
       font-family: "Consolas", "SFMono-Regular", monospace;
       letter-spacing: 0.01em;
     }
-    .chat-evidence-detail {
-      color: var(--ink-soft);
-      line-height: 1.65;
-    }
-    .chat-follow-ups {
-      display: grid;
-      gap: 8px;
-      margin-top: -2px;
-      margin-bottom: 4px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(243, 247, 255, 0.9);
-      border: 1px solid rgba(117, 138, 173, 0.16);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-    }
-    .chat-follow-ups-title {
-      margin: 0;
-      color: var(--ink-soft);
-      font-size: 0.76rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .chat-follow-up-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .chat-follow-up-chip {
-      background: rgba(16, 32, 51, 0.04);
-      color: var(--ink);
-    }
-    .chat-input-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-    }
+    .chat-evidence-detail { color: var(--ink-soft); line-height: 1.65; }
+    .chat-follow-up-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chat-follow-up-chip { background: rgba(16, 32, 51, 0.04); color: var(--ink); }
+    .chat-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
     .chat-input {
       width: 100%;
-      border: 1px solid rgba(117, 138, 173, 0.24);
+      border: 1px solid rgba(40, 30, 20, 0.14);
       border-radius: 14px;
-      background: rgba(255,255,255,0.94);
+      padding: 0 14px;
+      min-height: 46px;
+      background: rgba(255,255,255,0.92);
       color: var(--ink);
-      padding: 12px 14px;
       font: inherit;
     }
     .chat-send {
+      min-width: 84px;
       border: 0;
       border-radius: 14px;
-      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      background: linear-gradient(135deg, #115ee0, #0a8bc8);
       color: #fff;
-      padding: 0 16px;
-      font: inherit;
       font-weight: 700;
       cursor: pointer;
     }
-    .chat-send:disabled,
-    .chat-input:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
     @keyframes modalIn {
-      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      from { opacity: 0; transform: translateY(8px) scale(0.988); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    @media (max-width: 720px) {
-      .site-shell { padding-inline: 16px; }
-      .topbar { flex-direction: column; align-items: flex-start; }
+    @media (max-width: 920px) {
+      .depth-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
       .page-header,
-      .section { padding: 22px; }
-      .modal-root { padding: 0; }
-      .modal-panel {
-        width: 100%;
-        max-height: 100vh;
-        height: 100vh;
-        border-radius: 0;
-        padding: 22px 18px 28px;
-      }
-      .chat-launcher {
-        right: 16px;
-        bottom: 16px;
-        width: calc(100vw - 32px);
-        justify-content: center;
-      }
-      .chat-drawer {
-        width: 100vw;
-        padding: 18px 16px 18px;
-        gap: 12px;
-      }
-      .chat-messages {
-        min-height: 0;
-      }
-      .chat-message {
-        max-width: 100%;
-      }
-      .chat-input-row {
-        grid-template-columns: 1fr;
-      }
-      .chat-send {
-        min-height: 46px;
-      }
+      .section,
+      .card { padding: 20px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .magazine-nav { justify-content: flex-start; }
+      .issue-nav { flex-direction: column; }
+      .issue-nav a { width: 100%; justify-content: center; }
+      .chat-launcher { left: 20px; right: 20px; bottom: 20px; justify-content: center; display: inline-flex; }
     }
   </style>
 </head>
@@ -663,96 +609,101 @@
   <main class="site-shell">
     <header class="topbar">
       <div class="brand-lockup">
-        <span class="brand-mark"></span>
-        <span>Tech Daily Dashboard</span>
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Tech Intelligence Review / 当期日报</span>
       </div>
-      <nav class="top-links">
-        <a href="../index.html" data-page-link>返回首页</a>
-        <a href="../archive.html" data-page-link>历史归档</a>
+      <nav class="magazine-nav">
+        <a href="$home_href" data-page-link>返回主刊首页</a>
+        <a href="$topic_page_href" data-page-link>专题页</a>
+        <a href="$dossier_page_href" data-page-link>主题档案</a>
+        <a href="$archive_href" data-page-link>历史归档</a>
       </nav>
     </header>
 
     <section class="page-header">
-      <p class="eyebrow">$date</p>
-      <h1>当日日报详情</h1>
+      <p class="eyebrow">Daily Issue</p>
+      <h1>$date</h1>
       <p class="hero-copy">$headline</p>
-      <nav class="issue-nav">
+      <div class="issue-nav">
         <a href="$topic_page_href" data-page-link>进入专题页</a>
         <a href="$dossier_page_href" data-page-link>查看主题档案</a>
-      </nav>
+      </div>
     </section>
-
-    $agent_brief_section
-    $cross_day_brief_section
-    $theme_tracking_brief_section
-    $theme_dossier_brief_section
 
     <section class="section">
       <h2>重点观察</h2>
-      <p class="section-hint">这里优先展示当天最值得先读的条目，适合作为快速进入整份日报的入口。</p>
+      <p class="section-hint">当日正文只保留最值得先看的条目与公司动态；跨日、专题和档案内容下沉到独立栏目页，避免正文页继续臃肿。</p>
       <div class="stack">$highlights</div>
     </section>
 
+    <div class="depth-grid">
+      $agent_brief_section
+      $cross_day_brief_section
+      $theme_tracking_brief_section
+      $theme_dossier_brief_section
+    </div>
+
     <section class="section">
-      <h2>主题对比</h2>
-      <p class="section-hint">按主题查看不同动作的聚合与判断，而不是逐条阅读同类更新。</p>
+      <h2>主题概览</h2>
+      <p class="section-hint">只保留主题的快速概览；需要连续阅读时，直接进入专题页或主题档案。</p>
       <div class="stack">$topic_cards</div>
     </section>
 
     <section class="section">
       <h2>公司动态</h2>
-      <p class="section-hint">需要回看某一家公司的完整动作时，可以直接从这里下钻。</p>
+      <p class="section-hint">公司动态保留为日报正文的一部分，但把无动态、稳定无更新、信源占位这三类情况明确区分，减少误读。</p>
       <div class="stack">$company_cards</div>
     </section>
 
     <section class="section">
-      <h2>源状态说明</h2>
-      <p class="section-hint">显示各个官方来源当天的抓取与保留情况，便于追踪缺失与过滤原因。</p>
+      <h2>信源状态</h2>
+      <p class="section-hint">这里保留源状态明细，便于识别当日无动态与信源不稳定的区别。</p>
       <ul class="status-list">$statuses</ul>
     </section>
   </main>
   <div class="modal-root" id="modal-root" hidden>
     <div class="modal-backdrop" data-modal-close></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" type="button" aria-label="关闭" data-modal-close>×</button>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" data-modal-close aria-label="关闭详情">×</button>
       <div class="modal-content" id="modal-content"></div>
-    </section>
+    </div>
   </div>
-  $chat_agent_shell
   <script>
-    const modalRoot = document.getElementById('modal-root');
-    const modalContent = document.getElementById('modal-content');
-    const previousOverflow = () => document.body.dataset.previousOverflow || '';
-
-    function closeModal() {
-      modalRoot.hidden = true;
-      modalContent.innerHTML = '';
-      document.body.style.overflow = previousOverflow();
-    }
-
-    function openModal(templateId) {
-      const template = document.getElementById(templateId);
-      if (!template) return;
-      document.body.dataset.previousOverflow = document.body.style.overflow || '';
-      document.body.style.overflow = 'hidden';
-      modalContent.innerHTML = template.innerHTML;
-      modalRoot.hidden = false;
-    }
-
-    document.querySelectorAll('[data-modal-trigger]').forEach((trigger) => {
-      trigger.addEventListener('click', () => openModal(trigger.dataset.modalTrigger));
-    });
-
-    document.querySelectorAll('[data-modal-close]').forEach((node) => {
-      node.addEventListener('click', closeModal);
-    });
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !modalRoot.hidden) {
-        closeModal();
-      }
-    });
+    (() => {
+      const root = document.getElementById("modal-root");
+      const content = document.getElementById("modal-content");
+      if (!root || !content) return;
+      const previousOverflow = () => document.body.dataset.previousOverflow || "";
+      const openModal = (id) => {
+        const template = document.getElementById(id);
+        if (!template) return;
+        content.innerHTML = template.innerHTML;
+        root.hidden = false;
+        document.body.dataset.previousOverflow = document.body.style.overflow || "";
+        document.body.style.overflow = "hidden";
+      };
+      const closeModal = () => {
+        root.hidden = true;
+        content.innerHTML = "";
+        document.body.style.overflow = previousOverflow();
+      };
+      document.addEventListener("click", (event) => {
+        const trigger = event.target instanceof Element ? event.target.closest("[data-modal-trigger]") : null;
+        if (trigger) {
+          openModal(trigger.getAttribute("data-modal-trigger") || "");
+          return;
+        }
+        const closer = event.target instanceof Element ? event.target.closest("[data-modal-close]") : null;
+        if (closer) {
+          closeModal();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !root.hidden) closeModal();
+      });
+    })();
   </script>
   $page_transition_shell
+  $chat_agent_shell
 </body>
 </html>

@@ -724,6 +724,7 @@ def render_index(report: DailyReport) -> str:
         participating_companies=html.escape("、".join(cover.get("participating_companies", [])) or "暂无"),
         next_focus=html.escape("、".join(cover.get("next_focus", [])) or "暂无"),
         recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
+        archive_href="./archive.html",
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
         page_transition_shell=_render_page_transition_shell(),
     )
@@ -743,6 +744,8 @@ def render_daily(report: DailyReport) -> str:
         cross_day_brief_section=_render_cross_day_brief(report.cross_day_brief),
         theme_tracking_brief_section=_render_theme_tracking_brief(report.theme_tracking_brief),
         theme_dossier_brief_section=_render_theme_dossier_brief(report.theme_dossier_brief),
+        home_href="../index.html",
+        archive_href="../archive.html",
         topic_page_href="./topic.html",
         dossier_page_href="./dossier.html",
         highlights=_render_highlights(report, limit=8),
@@ -766,6 +769,10 @@ def render_topic_page(report: DailyReport) -> str:
     return template.substitute(
         title=html.escape(title),
         summary=html.escape(tracking.get("theme_summary", report.headline)),
+        home_href="../index.html",
+        archive_href="../archive.html",
+        daily_href="./index.html",
+        dossier_href="./dossier.html",
         cross_day_summary=html.escape("、".join(cross_day.get("warming_themes", [])) or "最近几天暂无明显升温主题。"),
         theme_tracking_summary=html.escape(tracking.get("theme_evolution", tracking.get("theme_summary", "暂无专题跟踪摘要。"))),
         theme_tracking_meta=_render_meta_cards(
@@ -799,6 +806,10 @@ def render_dossier_page(report: DailyReport) -> str:
     return template.substitute(
         title=html.escape(title),
         theme_summary=html.escape(dossier.get("theme_summary", "暂无主题摘要。")),
+        home_href="../index.html",
+        archive_href="../archive.html",
+        daily_href="./index.html",
+        topic_href="./topic.html",
         theme_state=html.escape(dossier.get("theme_state", "暂无")),
         theme_definition=html.escape(dossier.get("theme_definition", "暂无")),
         company_positions=positions,
