@@ -22,6 +22,7 @@
     .site-shell { max-width: 980px; margin: 0 auto; padding: 28px 20px 72px; }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; color: var(--ink-soft); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .hero, .section { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+    .dossier-frame { position: relative; }
     .hero { padding: 30px; border-radius: var(--radius-xl); }
     .eyebrow { margin: 0 0 12px; color: var(--accent); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
     h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 0.98; letter-spacing: -0.04em; }
@@ -30,6 +31,12 @@
     .section { margin-top: 22px; border-radius: var(--radius-lg); padding: 24px; }
     .section h2 { margin: 0 0 10px; letter-spacing: -0.03em; }
     .bullet-list { margin: 0; padding-left: 20px; color: var(--ink-soft); line-height: 1.75; }
+    .timeline-rule {
+      width: 64px;
+      height: 2px;
+      margin: 0 0 14px;
+      background: linear-gradient(90deg, rgba(15, 91, 216, 0.85), rgba(15, 91, 216, 0));
+    }
     .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .chat-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 55; border: 0; border-radius: 999px; padding: 14px 18px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24); cursor: pointer; }
     .chat-drawer[hidden] { display: none; }
@@ -52,7 +59,7 @@
   </style>
 </head>
 <body>
-  <main class="site-shell">
+  <main class="site-shell dossier-frame">
     <header class="topbar">
       <a href="../index.html">返回主刊首页</a>
       <a href="./topic.html">回到专题页</a>
@@ -63,22 +70,27 @@
       <p class="hero-copy">$theme_summary</p>
     </section>
     <section class="section">
+      <div class="timeline-rule" aria-hidden="true"></div>
       <h2>当前阶段</h2>
       <p class="section-copy">$theme_state</p>
     </section>
     <section class="section">
+      <div class="timeline-rule" aria-hidden="true"></div>
       <h2>主题定义</h2>
       <p class="section-copy">$theme_definition</p>
     </section>
     <section class="section">
+      <div class="timeline-rule" aria-hidden="true"></div>
       <h2>公司位置观察</h2>
       <ul class="bullet-list">$company_positions</ul>
     </section>
     <section class="section">
+      <div class="timeline-rule" aria-hidden="true"></div>
       <h2>关键时间线</h2>
       <p class="section-copy">$timeline_highlight</p>
     </section>
     <section class="section">
+      <div class="timeline-rule" aria-hidden="true"></div>
       <h2>跟踪决策</h2>
       <p class="section-copy">$tracking_decision</p>
     </section>

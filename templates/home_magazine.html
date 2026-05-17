@@ -60,6 +60,15 @@
       gap: 22px;
       align-items: stretch;
     }
+    .cover-frame {
+      position: relative;
+    }
+    .editorial-rule {
+      width: 72px;
+      height: 2px;
+      margin: 18px 0 0;
+      background: linear-gradient(90deg, rgba(15, 91, 216, 0.9), rgba(15, 91, 216, 0));
+    }
     .cover-hero,
     .cover-side,
     .cover-section {
@@ -285,11 +294,12 @@
       <nav><a href="$latest_daily_href">最新日报</a></nav>
     </header>
 
-    <section class="cover-grid">
+    <section class="cover-grid cover-frame">
       <article class="cover-hero" data-reveal="hero">
         <div>
           <p class="cover-kicker">当前主专题</p>
           <h1 class="cover-title">$primary_theme</h1>
+          <div class="editorial-rule" aria-hidden="true"></div>
           <p class="cover-summary">$cover_summary</p>
         </div>
         <div class="cover-actions">

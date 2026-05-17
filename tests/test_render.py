@@ -102,6 +102,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("./2026-05-10/topic.html", html)
         self.assertIn("./2026-05-10/dossier.html", html)
         self.assertIn("chat-drawer", html)
+        self.assertIn("cover-frame", html)
+        self.assertIn("editorial-rule", html)
+        self.assertIn("--paper", html)
 
     def test_render_daily_includes_highlights_and_enriched_company_metadata(self) -> None:
         entry = _entry(
@@ -292,6 +295,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("主题档案摘要", html)
         self.assertIn("./dossier.html", html)
         self.assertIn("chat-drawer", html)
+        self.assertIn("page-frame", html)
+        self.assertIn("section-rule", html)
 
     def test_render_dossier_page_outputs_theme_archive_content(self) -> None:
         report = DailyReport(
@@ -322,6 +327,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("公司位置观察", html)
         self.assertIn("关键时间线", html)
         self.assertIn("chat-drawer", html)
+        self.assertIn("dossier-frame", html)
+        self.assertIn("timeline-rule", html)
 
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(
