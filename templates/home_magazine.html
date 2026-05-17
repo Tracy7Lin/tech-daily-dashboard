@@ -63,6 +63,17 @@
     .cover-frame {
       position: relative;
     }
+    .cover-frame::before {
+      content: "";
+      position: absolute;
+      inset: -16px auto auto -18px;
+      width: 180px;
+      height: 180px;
+      border-radius: 42px;
+      background: linear-gradient(135deg, rgba(15, 91, 216, 0.20), rgba(15, 91, 216, 0));
+      filter: blur(0.5px);
+      pointer-events: none;
+    }
     .editorial-rule {
       width: 72px;
       height: 2px;
@@ -86,6 +97,27 @@
       display: grid;
       align-content: space-between;
     }
+    .ink-panel {
+      color: #f6f2ea;
+      background:
+        linear-gradient(135deg, rgba(17, 94, 224, 0.16), rgba(17, 94, 224, 0) 44%),
+        linear-gradient(145deg, #191611 0%, #101826 56%, #0f2748 100%);
+      border-color: rgba(255, 255, 255, 0.10);
+      box-shadow:
+        0 28px 68px rgba(8, 17, 32, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .ink-panel .cover-title,
+    .ink-panel .cover-summary {
+      position: relative;
+      z-index: 1;
+    }
+    .ink-panel .cover-summary {
+      color: rgba(246, 242, 234, 0.76);
+    }
+    .ink-panel .cover-kicker {
+      color: #83bdff;
+    }
     .cover-hero::after {
       content: "";
       position: absolute;
@@ -95,6 +127,18 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(15, 91, 216, 0.18), transparent 70%);
       pointer-events: none;
+    }
+    .cover-spotlight {
+      position: absolute;
+      inset: 30px auto auto 52%;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(117, 185, 255, 0.38), rgba(31, 119, 237, 0.12) 42%, rgba(31, 119, 237, 0) 72%);
+      filter: blur(10px);
+      pointer-events: none;
+      opacity: 0.92;
     }
     .cover-kicker,
     .section-kicker {
@@ -155,6 +199,9 @@
       padding: 24px 22px;
       display: grid;
       gap: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,255,255,0.62)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.10), rgba(15, 91, 216, 0) 42%);
     }
     .signal-card {
       padding: 14px 0 0;
@@ -188,6 +235,23 @@
       border-radius: var(--radius-lg);
       padding: 22px;
       transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+    .section-card-featured {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.74)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.14), rgba(15, 91, 216, 0) 48%);
+      border-color: rgba(15, 91, 216, 0.22);
+    }
+    .section-card-featured::after {
+      content: "";
+      position: absolute;
+      inset: auto 18px 0 auto;
+      width: 82px;
+      height: 82px;
+      border-radius: 24px 24px 0 0;
+      background: linear-gradient(135deg, rgba(15, 91, 216, 0.24), rgba(15, 91, 216, 0));
+      pointer-events: none;
     }
     .cover-section:hover {
       transform: translateY(-4px);
@@ -239,8 +303,35 @@
       color: var(--ink-soft);
       line-height: 1.7;
     }
-    [data-reveal] {
+    [data-reveal],
+    [data-motion] {
       animation: fadeLift 460ms ease both;
+    }
+    [data-motion="cover-entry"] {
+      animation-duration: 620ms;
+    }
+    [data-motion="section-card"] {
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background-position 260ms ease;
+      background-size: 120% 120%;
+    }
+    [data-motion="section-card"]:hover {
+      transform: translateY(-6px);
+      background-position: 100% 0;
+    }
+    [data-motion="nav-glide"] {
+      position: relative;
+      overflow: hidden;
+    }
+    [data-motion="nav-glide"]::after {
+      content: "";
+      position: absolute;
+      inset: 0 100% 0 auto;
+      width: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.18), rgba(255,255,255,0));
+      transition: transform 260ms ease;
+    }
+    [data-motion="nav-glide"]:hover::after {
+      transform: translateX(-180%);
     }
     @keyframes fadeLift {
       from { opacity: 0; transform: translateY(14px); }
@@ -295,7 +386,8 @@
     </header>
 
     <section class="cover-grid cover-frame">
-      <article class="cover-hero" data-reveal="hero">
+      <article class="cover-hero ink-panel" data-reveal="hero" data-motion="cover-entry">
+        <div class="cover-spotlight" aria-hidden="true"></div>
         <div>
           <p class="cover-kicker">当前主专题</p>
           <h1 class="cover-title">$primary_theme</h1>
@@ -303,9 +395,9 @@
           <p class="cover-summary">$cover_summary</p>
         </div>
         <div class="cover-actions">
-          <a class="cover-link primary" href="$topic_href">进入专题页</a>
-          <a class="cover-link" href="$latest_daily_href">查看最新日报</a>
-          <a class="cover-link" href="$dossier_href">查看主题档案</a>
+          <a class="cover-link primary" href="$topic_href" data-motion="nav-glide">进入专题页</a>
+          <a class="cover-link" href="$latest_daily_href" data-motion="nav-glide">查看最新日报</a>
+          <a class="cover-link" href="$dossier_href" data-motion="nav-glide">查看主题档案</a>
         </div>
       </article>
 
@@ -330,22 +422,22 @@
     </section>
 
     <section class="section-rail">
-      <a class="cover-section" href="$latest_daily_href" data-reveal="daily">
+      <a class="cover-section section-card-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card">
         <p class="section-kicker">Latest Issue</p>
         <h2 class="section-title">每日一期日报</h2>
         <p class="section-copy">快速进入当天正文，查看重点观察、公司动态与基础主题概览。</p>
       </a>
-      <a class="cover-section" href="$topic_href" data-reveal="topic">
+      <a class="cover-section" href="$topic_href" data-reveal="topic" data-motion="section-card">
         <p class="section-kicker">Feature</p>
         <h2 class="section-title">专题页</h2>
         <p class="section-copy">围绕当前主专题，阅读跨日观察、专题跟踪与深度摘要。</p>
       </a>
-      <a class="cover-section" href="$dossier_href" data-reveal="dossier">
+      <a class="cover-section" href="$dossier_href" data-reveal="dossier" data-motion="section-card">
         <p class="section-kicker">Archive</p>
         <h2 class="section-title">主题档案</h2>
         <p class="section-copy">查看主题定义、状态、公司位置、时间线与跟踪决策。</p>
       </a>
-      <section class="cover-section" data-reveal="recent">
+      <section class="cover-section" data-reveal="recent" data-motion="section-card">
         <p class="section-kicker">Recent Issues</p>
         <h2 class="section-title">最近几期</h2>
         <p class="section-copy">以当日 headline 为索引，快速回看最近一期的主线判断。</p>
