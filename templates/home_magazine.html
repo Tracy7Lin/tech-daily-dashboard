@@ -27,6 +27,20 @@
       background:
         radial-gradient(circle at top right, rgba(15, 91, 216, 0.10), transparent 22%),
         linear-gradient(180deg, #f8f3ec 0%, var(--bg) 100%);
+      transition: opacity 220ms ease, transform 320ms ease;
+    }
+    body[data-page-state="staging"] .site-shell {
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+    body[data-page-state="ready"] .site-shell {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 420ms ease, transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    body[data-page-state="leaving"] .site-shell {
+      opacity: 0.18;
+      transform: translateY(-10px) scale(1.01);
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -34,6 +48,67 @@
       max-width: 1240px;
       margin: 0 auto;
       padding: 28px 20px 80px;
+    }
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 320ms ease;
+    }
+    .page-curtain-ink,
+    .page-curtain-accent {
+      position: absolute;
+      inset: 0;
+      transform: scaleY(1);
+      transform-origin: top;
+      transition: transform 420ms cubic-bezier(0.76, 0, 0.24, 1);
+    }
+    .page-curtain-ink {
+      background: linear-gradient(180deg, #0b1322 0%, #0f2448 100%);
+    }
+    .page-curtain-accent {
+      inset: auto 0 0;
+      height: 32vh;
+      background: linear-gradient(90deg, rgba(61, 145, 255, 0.8), rgba(61, 145, 255, 0));
+      transform-origin: bottom;
+    }
+    .page-curtain-label {
+      position: relative;
+      z-index: 1;
+      color: rgba(246, 242, 234, 0.86);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      opacity: 0.88;
+      transition: opacity 220ms ease;
+    }
+    .page-curtain[data-state="revealed"] {
+      opacity: 0;
+    }
+    .page-curtain[data-state="revealed"] .page-curtain-ink {
+      transform: scaleY(0);
+    }
+    .page-curtain[data-state="revealed"] .page-curtain-accent {
+      transform: scaleY(0);
+    }
+    .page-curtain[data-state="revealed"] .page-curtain-label {
+      opacity: 0;
+    }
+    .page-curtain[data-state="covering"] {
+      opacity: 1;
+    }
+    .page-curtain[data-state="covering"] .page-curtain-ink,
+    .page-curtain[data-state="covering"] .page-curtain-accent {
+      transform: scaleY(1);
+    }
+    .page-curtain[data-state="covering"] .page-curtain-label {
+      opacity: 0.88;
     }
     .masthead {
       display: flex;
@@ -382,7 +457,7 @@
         <strong>Tech Intelligence Review</strong>
         <span>持续更新的科技情报主刊</span>
       </div>
-      <nav><a href="$latest_daily_href">最新日报</a></nav>
+      <nav><a href="$latest_daily_href" data-page-link>最新日报</a></nav>
     </header>
 
     <section class="cover-grid cover-frame">
@@ -395,9 +470,9 @@
           <p class="cover-summary">$cover_summary</p>
         </div>
         <div class="cover-actions">
-          <a class="cover-link primary" href="$topic_href" data-motion="nav-glide">进入专题页</a>
-          <a class="cover-link" href="$latest_daily_href" data-motion="nav-glide">查看最新日报</a>
-          <a class="cover-link" href="$dossier_href" data-motion="nav-glide">查看主题档案</a>
+          <a class="cover-link primary" href="$topic_href" data-motion="nav-glide" data-page-link>进入专题页</a>
+          <a class="cover-link" href="$latest_daily_href" data-motion="nav-glide" data-page-link>查看最新日报</a>
+          <a class="cover-link" href="$dossier_href" data-motion="nav-glide" data-page-link>查看主题档案</a>
         </div>
       </article>
 
@@ -422,17 +497,17 @@
     </section>
 
     <section class="section-rail">
-      <a class="cover-section section-card-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card">
+      <a class="cover-section section-card-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card" data-page-link>
         <p class="section-kicker">Latest Issue</p>
         <h2 class="section-title">每日一期日报</h2>
         <p class="section-copy">快速进入当天正文，查看重点观察、公司动态与基础主题概览。</p>
       </a>
-      <a class="cover-section" href="$topic_href" data-reveal="topic" data-motion="section-card">
+      <a class="cover-section" href="$topic_href" data-reveal="topic" data-motion="section-card" data-page-link>
         <p class="section-kicker">Feature</p>
         <h2 class="section-title">专题页</h2>
         <p class="section-copy">围绕当前主专题，阅读跨日观察、专题跟踪与深度摘要。</p>
       </a>
-      <a class="cover-section" href="$dossier_href" data-reveal="dossier" data-motion="section-card">
+      <a class="cover-section" href="$dossier_href" data-reveal="dossier" data-motion="section-card" data-page-link>
         <p class="section-kicker">Archive</p>
         <h2 class="section-title">主题档案</h2>
         <p class="section-copy">查看主题定义、状态、公司位置、时间线与跟踪决策。</p>
@@ -448,6 +523,7 @@
       $recent_issues
     </section>
   </main>
+  $page_transition_shell
   $chat_agent_shell
 </body>
 </html>

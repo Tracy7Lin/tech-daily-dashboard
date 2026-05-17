@@ -109,6 +109,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("cover-spotlight", html)
         self.assertIn("section-card-featured", html)
         self.assertIn("data-motion", html)
+        self.assertIn("page-curtain", html)
+        self.assertIn("page-transition-script", html)
+        self.assertIn("data-page-link", html)
 
     def test_render_daily_includes_highlights_and_enriched_company_metadata(self) -> None:
         entry = _entry(
@@ -161,6 +164,9 @@ class RenderTests(unittest.TestCase):
         self.assertNotIn("<img", html)
         self.assertIn("进入专题页", html)
         self.assertIn("查看主题档案", html)
+        self.assertIn("page-curtain", html)
+        self.assertIn("page-transition-script", html)
+        self.assertIn("data-page-link", html)
 
     def test_render_daily_includes_agent_brief_block_when_present(self) -> None:
         report = DailyReport(
@@ -302,6 +308,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("page-frame", html)
         self.assertIn("section-rule", html)
         self.assertIn("page-accent-band", html)
+        self.assertIn("page-curtain", html)
+        self.assertIn("page-transition-script", html)
+        self.assertIn("data-page-link", html)
 
     def test_render_dossier_page_outputs_theme_archive_content(self) -> None:
         report = DailyReport(
@@ -335,6 +344,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("dossier-frame", html)
         self.assertIn("timeline-rule", html)
         self.assertIn("dossier-accent-band", html)
+        self.assertIn("page-curtain", html)
+        self.assertIn("page-transition-script", html)
+        self.assertIn("data-page-link", html)
 
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(

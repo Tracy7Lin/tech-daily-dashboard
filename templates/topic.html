@@ -20,6 +20,17 @@
     body { margin: 0; color: var(--ink); font-family: Georgia, "Noto Serif SC", "Songti SC", serif; background: linear-gradient(180deg, #fbf8f4 0%, var(--bg) 100%); }
     a { color: var(--accent); text-decoration: none; }
     .site-shell { max-width: 1080px; margin: 0 auto; padding: 28px 20px 72px; }
+    body[data-page-state="staging"] .site-shell { opacity: 0; transform: translateY(16px); }
+    body[data-page-state="ready"] .site-shell { opacity: 1; transform: translateY(0); transition: opacity 380ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1); }
+    body[data-page-state="leaving"] .site-shell { opacity: 0.14; transform: translateY(-8px); }
+    .page-curtain { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; pointer-events: none; opacity: 1; transition: opacity 320ms ease; }
+    .page-curtain-ink, .page-curtain-accent { position: absolute; inset: 0; transform: scaleY(1); transform-origin: top; transition: transform 420ms cubic-bezier(0.76, 0, 0.24, 1); }
+    .page-curtain-ink { background: linear-gradient(180deg, #0b1322 0%, #0f2448 100%); }
+    .page-curtain-accent { inset: auto 0 0; height: 28vh; background: linear-gradient(90deg, rgba(61, 145, 255, 0.8), rgba(61, 145, 255, 0)); transform-origin: bottom; }
+    .page-curtain-label { position: relative; z-index: 1; color: rgba(246, 242, 234, 0.86); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; opacity: 0.88; transition: opacity 220ms ease; }
+    .page-curtain[data-state="revealed"] { opacity: 0; }
+    .page-curtain[data-state="revealed"] .page-curtain-ink, .page-curtain[data-state="revealed"] .page-curtain-accent { transform: scaleY(0); }
+    .page-curtain[data-state="revealed"] .page-curtain-label { opacity: 0; }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; color: var(--ink-soft); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .hero, .section { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
     .page-frame { position: relative; }
@@ -78,16 +89,16 @@
   <main class="site-shell page-frame">
     <div class="page-accent-band" aria-hidden="true"></div>
     <header class="topbar">
-      <a href="../index.html">返回主刊首页</a>
-      <a href="./index.html">查看当日日报</a>
+      <a href="../index.html" data-page-link>返回主刊首页</a>
+      <a href="./index.html" data-page-link>查看当日日报</a>
     </header>
     <section class="hero">
       <p class="eyebrow">专题页</p>
       <h1>$title</h1>
       <p class="hero-copy">$summary</p>
       <div class="nav-links">
-        <a class="nav-link" href="./dossier.html">查看主题档案</a>
-        <a class="nav-link" href="./index.html">回到日报正文</a>
+        <a class="nav-link" href="./dossier.html" data-page-link>查看主题档案</a>
+        <a class="nav-link" href="./index.html" data-page-link>回到日报正文</a>
       </div>
     </section>
     <section class="section">
@@ -108,6 +119,7 @@
       <div class="meta-list">$dossier_meta</div>
     </section>
   </main>
+  $page_transition_shell
   $chat_agent_shell
 </body>
 </html>

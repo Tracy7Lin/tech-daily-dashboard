@@ -15,6 +15,48 @@ def _load_template(name: str) -> Template:
     return Template((TEMPLATES_DIR / name).read_text(encoding="utf-8"))
 
 
+def _render_page_transition_shell() -> str:
+    return (
+        "<div class='page-curtain' id='page-curtain' aria-hidden='true'>"
+        "<div class='page-curtain-ink'></div>"
+        "<div class='page-curtain-accent'></div>"
+        "<div class='page-curtain-label'>Tech Intelligence Review</div>"
+        "</div>"
+        "<script id='page-transition-script'>"
+        "(() => {"
+        "const curtain = document.getElementById('page-curtain');"
+        "if (!curtain) return;"
+        "const TRANSITION_MS = 320;"
+        "const isInternalDocumentLink = (anchor) => {"
+        "  const href = anchor.getAttribute('href') || '';"
+        "  if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) return false;"
+        "  return href.endsWith('.html') || href.includes('.html?') || href.includes('.html#') || href.startsWith('./') || href.startsWith('../');"
+        "};"
+        "const reveal = () => {"
+        "  curtain.dataset.state = 'revealed';"
+        "  document.body.dataset.pageState = 'ready';"
+        "};"
+        "requestAnimationFrame(() => {"
+        "  document.body.dataset.pageState = 'staging';"
+        "  window.setTimeout(reveal, 40);"
+        "});"
+        "document.addEventListener('click', (event) => {"
+        "  const anchor = event.target instanceof Element ? event.target.closest('a') : null;"
+        "  if (!anchor || !isInternalDocumentLink(anchor)) return;"
+        "  if (anchor.target && anchor.target !== '_self') return;"
+        "  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;"
+        "  event.preventDefault();"
+        "  const destination = anchor.href;"
+        "  document.body.dataset.pageState = 'leaving';"
+        "  curtain.dataset.state = 'covering';"
+        "  window.setTimeout(() => { window.location.href = destination; }, TRANSITION_MS);"
+        "});"
+        "window.addEventListener('pageshow', () => { reveal(); });"
+        "})();"
+        "</script>"
+    )
+
+
 def _strip_html(text: str) -> str:
     return " ".join(re.sub(r"<[^>]+>", " ", text).split()).strip()
 
@@ -682,6 +724,7 @@ def render_index(report: DailyReport) -> str:
         next_focus=html.escape("、".join(cover.get("next_focus", [])) or "暂无"),
         recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+        page_transition_shell=_render_page_transition_shell(),
     )
 
 
@@ -709,6 +752,7 @@ def render_daily(report: DailyReport) -> str:
         ),
         statuses=statuses or "<li>无</li>",
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+        page_transition_shell=_render_page_transition_shell(),
     )
 
 
@@ -739,6 +783,7 @@ def render_topic_page(report: DailyReport) -> str:
             ]
         ),
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+        page_transition_shell=_render_page_transition_shell(),
     )
 
 
@@ -759,6 +804,7 @@ def render_dossier_page(report: DailyReport) -> str:
         timeline_highlight=html.escape(dossier.get("timeline_highlight", "暂无")),
         tracking_decision=html.escape(dossier.get("tracking_decision", "暂无")),
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+        page_transition_shell=_render_page_transition_shell(),
     )
 
 
