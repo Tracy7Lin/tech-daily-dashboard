@@ -120,6 +120,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("Google 在这个专题里处于什么位置？", context)
         self.assertEqual(answer["question_type"], "company_position")
         self.assertIn("Google", answer["answer"])
+        self.assertIn("建议继续跟踪", answer["answer"])
 
     def test_answer_chat_question_routes_timeline_focus_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -129,6 +130,18 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertTrue(
             any("2026-05-15" in point or "Google expands education safeguards" in point for point in answer["evidence_points"])
         )
+        self.assertIn("说明", answer["answer"])
+
+    def test_answer_chat_question_theme_state_carries_tracking_decision(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("为什么现在是 emerging？", context)
+        self.assertIn("建议继续跟踪", answer["answer"])
+
+    def test_answer_chat_question_company_position_uses_dossier_follow_ups(self) -> None:
+        context = build_chat_context(self.inputs)
+        answer = answer_chat_question("Google 在这个专题里处于什么位置？", context)
+        self.assertIn("为什么现在是 emerging？", answer["follow_up_suggestions"])
+        self.assertIn("最近几天关键时间线说明了什么？", answer["follow_up_suggestions"])
 
     def test_chat_responder_uses_history_for_follow_up(self) -> None:
         context = build_chat_context(self.inputs)

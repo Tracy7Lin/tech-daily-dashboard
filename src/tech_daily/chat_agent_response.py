@@ -14,6 +14,48 @@ def _evidence_item(source: str, label: str, detail: str) -> dict:
     }
 
 
+def _follow_up_suggestions_for(question_type: str, context: dict, company: str = "") -> list[str]:
+    primary_theme = context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
+    if question_type == "company_position":
+        suggestions = [
+            "为什么现在是 emerging？",
+            "最近几天关键时间线说明了什么？",
+        ]
+        if company:
+            suggestions.insert(0, f"{company} 最近几天在做什么？")
+        return suggestions
+    if question_type == "timeline_focus":
+        return [
+            "这个主专题现在怎么理解？",
+            "为什么现在是 emerging？",
+        ]
+    if question_type == "theme_state":
+        return [
+            "最近几天关键时间线说明了什么？",
+            f"{company} 在这个专题里处于什么位置？" if company else "Google 在这个专题里处于什么位置？",
+        ]
+    if question_type == "dossier_summary":
+        return [
+            "为什么现在是 emerging？",
+            "最近几天关键时间线说明了什么？",
+        ]
+    if question_type == "theme_focus" and primary_theme:
+        return [
+            "这个主专题现在怎么理解？",
+            "最近几天关键时间线说明了什么？",
+        ]
+    return context.get("follow_up_suggestions", [])
+
+
+def _timeline_explanation(detail: str) -> str:
+    cleaned = (detail or "").strip()
+    if not cleaned:
+        return ""
+    if cleaned.startswith(("说明", "意味着", "反映出")):
+        return cleaned
+    return f"这说明 {cleaned}"
+
+
 def _select_placeholder_status(statuses: list[dict]) -> dict | None:
     if not statuses:
         return None
@@ -198,8 +240,9 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         dossier = context.get("theme_dossier", {})
         primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
         position = dossier.get("company_positions", {}).get(entity, "")
+        tracking_decision = dossier.get("tracking_decision", "")
         if position:
-            answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。"
+            answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。{tracking_decision}".strip()
             add_evidence("theme_dossier.json", "专题档案", f"{entity} 在 dossier 中的当前位置是：{position}。")
             if dossier.get("theme_state"):
                 add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段为 {dossier.get('theme_state')}。")
@@ -256,7 +299,7 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
             lead = timeline[-1]
             answer = (
                 f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
-                f"{lead.get('why_it_matters', '')}"
+                f"{_timeline_explanation(lead.get('why_it_matters', ''))}"
             )
             add_evidence(
                 "theme_dossier.json",
@@ -282,7 +325,7 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         "sources_used": sources_used or ["report.json"],
         "evidence_items": evidence_items[:3],
         "evidence_points": evidence_points[:3],
-        "follow_up_suggestions": context.get("follow_up_suggestions", []),
+        "follow_up_suggestions": _follow_up_suggestions_for(question_type, context, entity),
         "mode_used": context.get("mode_used", "rule"),
     }
 
