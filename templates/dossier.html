@@ -58,6 +58,48 @@
       margin: 0 0 14px;
       background: linear-gradient(90deg, rgba(15, 91, 216, 0.85), rgba(15, 91, 216, 0));
     }
+    .dossier-spread {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+      gap: 22px;
+      align-items: start;
+    }
+    .dossier-spread-main {
+      display: grid;
+      gap: 22px;
+    }
+    .dossier-spread-sidebar {
+      display: grid;
+      gap: 22px;
+    }
+    .timeline-entry {
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+    }
+    .timeline-entry:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+    .timeline-entry-kicker {
+      margin: 0;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .timeline-entry-copy {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.72;
+      font-size: 0.96rem;
+    }
+    @media (max-width: 960px) {
+      .dossier-spread { grid-template-columns: 1fr; }
+    }
     .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .chat-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 55; border: 0; border-radius: 999px; padding: 14px 18px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24); cursor: pointer; }
     .chat-drawer[hidden] { display: none; }
@@ -91,30 +133,39 @@
       <h1>$title</h1>
       <p class="hero-copy">$theme_summary</p>
     </section>
-    <section class="section">
-      <div class="timeline-rule" aria-hidden="true"></div>
-      <h2>当前阶段</h2>
-      <p class="section-copy">$theme_state</p>
-    </section>
-    <section class="section">
-      <div class="timeline-rule" aria-hidden="true"></div>
-      <h2>主题定义</h2>
-      <p class="section-copy">$theme_definition</p>
-    </section>
-    <section class="section">
-      <div class="timeline-rule" aria-hidden="true"></div>
-      <h2>公司位置观察</h2>
-      <ul class="bullet-list">$company_positions</ul>
-    </section>
-    <section class="section">
-      <div class="timeline-rule" aria-hidden="true"></div>
-      <h2>关键时间线</h2>
-      <p class="section-copy">$timeline_highlight</p>
-    </section>
-    <section class="section">
-      <div class="timeline-rule" aria-hidden="true"></div>
-      <h2>跟踪决策</h2>
-      <p class="section-copy">$tracking_decision</p>
+    <section class="dossier-spread">
+      <div class="dossier-spread-main">
+        <section class="section">
+          <div class="timeline-rule" aria-hidden="true"></div>
+          <h2>主题定义</h2>
+          <p class="section-copy">$theme_definition</p>
+        </section>
+        <section class="section">
+          <div class="timeline-rule" aria-hidden="true"></div>
+          <h2>公司位置观察</h2>
+          <ul class="bullet-list">$company_positions</ul>
+        </section>
+        <section class="section">
+          <div class="timeline-rule" aria-hidden="true"></div>
+          <h2>关键时间线</h2>
+          <div class="timeline-entry">
+            <p class="timeline-entry-kicker">Timeline Focus</p>
+            <p class="timeline-entry-copy">$timeline_highlight</p>
+          </div>
+        </section>
+      </div>
+      <aside class="dossier-spread-sidebar">
+        <section class="section">
+          <div class="timeline-rule" aria-hidden="true"></div>
+          <h2>当前阶段</h2>
+          <p class="section-copy">$theme_state</p>
+        </section>
+        <section class="section">
+          <div class="timeline-rule" aria-hidden="true"></div>
+          <h2>跟踪决策</h2>
+          <p class="section-copy">$tracking_decision</p>
+        </section>
+      </aside>
     </section>
   </main>
   $page_transition_shell

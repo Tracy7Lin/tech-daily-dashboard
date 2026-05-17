@@ -64,6 +64,59 @@
     .meta-list { display: grid; gap: 12px; margin-top: 14px; }
     .meta-card { padding-top: 12px; border-top: 1px solid var(--line); }
     .meta-card:first-child { padding-top: 0; border-top: 0; }
+    .spread-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.7fr);
+      gap: 22px;
+      align-items: start;
+    }
+    .spread-stack {
+      display: grid;
+      gap: 22px;
+    }
+    .spread-margin-note {
+      position: sticky;
+      top: 26px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,255,255,0.72)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.12), rgba(15, 91, 216, 0) 58%);
+      box-shadow: var(--shadow);
+    }
+    .margin-note-kicker {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .margin-note-copy {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.72;
+      font-size: 0.95rem;
+    }
+    .margin-note-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .margin-note-item {
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .margin-note-item:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+    @media (max-width: 960px) {
+      .spread-layout { grid-template-columns: 1fr; }
+      .spread-margin-note { position: static; }
+    }
     .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
     .chat-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 55; border: 0; border-radius: 999px; padding: 14px 18px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24); cursor: pointer; }
     .chat-drawer[hidden] { display: none; }
@@ -101,22 +154,40 @@
         <a class="nav-link" href="./index.html" data-page-link>回到日报正文</a>
       </div>
     </section>
-    <section class="section">
-      <div class="section-rule" aria-hidden="true"></div>
-      <h2>跨日观察</h2>
-      <p class="section-copy">$cross_day_summary</p>
-    </section>
-    <section class="section">
-      <div class="section-rule" aria-hidden="true"></div>
-      <h2>专题跟踪</h2>
-      <p class="section-copy">$theme_tracking_summary</p>
-      <div class="meta-list">$theme_tracking_meta</div>
-    </section>
-    <section class="section">
-      <div class="section-rule" aria-hidden="true"></div>
-      <h2>主题档案摘要</h2>
-      <p class="section-copy">$dossier_summary</p>
-      <div class="meta-list">$dossier_meta</div>
+    <section class="spread-layout">
+      <div class="spread-stack">
+        <section class="section">
+          <div class="section-rule" aria-hidden="true"></div>
+          <h2>跨日观察</h2>
+          <p class="section-copy">$cross_day_summary</p>
+        </section>
+        <section class="section">
+          <div class="section-rule" aria-hidden="true"></div>
+          <h2>专题跟踪</h2>
+          <p class="section-copy">$theme_tracking_summary</p>
+          <div class="meta-list">$theme_tracking_meta</div>
+        </section>
+        <section class="section">
+          <div class="section-rule" aria-hidden="true"></div>
+          <h2>主题档案摘要</h2>
+          <p class="section-copy">$dossier_summary</p>
+          <div class="meta-list">$dossier_meta</div>
+        </section>
+      </div>
+      <aside class="spread-margin-note">
+        <p class="margin-note-kicker">栏目导读</p>
+        <p class="margin-note-copy">$summary</p>
+        <div class="margin-note-list">
+          <div class="margin-note-item">
+            <p class="margin-note-kicker">主专题</p>
+            <p class="margin-note-copy">$title</p>
+          </div>
+          <div class="margin-note-item">
+            <p class="margin-note-kicker">阅读顺序</p>
+            <p class="margin-note-copy">先看跨日变化，再看专题跟踪，最后进入主题档案确认长期位置与后续动作。</p>
+          </div>
+        </div>
+      </aside>
     </section>
   </main>
   $page_transition_shell

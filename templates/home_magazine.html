@@ -135,6 +135,36 @@
       gap: 22px;
       align-items: stretch;
     }
+    .cover-ledger {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .ledger-cell {
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+    }
+    .ledger-label {
+      margin: 0 0 4px;
+      color: rgba(246, 242, 234, 0.62);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ledger-value {
+      margin: 0;
+      color: #f6f2ea;
+      font-size: 1rem;
+      line-height: 1.55;
+    }
     .cover-frame {
       position: relative;
     }
@@ -278,6 +308,30 @@
         linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,255,255,0.62)),
         linear-gradient(135deg, rgba(15, 91, 216, 0.10), rgba(15, 91, 216, 0) 42%);
     }
+    .cover-editorial-note {
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(15, 91, 216, 0.16);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.74)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.10), rgba(15, 91, 216, 0) 56%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.68);
+    }
+    .editorial-note-kicker {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .editorial-note-copy {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.72;
+      font-size: 0.96rem;
+    }
     .signal-card {
       padding: 14px 0 0;
       border-top: 1px solid var(--line);
@@ -306,11 +360,25 @@
       gap: 16px;
       margin-top: 24px;
     }
+    .section-rail-asymmetric {
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+      grid-template-areas:
+        "featured feature dossier"
+        "featured recent recent";
+      align-items: stretch;
+    }
     .cover-section {
       border-radius: var(--radius-lg);
       padding: 22px;
       transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
     }
+    .section-rail-asymmetric .cover-section {
+      min-height: 210px;
+    }
+    .section-slot-featured { grid-area: featured; }
+    .section-slot-topic { grid-area: feature; }
+    .section-slot-dossier { grid-area: dossier; }
+    .section-slot-recent { grid-area: recent; }
     .section-card-featured {
       position: relative;
       background:
@@ -414,7 +482,13 @@
     }
     @media (max-width: 1080px) {
       .cover-grid,
-      .section-rail { grid-template-columns: 1fr; }
+      .section-rail,
+      .section-rail-asymmetric { grid-template-columns: 1fr; grid-template-areas: none; }
+      .cover-ledger { grid-template-columns: 1fr; }
+      .section-slot-featured,
+      .section-slot-topic,
+      .section-slot-dossier,
+      .section-slot-recent { grid-area: auto; }
       .cover-hero { min-height: auto; }
     }
     @media (max-width: 720px) {
@@ -468,6 +542,20 @@
           <h1 class="cover-title">$primary_theme</h1>
           <div class="editorial-rule" aria-hidden="true"></div>
           <p class="cover-summary">$cover_summary</p>
+          <div class="cover-ledger">
+            <section class="ledger-cell">
+              <p class="ledger-label">Issue</p>
+              <p class="ledger-value">$latest_report_date</p>
+            </section>
+            <section class="ledger-cell">
+              <p class="ledger-label">State</p>
+              <p class="ledger-value">$theme_state</p>
+            </section>
+            <section class="ledger-cell">
+              <p class="ledger-label">Focus</p>
+              <p class="ledger-value">$next_focus</p>
+            </section>
+          </div>
         </div>
         <div class="cover-actions">
           <a class="cover-link primary" href="$topic_href" data-motion="nav-glide" data-page-link>进入专题页</a>
@@ -493,29 +581,34 @@
           <p class="signal-label">下一步关注</p>
           <p class="signal-value">$next_focus</p>
         </div>
+        <section class="cover-editorial-note">
+          <p class="editorial-note-kicker">编辑按语</p>
+          <p class="editorial-note-copy">$editorial_line</p>
+        </section>
       </aside>
     </section>
 
-    <section class="section-rail">
-      <a class="cover-section section-card-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card" data-page-link>
+    <section class="section-rail section-rail-asymmetric">
+      <a class="cover-section section-card-featured section-slot-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card" data-page-link>
         <p class="section-kicker">Latest Issue</p>
         <h2 class="section-title">每日一期日报</h2>
         <p class="section-copy">快速进入当天正文，查看重点观察、公司动态与基础主题概览。</p>
       </a>
-      <a class="cover-section" href="$topic_href" data-reveal="topic" data-motion="section-card" data-page-link>
+      <a class="cover-section section-slot-topic" href="$topic_href" data-reveal="topic" data-motion="section-card" data-page-link>
         <p class="section-kicker">Feature</p>
         <h2 class="section-title">专题页</h2>
         <p class="section-copy">围绕当前主专题，阅读跨日观察、专题跟踪与深度摘要。</p>
       </a>
-      <a class="cover-section" href="$dossier_href" data-reveal="dossier" data-motion="section-card" data-page-link>
+      <a class="cover-section section-slot-dossier" href="$dossier_href" data-reveal="dossier" data-motion="section-card" data-page-link>
         <p class="section-kicker">Archive</p>
         <h2 class="section-title">主题档案</h2>
         <p class="section-copy">查看主题定义、状态、公司位置、时间线与跟踪决策。</p>
       </a>
-      <section class="cover-section" data-reveal="recent" data-motion="section-card">
+      <section class="cover-section section-slot-recent" data-reveal="recent" data-motion="section-card">
         <p class="section-kicker">Recent Issues</p>
         <h2 class="section-title">最近几期</h2>
         <p class="section-copy">以当日 headline 为索引，快速回看最近一期的主线判断。</p>
+        <div class="recent-list">$recent_issues</div>
       </section>
     </section>
 

@@ -715,6 +715,7 @@ def render_index(report: DailyReport) -> str:
     return template.substitute(
         primary_theme=html.escape(cover.get("primary_theme", "暂无主专题")),
         cover_summary=html.escape(cover.get("cover_summary", report.headline)),
+        latest_report_date=html.escape(str(cover.get("latest_report_date", report.date))),
         latest_daily_href=html.escape(cover.get("daily_href", f"./{report.date}/index.html")),
         topic_href=html.escape(cover.get("topic_href", f"./{report.date}/topic.html")),
         dossier_href=html.escape(cover.get("dossier_href", f"./{report.date}/dossier.html")),

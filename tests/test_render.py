@@ -112,6 +112,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("page-curtain", html)
         self.assertIn("page-transition-script", html)
         self.assertIn("data-page-link", html)
+        self.assertIn("cover-ledger", html)
+        self.assertIn("cover-editorial-note", html)
+        self.assertIn("section-rail-asymmetric", html)
 
     def test_render_daily_includes_highlights_and_enriched_company_metadata(self) -> None:
         entry = _entry(
@@ -311,6 +314,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("page-curtain", html)
         self.assertIn("page-transition-script", html)
         self.assertIn("data-page-link", html)
+        self.assertIn("spread-layout", html)
+        self.assertIn("spread-margin-note", html)
 
     def test_render_dossier_page_outputs_theme_archive_content(self) -> None:
         report = DailyReport(
@@ -347,6 +352,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("page-curtain", html)
         self.assertIn("page-transition-script", html)
         self.assertIn("data-page-link", html)
+        self.assertIn("dossier-spread", html)
+        self.assertIn("timeline-entry", html)
 
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(
