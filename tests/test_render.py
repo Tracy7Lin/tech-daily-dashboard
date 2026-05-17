@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.models import CompanyReport, DailyReport, EnrichedEntry, RawEntry, SourceStatus, TopicCluster
-from tech_daily.render import render_daily, render_dossier_page, render_index, render_topic_page, write_site
+from tech_daily.render import render_archive, render_daily, render_dossier_page, render_index, render_topic_page, write_site
 
 
 def _entry(
@@ -394,7 +394,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("chat-drawer", html)
         self.assertIn("今天最值得关注什么？", html)
         self.assertIn("chat-status", html)
-        self.assertIn("正在整理回答", html)
+        self.assertIn("正在整理静态回答", html)
+        self.assertIn("使用 python run_dashboard.py serve --port 8080 启动实时问答服务", html)
         self.assertIn("aria-live='polite'", html)
         self.assertIn("aria-expanded='false'", html)
         self.assertIn("/api/chat", html)
@@ -562,6 +563,22 @@ class RenderTests(unittest.TestCase):
             self.assertIn("archive-list", archive_html)
             self.assertIn("2026-05-10", archive_html)
             self.assertIn("2026-05-09", archive_html)
+
+    def test_render_archive_includes_magazine_nav_and_latest_links(self) -> None:
+        report = DailyReport(
+            date="2026-05-10",
+            headline="newer",
+            hottest_topics=[],
+            total_entries=0,
+            companies_covered=0,
+        )
+        html = render_archive([report])
+
+        self.assertIn("magazine-nav", html)
+        self.assertIn("./index.html", html)
+        self.assertIn("./2026-05-10/index.html", html)
+        self.assertIn("./2026-05-10/topic.html", html)
+        self.assertIn("./2026-05-10/dossier.html", html)
 
 
 if __name__ == "__main__":

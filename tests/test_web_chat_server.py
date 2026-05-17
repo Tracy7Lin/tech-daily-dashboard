@@ -4,10 +4,18 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.web_chat_server import handle_chat_request
+from tech_daily.web_chat_server import handle_chat_request, runtime_health_payload
 
 
 class WebChatServerTests(unittest.TestCase):
+    def test_runtime_health_payload_reports_llm_availability(self) -> None:
+        payload = runtime_health_payload(site_dir=Path("build/site"), llm_available=True, mode="hybrid")
+
+        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["llm_available"])
+        self.assertEqual(payload["mode"], "hybrid")
+        self.assertIn("runtime_hint", payload)
+
     def test_handle_chat_request_requires_date_and_question(self) -> None:
         with TemporaryDirectory() as tmpdir:
             site_dir = Path(tmpdir)

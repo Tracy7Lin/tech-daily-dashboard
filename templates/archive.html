@@ -3,34 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>科技巨头日报归档</title>
+  <title>Tech Intelligence Review / 历史归档</title>
   <style>
     :root {
-      --bg: #f4f7fb;
-      --surface: rgba(255, 255, 255, 0.84);
-      --ink: #102033;
-      --ink-soft: #516173;
-      --line: rgba(117, 138, 173, 0.22);
-      --brand: #2563eb;
-      --shadow: 0 24px 60px rgba(15, 23, 42, 0.10);
-      --radius-xl: 28px;
+      --bg: #f5f0e8;
+      --paper: #fbf7f1;
+      --surface: rgba(255, 255, 255, 0.86);
+      --ink: #1c160f;
+      --ink-soft: #675f56;
+      --brand: #0f5bd8;
+      --brand-soft: rgba(15, 91, 216, 0.10);
+      --line: rgba(40, 30, 20, 0.12);
+      --shadow: 0 24px 60px rgba(28, 22, 15, 0.10);
+      --radius-xl: 30px;
       --radius-lg: 22px;
+      --radius-md: 16px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       color: var(--ink);
-      font-family: "Segoe UI Variable", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: Georgia, "Iowan Old Style", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
-        linear-gradient(180deg, #f9fbff 0%, var(--bg) 60%, #eef3f9 100%);
+        radial-gradient(circle at top right, rgba(15, 91, 216, 0.10), transparent 22%),
+        linear-gradient(180deg, #f8f3ec 0%, var(--bg) 100%);
     }
     a { color: var(--brand); text-decoration: none; }
     a:hover { text-decoration: underline; }
     .site-shell {
-      max-width: 920px;
+      max-width: 1120px;
       margin: 0 auto;
       padding: 28px 20px 72px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      color: var(--ink-soft);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.94rem;
+    }
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #0f5bd8, #2c8fff);
+      box-shadow: 0 0 0 8px var(--brand-soft);
+    }
+    .magazine-nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .magazine-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.62);
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .magazine-nav a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 91, 216, 0.22);
+      background: rgba(255,255,255,0.78);
+      text-decoration: none;
     }
     .page-header,
     .card {
@@ -41,12 +94,13 @@
       backdrop-filter: blur(18px);
     }
     .page-header {
-      padding: 28px 30px;
+      padding: 34px 32px;
       margin-bottom: 22px;
     }
     .eyebrow {
       margin: 0 0 12px;
       color: var(--brand);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -54,26 +108,44 @@
     }
     .page-header h1 {
       margin: 0;
-      font-size: clamp(2rem, 3.8vw, 3rem);
-      letter-spacing: -0.04em;
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
     }
     .page-header p {
-      margin: 14px 0 0;
+      margin: 16px 0 0;
+      max-width: 720px;
       color: var(--ink-soft);
-      line-height: 1.72;
+      line-height: 1.76;
+    }
+    .archive-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+      gap: 18px;
     }
     .card {
       padding: 24px;
       border-radius: var(--radius-lg);
     }
+    .card h2 {
+      margin: 0 0 10px;
+      letter-spacing: -0.03em;
+    }
+    .section-copy {
+      margin: 0 0 14px;
+      color: var(--ink-soft);
+      line-height: 1.72;
+    }
     .archive-list {
       list-style: none;
       margin: 0;
       padding: 0;
+      display: grid;
+      gap: 14px;
     }
     .archive-list li {
-      padding: 14px 0;
-      border-top: 1px solid rgba(117, 138, 173, 0.16);
+      padding-top: 14px;
+      border-top: 1px solid rgba(40, 30, 20, 0.12);
       color: var(--ink-soft);
       line-height: 1.7;
     }
@@ -85,17 +157,77 @@
       font-weight: 700;
       margin-right: 10px;
     }
+    .feature-links {
+      display: grid;
+      gap: 10px;
+    }
+    .feature-link {
+      display: block;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.74);
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .feature-link:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 91, 216, 0.22);
+      background: rgba(255,255,255,0.84);
+      text-decoration: none;
+    }
+    .feature-link span {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+    @media (max-width: 860px) {
+      .archive-grid { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .magazine-nav { justify-content: flex-start; }
+    }
   </style>
 </head>
 <body>
   <main class="site-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Tech Intelligence Review / Archive</span>
+      </div>
+      <nav class="magazine-nav">
+        <a href="$home_href">主刊首页</a>
+        <a href="$latest_daily_href">最新日报</a>
+        <a href="$latest_topic_href">专题页</a>
+        <a href="$latest_dossier_href">主题档案</a>
+      </nav>
+    </header>
     <section class="page-header">
       <p class="eyebrow">Archive</p>
       <h1>历史归档</h1>
-      <p>按日期回看过去生成的日报，适合快速检查某一天的核心判断与页面产物。</p>
+      <p>这里保留最近几期日报的入口，方便在主刊之外快速回溯某一天的正文、专题页和主题档案。</p>
     </section>
-    <section class="card">
-      <ul class="archive-list">$archive_items</ul>
+    <section class="archive-grid">
+      <section class="card">
+        <h2>最近期数</h2>
+        <p class="section-copy">按日期回看过去生成的日报，适合快速检查某一天的核心判断与页面产物。</p>
+        <ul class="archive-list">$archive_items</ul>
+      </section>
+      <aside class="card">
+        <h2>当前主入口</h2>
+        <p class="section-copy">如果你想先读当前主线，再回到历史细节，这里保留最常用的刊物入口。</p>
+        <div class="feature-links">
+          <a class="feature-link" href="$latest_daily_href">阅读最新日报<span>返回当期正文，快速看今日重点与公司动态。</span></a>
+          <a class="feature-link" href="$latest_topic_href">进入最新专题页<span>从跨日观察、专题跟踪与主题档案摘要切入。</span></a>
+          <a class="feature-link" href="$latest_dossier_href">查看最新主题档案<span>直接进入当前主专题的长期位置、时间线与跟踪决策。</span></a>
+        </div>
+      </aside>
     </section>
   </main>
 </body>

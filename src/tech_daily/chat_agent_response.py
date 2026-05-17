@@ -195,6 +195,8 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
         ],
         "runtime_chat": {
             "endpoint": "/api/chat",
+            "health_endpoint": "/api/health",
+            "serve_hint": "使用 python run_dashboard.py serve --port 8080 启动实时问答服务。",
         },
         "mode_used": "rule",
     }

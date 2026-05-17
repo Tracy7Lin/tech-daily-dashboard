@@ -7,7 +7,34 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from .chat_agent_pipeline import run_chat_agent
+from .llm_client import LLMClient
 from .paths import DATA_DIR, SITE_DIR
+from .settings import DEFAULT_SETTINGS
+
+
+def runtime_health_payload(site_dir: Path, *, llm_available: bool, mode: str) -> dict:
+    runtime_hint = (
+        "实时增强问答已连接，可直接使用 LLM 研究助理模式。"
+        if llm_available and mode != "rule"
+        else "本地问答服务已连接，但当前将优先回退到规则回答。"
+    )
+    return {
+        "ok": True,
+        "site_dir": str(site_dir),
+        "llm_available": llm_available,
+        "mode": mode,
+        "runtime_hint": runtime_hint,
+    }
+
+
+def _llm_available() -> bool:
+    client = LLMClient(
+        api_url=DEFAULT_SETTINGS.llm_api_url,
+        api_key=DEFAULT_SETTINGS.llm_api_key,
+        model=DEFAULT_SETTINGS.llm_model,
+        timeout_seconds=DEFAULT_SETTINGS.llm_timeout_seconds,
+    )
+    return client.is_available()
 
 
 def handle_chat_request(site_dir: Path, payload: dict, data_dir: Path | None = None) -> tuple[int, dict]:
@@ -55,10 +82,11 @@ class _WebChatRequestHandler(SimpleHTTPRequestHandler):
         if self.path.rstrip("/") == "/api/health":
             self._write_json(
                 HTTPStatus.OK,
-                {
-                    "ok": True,
-                    "site_dir": str(self._site_dir),
-                },
+                runtime_health_payload(
+                    self._site_dir,
+                    llm_available=_llm_available(),
+                    mode=DEFAULT_SETTINGS.editorial_mode,
+                ),
             )
             return
         super().do_GET()

@@ -369,13 +369,38 @@ def _render_chat_agent_shell(context: dict) -> str:
         "const primaryTheme = (context.theme_tracking || {}).primary_theme || '';"
         "const runtimeChat = context.runtime_chat || {};"
         "const runtimeEndpoint = runtimeChat.endpoint || '/api/chat';"
-        "const runtimeEnabled = ['http:', 'https:'].includes(window.location.protocol);"
+        "const runtimeHealthEndpoint = runtimeChat.health_endpoint || '/api/health';"
+        "const runtimeServeHint = runtimeChat.serve_hint || '使用 python run_dashboard.py serve --port 8080 启动实时问答服务。';"
+        "const protocolEnabled = ['http:', 'https:'].includes(window.location.protocol);"
+        "let runtimeAvailable = protocolEnabled;"
+        "let runtimeMode = runtimeChat.mode || 'rule';"
+        "let runtimeLlmAvailable = false;"
         "const conversationHistory = [];"
         "let lastFocused = null;"
         "function setStatus(text, state) {"
         "  status.textContent = text;"
         "  if (state) status.dataset.state = state;"
         "  else delete status.dataset.state;"
+        "}"
+        "async function syncRuntimeHealth() {"
+        "  if (!protocolEnabled) {"
+        "    runtimeAvailable = false;"
+        "    setStatus(`当前处于静态预览模式，正在使用内嵌回答。${runtimeServeHint}`, 'fallback');"
+        "    return;"
+        "  }"
+        "  try {"
+        "    const healthResponse = await fetch(runtimeHealthEndpoint, { method: 'GET', cache: 'no-store' });"
+        "    if (!healthResponse.ok) throw new Error('runtime_health_failed');"
+        "    const payload = await healthResponse.json();"
+        "    runtimeAvailable = true;"
+        "    runtimeMode = payload.mode || runtimeMode;"
+        "    runtimeLlmAvailable = Boolean(payload.llm_available);"
+        "    if (runtimeLlmAvailable && runtimeMode !== 'rule') setStatus(payload.runtime_hint || '实时增强问答已连接。', 'enhanced');"
+        "    else setStatus(payload.runtime_hint || '本地问答服务已连接，但当前将优先回退到规则回答。', 'fallback');"
+        "  } catch (error) {"
+        "    runtimeAvailable = false;"
+        "    setStatus(`当前页面未连接到实时问答服务，正在使用内嵌回答。${runtimeServeHint}`, 'fallback');"
+        "  }"
         "}"
         "function addMessage(role, text) {"
         "  const bubble = document.createElement('div');"
@@ -504,12 +529,12 @@ def _render_chat_agent_shell(context: dict) -> str:
         "async function ask(question) {"
         "  if (!question.trim()) return;"
         "  addMessage('user', question);"
-        "  setStatus(runtimeEnabled ? '正在连接本地问答服务…' : '正在整理回答…', 'loading');"
+        "  setStatus(runtimeAvailable ? '正在连接本地问答服务…' : '正在整理静态回答…', 'loading');"
         "  send.disabled = true;"
         "  input.disabled = true;"
         "  try {"
         "    let response = null;"
-        "    if (runtimeEnabled) {"
+        "    if (runtimeAvailable) {"
         "      try {"
         "        const apiResponse = await fetch(runtimeEndpoint, {"
         "          method: 'POST',"
@@ -529,8 +554,8 @@ def _render_chat_agent_shell(context: dict) -> str:
         "    addAgentResponse(response);"
         "    rememberTurn(question, response);"
         "    const mode = response.mode_used || 'rule';"
-        "    if (response._fell_back) setStatus('本地问答服务暂不可用，已回退到内嵌回答。', 'fallback');"
-        "    else if (mode === 'rule') setStatus(runtimeEnabled ? '当前由本地问答服务返回规则回答，可继续追问。' : '当前使用本地规则问答，可继续追问。', 'fallback');"
+        "    if (response._fell_back) { runtimeAvailable = false; setStatus(`本地问答服务暂不可用，已回退到内嵌回答。${runtimeServeHint}`, 'fallback'); }"
+        "    else if (mode === 'rule') setStatus(runtimeAvailable ? '本地问答服务已响应，但当前返回的是规则回答。' : '当前使用静态规则问答，可继续追问。', 'fallback');"
         "    else setStatus('当前使用真实增强问答模式，可继续追问。', 'enhanced');"
         "  } catch (error) {"
         "    addMessage('agent', '这次问答没有顺利完成，我先回退到日报内可直接支持的问题：今天重点、主专题、某家公司、信源状态。');"
@@ -541,6 +566,7 @@ def _render_chat_agent_shell(context: dict) -> str:
         "  }"
         "  input.value = '';"
         "}"
+        "syncRuntimeHealth();"
         "launcher.addEventListener('click', openDrawer);"
         "closeButton?.addEventListener('click', closeDrawer);"
         "send.addEventListener('click', () => ask(input.value));"
@@ -830,7 +856,17 @@ def render_archive(reports: list[DailyReport]) -> str:
             f" - {html.escape(report.headline)}"
             "</li>"
         )
-    return template.substitute(archive_items="".join(items) or "<li>暂无归档</li>")
+    latest = reports[0] if reports else None
+    latest_daily_href = f"./{html.escape(latest.date)}/index.html" if latest else "./index.html"
+    latest_topic_href = f"./{html.escape(latest.date)}/topic.html" if latest else "./index.html"
+    latest_dossier_href = f"./{html.escape(latest.date)}/dossier.html" if latest else "./index.html"
+    return template.substitute(
+        archive_items="".join(items) or "<li>暂无归档</li>",
+        home_href="./index.html",
+        latest_daily_href=latest_daily_href,
+        latest_topic_href=latest_topic_href,
+        latest_dossier_href=latest_dossier_href,
+    )
 
 
 def write_site(report: DailyReport, output_dir: Path) -> None:
