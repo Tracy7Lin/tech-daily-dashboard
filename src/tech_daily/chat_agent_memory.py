@@ -35,14 +35,29 @@ def resolve_follow_up_route(
     if any(token in normalized for token in ("继续说时间线", "继续说", "接着说时间线")):
         return "timeline_focus", last_theme
 
-    if any(token in normalized for token in ("为什么", "为何")) and last_question_type in {"theme_state", "dossier_summary"}:
-        return last_question_type, last_theme
+    if any(token in normalized for token in ("为什么", "为何")):
+        if last_question_type in {"theme_state", "dossier_summary"}:
+            return last_question_type, last_theme
+        if last_question_type == "company_position" and last_company:
+            return "company_position", last_company
+        if last_question_type == "timeline_focus":
+            return "timeline_focus", last_theme
 
     if any(token in normalized for token in ("还有别的", "还有别的吗", "还有吗")):
         if last_question_type in {"company_position", "company_focus"} and last_theme:
             return "dossier_summary", last_theme
         if last_question_type in {"timeline_focus", "theme_state", "dossier_summary"} and last_theme:
             return last_question_type, last_theme
+
+    if normalized in {"继续", "接着说", "展开说说"}:
+        if last_question_type == "timeline_focus" and last_theme:
+            return "timeline_focus", last_theme
+        if last_question_type in {"dossier_summary", "theme_state", "theme_focus"} and last_theme:
+            return "dossier_summary", last_theme
+        if last_question_type == "company_position" and last_company:
+            return "company_position", last_company
+        if last_question_type == "company_focus" and last_company:
+            return "company_focus", last_company
 
     if normalized in {"那呢", "那怎么样", "那怎么办"} and last_company:
         return "company_focus", last_company

@@ -501,6 +501,56 @@
       font-size: 0.88rem;
       line-height: 1.65;
     }
+    .chat-evidence-item {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .chat-evidence-item:last-child {
+      margin-bottom: 0;
+    }
+    .chat-evidence-source {
+      width: fit-content;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--brand);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .chat-evidence-detail {
+      color: var(--ink-soft);
+      line-height: 1.65;
+    }
+    .chat-follow-ups {
+      display: grid;
+      gap: 8px;
+      margin-top: -2px;
+      margin-bottom: 4px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(243, 247, 255, 0.9);
+      border: 1px solid rgba(117, 138, 173, 0.16);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    }
+    .chat-follow-ups-title {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .chat-follow-up-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chat-follow-up-chip {
+      background: rgba(16, 32, 51, 0.04);
+      color: var(--ink);
+    }
     .chat-input-row {
       display: grid;
       grid-template-columns: 1fr auto;

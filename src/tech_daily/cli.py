@@ -131,8 +131,17 @@ def _print_dry_run_summary(result: dict) -> None:
 def _print_chat_answer(result: dict) -> None:
     print(f"question_type={result['question_type']} mode_used={result['mode_used']}")
     print(f"answer={result['answer']}")
-    for evidence in result.get("evidence_points", [])[:3]:
-        print(f"evidence={evidence}")
+    evidence_items = result.get("evidence_items", [])
+    if evidence_items:
+        for evidence in evidence_items[:3]:
+            print(
+                f"evidence_source={evidence.get('source', '-')}"
+                f" evidence_label={evidence.get('label', '-')}"
+                f" evidence_detail={evidence.get('detail', '-')}"
+            )
+    else:
+        for evidence in result.get("evidence_points", [])[:3]:
+            print(f"evidence={evidence}")
     for suggestion in result.get("follow_up_suggestions", [])[:3]:
         print(f"follow_up={suggestion}")
 

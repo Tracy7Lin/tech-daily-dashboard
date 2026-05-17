@@ -67,6 +67,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertEqual(answer["question_type"], "company_focus")
         self.assertIn("Google", answer["answer"])
         self.assertGreaterEqual(len(answer["evidence_points"]), 1)
+        self.assertTrue(any(item["source"] == "theme_dossier.json" for item in answer["evidence_items"]))
 
     def test_answer_chat_question_routes_theme_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -112,6 +113,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertEqual(answer["question_type"], "theme_state")
         self.assertIn("emerging", answer["answer"])
         self.assertTrue(any("emerging" in point or "阶段" in point for point in answer["evidence_points"]))
+        self.assertTrue(any(item["label"] == "专题档案" for item in answer["evidence_items"]))
 
     def test_answer_chat_question_routes_company_position_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -140,6 +142,24 @@ class ChatAgentResponseTests(unittest.TestCase):
                     "question_type": "dossier_summary",
                     "resolved_theme": "安全与治理",
                     "resolved_company": "",
+                }
+            ],
+        )
+        self.assertEqual(answer["question_type"], "company_position")
+        self.assertEqual(answer["resolved_company"], "Google")
+
+    def test_chat_responder_uses_history_for_why_follow_up(self) -> None:
+        context = build_chat_context(self.inputs)
+        responder = ChatAgentResponder(mode="rule", client=None)
+        answer = responder.answer(
+            "为什么？",
+            context,
+            history=[
+                {
+                    "role": "assistant",
+                    "question_type": "company_position",
+                    "resolved_theme": "安全与治理",
+                    "resolved_company": "Google",
                 }
             ],
         )
@@ -179,6 +199,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertEqual(answer["mode_used"], "llm")
         self.assertIn("安全与治理", answer["answer"])
         self.assertIn("evidence_points", answer)
+        self.assertIn("evidence_items", answer)
 
     def test_build_chat_response_bank_uses_python_generated_answers(self) -> None:
         context = build_chat_context(self.inputs)
@@ -191,6 +212,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("dossier_summary", bank)
         self.assertIn("timeline_focus", bank)
         self.assertIn("google", bank["company_position_answers"])
+        self.assertIn("evidence_items", bank["dossier_summary"])
 
     def test_build_chat_context_distinguishes_stable_no_news_company(self) -> None:
         inputs = ChatAgentInputs(

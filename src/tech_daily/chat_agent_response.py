@@ -6,6 +6,14 @@ from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
 
 
+def _evidence_item(source: str, label: str, detail: str) -> dict:
+    return {
+        "source": source,
+        "label": label,
+        "detail": detail,
+    }
+
+
 def _select_placeholder_status(statuses: list[dict]) -> dict | None:
     if not statuses:
         return None
@@ -157,15 +165,25 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
     )
 
     evidence_points: list[str] = []
+    evidence_items: list[dict] = []
+    sources_used: list[str] = []
+
+    def add_evidence(source: str, label: str, detail: str) -> None:
+        if not detail:
+            return
+        evidence_points.append(detail)
+        evidence_items.append(_evidence_item(source, label, detail))
+        if source not in sources_used:
+            sources_used.append(source)
 
     if question_type == "daily_summary":
         answer = context.get("daily_summary", {}).get("answer", "今天还没有可直接回答的日报摘要。")
         primary_theme = context.get("theme_tracking", {}).get("primary_theme", "")
         if primary_theme:
-            evidence_points.append(f"当前主专题是 {primary_theme}。")
+            add_evidence("theme_tracking_brief.json", "专题跟踪", f"当前主专题是 {primary_theme}。")
         ops_answer = context.get("ops_status", {}).get("answer", "")
         if ops_answer:
-            evidence_points.append(ops_answer)
+            add_evidence("health_snapshot.json", "运维快照", ops_answer)
     elif question_type == "company_focus":
         answer = context.get("company_answers", {}).get(
             entity.lower(),
@@ -173,27 +191,35 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         )
         dossier = context.get("theme_dossier", {})
         if dossier.get("primary_theme"):
-            evidence_points.append(f"当前主专题是 {dossier.get('primary_theme')}。")
+            add_evidence("theme_dossier.json", "专题档案", f"当前主专题是 {dossier.get('primary_theme')}。")
         if entity.lower() in context.get("company_answers", {}):
-            evidence_points.append(context["company_answers"][entity.lower()])
+            add_evidence("report.json", "公司日报", context["company_answers"][entity.lower()])
     elif question_type == "company_position":
         dossier = context.get("theme_dossier", {})
         primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
         position = dossier.get("company_positions", {}).get(entity, "")
         if position:
             answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。"
-            evidence_points.append(f"{entity} 在 dossier 中的当前位置是：{position}。")
+            add_evidence("theme_dossier.json", "专题档案", f"{entity} 在 dossier 中的当前位置是：{position}。")
             if dossier.get("theme_state"):
-                evidence_points.append(f"当前主题阶段为 {dossier.get('theme_state')}。")
+                add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段为 {dossier.get('theme_state')}。")
         else:
             answer = f"当前 dossier 里还没有足够明确地定义 {entity} 在这个专题中的位置。"
     elif question_type == "theme_focus":
         answer = context.get("theme_tracking", {}).get("answer", "当前还没有形成明确主专题。")
         theme_tracking = context.get("theme_tracking", {})
         if theme_tracking.get("primary_theme"):
-            evidence_points.append(f"最近几天持续聚焦的主专题是 {theme_tracking.get('primary_theme')}。")
+            add_evidence(
+                "theme_tracking_brief.json",
+                "专题跟踪",
+                f"最近几天持续聚焦的主专题是 {theme_tracking.get('primary_theme')}。",
+            )
         if theme_tracking.get("participating_companies"):
-            evidence_points.append(f"当前参与公司包括：{'、'.join(theme_tracking.get('participating_companies', []))}。")
+            add_evidence(
+                "theme_tracking_brief.json",
+                "专题跟踪",
+                f"当前参与公司包括：{'、'.join(theme_tracking.get('participating_companies', []))}。",
+            )
     elif question_type == "dossier_summary":
         dossier = context.get("theme_dossier", {})
         primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
@@ -202,9 +228,13 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         if primary_theme:
             answer = f"{primary_theme} 目前可以理解为：{theme_definition or context.get('theme_tracking', {}).get('answer', '')} {tracking_decision}".strip()
             if dossier.get("theme_state"):
-                evidence_points.append(f"当前主题阶段是 {dossier.get('theme_state')}。")
-            if dossier.get("participating_companies"):
-                evidence_points.append(f"当前持续参与公司包括：{'、'.join(dossier.get('participating_companies', []))}。")
+                add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段是 {dossier.get('theme_state')}。")
+            if dossier.get("company_positions"):
+                add_evidence(
+                    "theme_dossier.json",
+                    "专题档案",
+                    f"当前持续参与公司包括：{'、'.join(dossier.get('company_positions', {}).keys())}。",
+                )
         else:
             answer = "当前还没有形成足够清晰的专题档案。"
     elif question_type == "theme_state":
@@ -214,9 +244,9 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         decision = dossier.get("tracking_decision", "")
         if state:
             answer = f"这个主题当前处于 {state}。{summary} {decision}".strip()
-            evidence_points.append(f"当前 dossier 状态机结果是 {state}。")
+            add_evidence("theme_dossier.json", "专题档案", f"当前 dossier 状态机结果是 {state}。")
             if summary:
-                evidence_points.append(summary)
+                add_evidence("cross_day_intel_brief.json", "跨日观察", summary)
         else:
             answer = "当前还没有足够明确的专题阶段判断。"
     elif question_type == "timeline_focus":
@@ -228,15 +258,19 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
                 f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
                 f"{lead.get('why_it_matters', '')}"
             )
-            evidence_points.append(f"{lead.get('date', '')} · {lead.get('company', '相关公司')} · {lead.get('title', '代表事件')}")
+            add_evidence(
+                "theme_dossier.json",
+                "主题时间线",
+                f"{lead.get('date', '')} · {lead.get('company', '相关公司')} · {lead.get('title', '代表事件')}",
+            )
             if lead.get("why_it_matters"):
-                evidence_points.append(lead.get("why_it_matters"))
+                add_evidence("theme_dossier.json", "主题时间线", lead.get("why_it_matters"))
         else:
             answer = "当前 dossier 里还没有足够明确的关键时间线。"
     elif question_type == "ops_status":
         answer = context.get("ops_status", {}).get("answer", "当前没有额外运维提示。")
         for company_slug in context.get("ops_status", {}).get("high_priority", []):
-            evidence_points.append(f"高优先级信源问题：{company_slug}")
+            add_evidence("health_snapshot.json", "运维快照", f"高优先级信源问题：{company_slug}")
     else:
         answer = "当前问答主要基于今日日报、跨日观察、专题跟踪和运维状态。你可以继续问今天重点、某家公司、主专题或信源状态。"
 
@@ -245,14 +279,8 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         "question_type": question_type,
         "resolved_theme": context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
         "resolved_company": entity if question_type in {"company_focus", "company_position"} else "",
-        "sources_used": [
-            "report.json",
-            "daily_intel_brief.json",
-            "cross_day_intel_brief.json",
-            "theme_tracking_brief.json",
-            "theme_dossier.json",
-            "health_snapshot.json",
-        ],
+        "sources_used": sources_used or ["report.json"],
+        "evidence_items": evidence_items[:3],
         "evidence_points": evidence_points[:3],
         "follow_up_suggestions": context.get("follow_up_suggestions", []),
         "mode_used": context.get("mode_used", "rule"),
@@ -321,6 +349,19 @@ class ChatAgentResponder:
                     "type": "object",
                     "properties": {
                         "answer": {"type": "string"},
+                        "evidence_items": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "source": {"type": "string"},
+                                    "label": {"type": "string"},
+                                    "detail": {"type": "string"},
+                                },
+                                "required": ["source", "label", "detail"],
+                                "additionalProperties": False,
+                            },
+                        },
                         "evidence_points": {
                             "type": "array",
                             "items": {"type": "string"},
@@ -343,6 +384,7 @@ class ChatAgentResponder:
         return {
             **rule_answer,
             "answer": answer,
+            "evidence_items": payload.get("evidence_items") or rule_answer["evidence_items"],
             "evidence_points": payload.get("evidence_points") or rule_answer["evidence_points"],
             "follow_up_suggestions": payload.get("follow_up_suggestions") or rule_answer["follow_up_suggestions"],
             "mode_used": "llm",

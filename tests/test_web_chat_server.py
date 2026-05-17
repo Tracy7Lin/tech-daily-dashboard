@@ -24,6 +24,7 @@ class WebChatServerTests(unittest.TestCase):
                     "answer": "今天最值得关注的是安全与治理。",
                     "question_type": "daily_summary",
                     "sources_used": ["report.json"],
+                    "evidence_items": [{"source": "theme_dossier.json", "label": "专题档案", "detail": "当前主专题是安全与治理。"}],
                     "follow_up_suggestions": ["这个主专题现在怎么理解？"],
                     "mode_used": "llm",
                 }
@@ -36,6 +37,7 @@ class WebChatServerTests(unittest.TestCase):
         self.assertEqual(payload["question_type"], "daily_summary")
         self.assertEqual(payload["mode_used"], "llm")
         self.assertIn("安全与治理", payload["answer"])
+        self.assertEqual(payload["evidence_items"][0]["source"], "theme_dossier.json")
 
     def test_handle_chat_request_passes_message_history(self) -> None:
         with TemporaryDirectory() as tmpdir:

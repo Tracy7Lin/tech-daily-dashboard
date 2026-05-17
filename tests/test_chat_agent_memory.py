@@ -37,6 +37,38 @@ class ChatAgentMemoryTests(unittest.TestCase):
         )
         self.assertEqual(route, ("timeline_focus", "安全与治理"))
 
+    def test_resolve_follow_up_route_maps_why_to_company_position(self) -> None:
+        route = resolve_follow_up_route(
+            "为什么？",
+            [
+                {
+                    "role": "assistant",
+                    "question_type": "company_position",
+                    "resolved_theme": "安全与治理",
+                    "resolved_company": "Google",
+                }
+            ],
+            companies=["Google", "OpenAI"],
+            primary_theme="安全与治理",
+        )
+        self.assertEqual(route, ("company_position", "Google"))
+
+    def test_resolve_follow_up_route_maps_generic_continue_to_dossier_summary(self) -> None:
+        route = resolve_follow_up_route(
+            "继续",
+            [
+                {
+                    "role": "assistant",
+                    "question_type": "dossier_summary",
+                    "resolved_theme": "安全与治理",
+                    "resolved_company": "",
+                }
+            ],
+            companies=["Google", "OpenAI"],
+            primary_theme="安全与治理",
+        )
+        self.assertEqual(route, ("dossier_summary", "安全与治理"))
+
 
 if __name__ == "__main__":
     unittest.main()
