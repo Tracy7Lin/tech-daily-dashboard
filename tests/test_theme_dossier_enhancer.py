@@ -79,6 +79,56 @@ class ThemeDossierEnhancerTests(unittest.TestCase):
         self.assertEqual(enhanced, brief)
         self.assertEqual(enhanced.mode_used, "rule")
 
+    def test_hybrid_mode_rejects_meta_and_speculative_language(self) -> None:
+        client = MagicMock()
+        client.is_available.return_value = True
+        client.generate_json.return_value = {
+            "theme_definition": "根据提供的信息，这个主题可能会继续扩展。",
+            "theme_summary": "可以看出这一主题有望成为行业重点。",
+            "tracking_decision": "预计后续还会继续升温，建议保持观察。",
+            "next_day_focus": ["Google"],
+            "company_positions": {
+                "Google": "可能进一步强化在教育场景中的布局。"
+            },
+            "timeline_events": [
+                {
+                    "why_it_matters": "这或将推动后续更多公司跟进。"
+                }
+            ],
+        }
+        enhancer = ThemeDossierEnhancer(mode="hybrid", client=client)
+        brief = _brief()
+
+        enhanced = enhancer.enhance(brief)
+
+        self.assertEqual(enhanced, brief)
+        self.assertEqual(enhanced.mode_used, "rule")
+
+    def test_hybrid_mode_keeps_original_company_positions_when_llm_drops_them(self) -> None:
+        client = MagicMock()
+        client.is_available.return_value = True
+        client.generate_json.return_value = {
+            "theme_definition": "这个主题关注安全与治理如何落到教育产品场景中。",
+            "theme_summary": "最近几天，这个专题的信号仍主要来自 Google 的教育场景动作。",
+            "tracking_decision": "建议继续跟踪，因为该主题开始出现具体落地路径。",
+            "next_day_focus": ["Google"],
+            "company_positions": {},
+            "timeline_events": [
+                {
+                    "why_it_matters": "这说明安全治理要求开始进入更具体的教育产品规则。"
+                }
+            ],
+        }
+        enhancer = ThemeDossierEnhancer(mode="hybrid", client=client)
+
+        enhanced = enhancer.enhance(_brief())
+
+        self.assertEqual(enhanced.mode_used, "llm")
+        self.assertEqual(
+            enhanced.company_positions["Google"],
+            "教育场景下的产品安全治理",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

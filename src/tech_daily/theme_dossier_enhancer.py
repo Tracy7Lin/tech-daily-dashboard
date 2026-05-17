@@ -5,6 +5,35 @@ from dataclasses import replace
 from .llm_client import LLMClient, LLMClientError
 from .models import ThemeDossierBrief, ThemeDossierTimelineEvent
 
+_BANNED_PHRASES = (
+    "根据提供的信息",
+    "可以看出",
+    "从提供的内容来看",
+    "从这些信息来看",
+)
+_SPECULATIVE_TOKENS = (
+    "可能",
+    "或将",
+    "预计",
+    "有望",
+)
+
+
+def _clean_text(value: str) -> str:
+    cleaned = " ".join((value or "").split()).strip()
+    for phrase in _BANNED_PHRASES:
+        cleaned = cleaned.replace(phrase, "").strip(" ，,。")
+    return cleaned
+
+
+def _is_low_signal(value: str) -> bool:
+    return not value or len(value) < 10
+
+
+def _contains_speculation(value: str) -> bool:
+    lowered = value or ""
+    return any(token in lowered for token in _SPECULATIVE_TOKENS)
+
 
 class ThemeDossierEnhancer:
     def __init__(self, mode: str = "rule", client: LLMClient | None = None) -> None:
@@ -75,7 +104,12 @@ class ThemeDossierEnhancer:
 
         try:
             timeline = [
-                replace(event, why_it_matters=(payload.get("timeline_events", [])[index].get("why_it_matters") or event.why_it_matters).strip())
+                replace(
+                    event,
+                    why_it_matters=_clean_text(
+                        (payload.get("timeline_events", [])[index].get("why_it_matters") or event.why_it_matters).strip()
+                    ),
+                )
                 if index < len(payload.get("timeline_events", []))
                 else event
                 for index, event in enumerate(brief.timeline_events)
@@ -88,11 +122,24 @@ class ThemeDossierEnhancer:
         tracking_decision = (payload.get("tracking_decision") or "").strip()
         next_day_focus = [item.strip() for item in (payload.get("next_day_focus") or []) if isinstance(item, str) and item.strip()]
         company_positions = {
-            company: value.strip()
+            company: _clean_text(value)
             for company, value in (payload.get("company_positions") or {}).items()
-            if company in brief.company_positions and isinstance(value, str) and value.strip()
+            if company in brief.company_positions and isinstance(value, str) and _clean_text(value)
         }
-        if not theme_definition or not theme_summary or not tracking_decision:
+        theme_definition = _clean_text(theme_definition)
+        theme_summary = _clean_text(theme_summary)
+        tracking_decision = _clean_text(tracking_decision)
+
+        if (
+            _is_low_signal(theme_definition)
+            or _is_low_signal(theme_summary)
+            or _is_low_signal(tracking_decision)
+            or _contains_speculation(theme_definition)
+            or _contains_speculation(theme_summary)
+            or _contains_speculation(tracking_decision)
+            or any(_contains_speculation(value) for value in company_positions.values())
+            or any(_is_low_signal(event.why_it_matters) or _contains_speculation(event.why_it_matters) for event in timeline)
+        ):
             return brief
 
         return replace(
