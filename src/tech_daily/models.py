@@ -172,6 +172,7 @@ class DailyReport:
     theme_tracking_brief: dict = field(default_factory=dict)
     theme_dossier_brief: dict = field(default_factory=dict)
     chat_agent_context: dict = field(default_factory=dict)
+    magazine_pages: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

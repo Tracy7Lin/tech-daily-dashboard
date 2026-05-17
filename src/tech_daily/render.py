@@ -533,6 +533,30 @@ def _render_chat_agent_shell(context: dict) -> str:
     )
 
 
+def _render_recent_issue_items(items: list[dict]) -> str:
+    return "".join(
+        "<article class='recent-item'>"
+        f"<p class='recent-date'>{html.escape(item.get('label', ''))}</p>"
+        "<div>"
+        f"<h3 class='recent-title'><a href='{html.escape(item.get('href', '#'))}'>{html.escape(item.get('label', ''))}</a></h3>"
+        f"<p class='recent-headline'>{html.escape(item.get('headline', ''))}</p>"
+        "</div>"
+        "</article>"
+        for item in items
+    )
+
+
+def _render_meta_cards(items: list[tuple[str, str]]) -> str:
+    return "".join(
+        "<article class='meta-card'>"
+        f"<strong>{html.escape(label)}</strong>"
+        f"<p class='section-copy'>{html.escape(value)}</p>"
+        "</article>"
+        for label, value in items
+        if value
+    )
+
+
 def _render_topic_card(cluster: TopicCluster, modal_prefix: str = "topic") -> str:
     companies = sorted({entry.raw.company_name for entry in cluster.entries})
     modal_id = f"{modal_prefix}-{cluster.topic_id}"
@@ -644,23 +668,19 @@ def _render_company_report(
 
 
 def render_index(report: DailyReport) -> str:
-    template = _load_template("index.html")
-    topic_cards = "".join(_render_topic_card(cluster) for cluster in report.topic_clusters)
-    statuses_by_company = _statuses_by_company(report.source_statuses)
-    company_cards = "".join(
-        _render_company_report(company, statuses_by_company=statuses_by_company)
-        for company in report.company_reports
-    )
+    template = _load_template("home_magazine.html")
+    cover = report.magazine_pages.get("cover", {})
     return template.substitute(
-        date=html.escape(report.date),
-        headline=html.escape(report.headline),
-        total_entries=str(report.total_entries),
-        companies_covered=str(report.companies_covered),
-        hottest_topics=html.escape(" / ".join(report.hottest_topics) or "暂无"),
-        signal_rail=_render_signal_rail(report),
-        highlights=_render_highlights(report, limit=5),
-        topic_cards=topic_cards,
-        company_cards=company_cards,
+        primary_theme=html.escape(cover.get("primary_theme", "暂无主专题")),
+        cover_summary=html.escape(cover.get("cover_summary", report.headline)),
+        latest_daily_href=html.escape(cover.get("daily_href", f"./{report.date}/index.html")),
+        topic_href=html.escape(cover.get("topic_href", f"./{report.date}/topic.html")),
+        dossier_href=html.escape(cover.get("dossier_href", f"./{report.date}/dossier.html")),
+        editorial_line=html.escape(cover.get("editorial_line", report.headline)),
+        theme_state=html.escape(cover.get("theme_state", "暂无")),
+        participating_companies=html.escape("、".join(cover.get("participating_companies", [])) or "暂无"),
+        next_focus=html.escape("、".join(cover.get("next_focus", [])) or "暂无"),
+        recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
     )
 
@@ -679,6 +699,8 @@ def render_daily(report: DailyReport) -> str:
         cross_day_brief_section=_render_cross_day_brief(report.cross_day_brief),
         theme_tracking_brief_section=_render_theme_tracking_brief(report.theme_tracking_brief),
         theme_dossier_brief_section=_render_theme_dossier_brief(report.theme_dossier_brief),
+        topic_page_href="./topic.html",
+        dossier_page_href="./dossier.html",
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(
@@ -686,6 +708,56 @@ def render_daily(report: DailyReport) -> str:
             for company in report.company_reports
         ),
         statuses=statuses or "<li>无</li>",
+        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+    )
+
+
+def render_topic_page(report: DailyReport) -> str:
+    template = _load_template("topic.html")
+    tracking = report.theme_tracking_brief or {}
+    dossier = report.theme_dossier_brief or {}
+    cross_day = report.cross_day_brief or {}
+    title = tracking.get("primary_theme") or dossier.get("primary_theme") or "暂无主专题"
+    return template.substitute(
+        title=html.escape(title),
+        summary=html.escape(tracking.get("theme_summary", report.headline)),
+        cross_day_summary=html.escape("、".join(cross_day.get("warming_themes", [])) or "最近几天暂无明显升温主题。"),
+        theme_tracking_summary=html.escape(tracking.get("theme_evolution", tracking.get("theme_summary", "暂无专题跟踪摘要。"))),
+        theme_tracking_meta=_render_meta_cards(
+            [
+                ("参与公司", "、".join(tracking.get("participating_companies", [])) or "暂无"),
+                ("继续跟踪", "建议继续跟踪" if tracking.get("continue_tracking") else "暂不需要继续加重跟踪"),
+                ("下一步关注", "、".join(tracking.get("next_day_theme_focus", [])) or "暂无"),
+            ]
+        ),
+        dossier_summary=html.escape(dossier.get("theme_summary", dossier.get("theme_definition", "暂无主题档案摘要。"))),
+        dossier_meta=_render_meta_cards(
+            [
+                ("当前阶段", dossier.get("theme_state", "暂无")),
+                ("主题定义", dossier.get("theme_definition", "暂无")),
+                ("跟踪决策", dossier.get("tracking_decision", "暂无")),
+            ]
+        ),
+        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+    )
+
+
+def render_dossier_page(report: DailyReport) -> str:
+    template = _load_template("dossier.html")
+    dossier = report.theme_dossier_brief or {}
+    title = dossier.get("primary_theme") or "暂无主专题"
+    positions = "".join(
+        f"<li>{html.escape(item)}</li>"
+        for item in dossier.get("lead_positions", [])
+    ) or "<li>暂无</li>"
+    return template.substitute(
+        title=html.escape(title),
+        theme_summary=html.escape(dossier.get("theme_summary", "暂无主题摘要。")),
+        theme_state=html.escape(dossier.get("theme_state", "暂无")),
+        theme_definition=html.escape(dossier.get("theme_definition", "暂无")),
+        company_positions=positions,
+        timeline_highlight=html.escape(dossier.get("timeline_highlight", "暂无")),
+        tracking_decision=html.escape(dossier.get("tracking_decision", "暂无")),
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
     )
 
@@ -710,6 +782,8 @@ def write_site(report: DailyReport, output_dir: Path) -> None:
 
     (output_dir / "index.html").write_text(render_index(report), encoding="utf-8")
     (daily_dir / "index.html").write_text(render_daily(report), encoding="utf-8")
+    (daily_dir / "topic.html").write_text(render_topic_page(report), encoding="utf-8")
+    (daily_dir / "dossier.html").write_text(render_dossier_page(report), encoding="utf-8")
     (daily_dir / "report.json").write_text(
         json.dumps(report.to_dict(), ensure_ascii=False, indent=2),
         encoding="utf-8",

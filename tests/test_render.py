@@ -1,10 +1,11 @@
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from bootstrap import SRC_DIR  # noqa: F401
 from tech_daily.models import CompanyReport, DailyReport, EnrichedEntry, RawEntry, SourceStatus, TopicCluster
-from tech_daily.render import render_daily, render_index, write_site
+from tech_daily.render import render_daily, render_dossier_page, render_index, render_topic_page, write_site
 
 
 def _entry(
@@ -71,24 +72,36 @@ class RenderTests(unittest.TestCase):
             company_reports=[CompanyReport(company_slug="openai", company_name="OpenAI", entries=[entry], has_updates=True)],
             source_statuses=[],
         )
+        report = replace(
+            report,
+            theme_tracking_brief={
+                "primary_theme": "AI Agent",
+                "theme_summary": "AI Agent 仍然是当前主专题。",
+                "participating_companies": ["OpenAI"],
+                "next_day_theme_focus": ["AI Agent"],
+            },
+            theme_dossier_brief={
+                "primary_theme": "AI Agent",
+                "theme_state": "emerging",
+                "theme_definition": "AI Agent 正在从能力发布走向更完整的平台化动作。",
+                "tracking_decision": "建议继续跟踪。",
+            },
+            chat_agent_context={
+                "report_date": "2026-05-10",
+                "quick_questions": ["这个主专题现在怎么理解？"],
+            },
+        )
         html = render_index(report)
         self.assertIn("site-shell", html)
-        self.assertIn("hero-stats", html)
-        self.assertIn("signal-rail", html)
-        self.assertIn("signal-card", html)
-        self.assertIn("metric-pill", html)
-        self.assertIn("modal-root", html)
-        self.assertIn("data-modal-trigger", html)
-        self.assertIn("openModal", html)
-        self.assertIn("topic-stat-chip", html)
-        self.assertIn("主题对比", html)
-        self.assertIn("重点观察", html)
-        self.assertIn("涉及公司", html)
-        self.assertIn("代表事件", html)
-        self.assertIn("来源：News", html)
-        self.assertIn("分类：technology", html)
-        self.assertIn("对比角度：ai、model、developer", html)
-        self.assertIn("New voice models for the API", html)
+        self.assertIn("cover-grid", html)
+        self.assertIn("当前主专题", html)
+        self.assertIn("进入专题页", html)
+        self.assertIn("查看最新日报", html)
+        self.assertIn("最近几期", html)
+        self.assertIn("./2026-05-10/index.html", html)
+        self.assertIn("./2026-05-10/topic.html", html)
+        self.assertIn("./2026-05-10/dossier.html", html)
+        self.assertIn("chat-drawer", html)
 
     def test_render_daily_includes_highlights_and_enriched_company_metadata(self) -> None:
         entry = _entry(
@@ -139,6 +152,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("对比角度：product、consumer", html)
         self.assertIn("Google Health Coach, now available globally", html)
         self.assertNotIn("<img", html)
+        self.assertIn("进入专题页", html)
+        self.assertIn("查看主题档案", html)
 
     def test_render_daily_includes_agent_brief_block_when_present(self) -> None:
         report = DailyReport(
@@ -207,7 +222,7 @@ class RenderTests(unittest.TestCase):
         html = render_daily(report)
         self.assertIn("专题跟踪", html)
         self.assertIn("主专题", html)
-        self.assertIn("查看完整专题 Markdown 报告", html)
+        self.assertIn("进入专题页", html)
 
     def test_render_daily_includes_theme_dossier_brief_block_when_present(self) -> None:
         report = DailyReport(
@@ -235,9 +250,78 @@ class RenderTests(unittest.TestCase):
         html = render_daily(report)
         self.assertIn("主题档案", html)
         self.assertIn("当前阶段", html)
-        self.assertIn("查看完整 dossier Markdown", html)
+        self.assertIn("查看主题档案", html)
         self.assertIn("公司位置观察", html)
         self.assertIn("时间线焦点", html)
+
+    def test_render_topic_page_outputs_cross_day_tracking_and_dossier_summary(self) -> None:
+        report = DailyReport(
+            date="2026-05-17",
+            headline="headline",
+            hottest_topics=["安全与治理"],
+            total_entries=0,
+            companies_covered=0,
+            cross_day_brief={
+                "warming_themes": ["安全与治理"],
+                "steady_companies": ["OpenAI", "Google"],
+                "next_day_focus": ["安全与治理"],
+            },
+            theme_tracking_brief={
+                "primary_theme": "安全与治理",
+                "theme_summary": "安全与治理仍是最近几天最值得继续盯住的专题。",
+                "participating_companies": ["OpenAI", "Google"],
+                "theme_evolution": "正在从原则讨论走向更明确的产品约束。",
+                "continue_tracking": True,
+                "next_day_theme_focus": ["安全与治理"],
+            },
+            theme_dossier_brief={
+                "primary_theme": "安全与治理",
+                "theme_definition": "不同公司正在把安全机制前置到产品和平台层。",
+                "theme_state": "emerging",
+                "tracking_decision": "建议继续跟踪。",
+            },
+            chat_agent_context={
+                "report_date": "2026-05-17",
+                "quick_questions": ["这个主专题现在怎么理解？"],
+            },
+        )
+        html = render_topic_page(report)
+        self.assertIn("专题页", html)
+        self.assertIn("跨日观察", html)
+        self.assertIn("专题跟踪", html)
+        self.assertIn("主题档案摘要", html)
+        self.assertIn("./dossier.html", html)
+        self.assertIn("chat-drawer", html)
+
+    def test_render_dossier_page_outputs_theme_archive_content(self) -> None:
+        report = DailyReport(
+            date="2026-05-17",
+            headline="headline",
+            hottest_topics=["安全与治理"],
+            total_entries=0,
+            companies_covered=0,
+            theme_dossier_brief={
+                "primary_theme": "安全与治理",
+                "theme_definition": "不同公司正在把安全机制前置到产品和平台层。",
+                "theme_state": "emerging",
+                "theme_summary": "安全与治理已成为值得持续跟踪的主题。",
+                "lead_positions": ["OpenAI：偏平台", "Google：偏产品"],
+                "timeline_highlight": "2026-05-17 · OpenAI · Trusted Contact",
+                "tracking_decision": "建议继续跟踪。",
+                "next_day_focus": ["安全与治理"],
+            },
+            chat_agent_context={
+                "report_date": "2026-05-17",
+                "quick_questions": ["为什么现在是 emerging？"],
+            },
+        )
+        html = render_dossier_page(report)
+        self.assertIn("主题档案", html)
+        self.assertIn("当前阶段", html)
+        self.assertIn("主题定义", html)
+        self.assertIn("公司位置观察", html)
+        self.assertIn("关键时间线", html)
+        self.assertIn("chat-drawer", html)
 
     def test_render_daily_includes_chat_agent_shell_when_context_present(self) -> None:
         report = DailyReport(
@@ -288,7 +372,7 @@ class RenderTests(unittest.TestCase):
             company_reports=[CompanyReport(company_slug="apple", company_name="Apple", entries=[], has_updates=False)],
             source_statuses=[],
         )
-        html = render_index(report)
+        html = render_daily(report)
         self.assertIn("<section class='card company-card'>", html)
         self.assertIn("Apple", html)
         self.assertIn("今日无有效动态", html)
@@ -314,7 +398,7 @@ class RenderTests(unittest.TestCase):
                 )
             ],
         )
-        html = render_index(report)
+        html = render_daily(report)
         self.assertIn("信源暂未稳定", html)
         self.assertIn("Tesla 官方新闻入口当前持续拒绝抓取请求", html)
         self.assertIn("Tesla IR Press", html)

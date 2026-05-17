@@ -11,6 +11,7 @@ from .collector import collect_entries
 from .config_loader import load_companies
 from .cross_day_pipeline import run_cross_day_pipeline
 from .editorial import build_daily_headline
+from .magazine_pages import build_magazine_pages
 from .models import CompanyReport, DailyReport, EnrichedEntry
 from .quality import filter_high_signal_entries, matches_report_date
 from .render import write_site
@@ -125,11 +126,13 @@ def build_daily_report(date_str: str) -> DailyReport:
         topic_clusters=topic_clusters,
         company_reports=company_reports,
         source_statuses=statuses,
+        magazine_pages={},
     )
 
 
 def generate_daily_report(date_str: str, output_dir: Path | None = None) -> DailyReport:
     report = build_daily_report(date_str)
+    report = replace(report, magazine_pages=build_magazine_pages(report))
     destination = output_dir or Path(DEFAULT_SETTINGS.site_output_dir)
     write_site(report, destination)
     report_json_path = destination / report.date / "report.json"
@@ -161,6 +164,7 @@ def generate_daily_report(date_str: str, output_dir: Path | None = None) -> Dail
             write_site(report, destination)
         except Exception:
             pass
+    report = replace(report, magazine_pages=build_magazine_pages(report))
     report = replace(report, chat_agent_context=build_embedded_chat_context(report))
     write_site(report, destination)
     return report

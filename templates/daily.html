@@ -104,6 +104,23 @@
       margin: 0 0 8px;
       letter-spacing: -0.03em;
     }
+    .issue-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .issue-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(117, 138, 173, 0.18);
+      background: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-decoration: none;
+    }
     .section-hint {
       margin: 0 0 18px;
       color: var(--ink-soft);
@@ -646,6 +663,10 @@
       <p class="eyebrow">$date</p>
       <h1>当日日报详情</h1>
       <p class="hero-copy">$headline</p>
+      <nav class="issue-nav">
+        <a href="$topic_page_href">进入专题页</a>
+        <a href="$dossier_page_href">查看主题档案</a>
+      </nav>
     </section>
 
     $agent_brief_section

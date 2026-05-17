@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$title - 专题页</title>
+  <style>
+    :root {
+      --bg: #f7f2eb;
+      --surface: rgba(255,255,255,0.78);
+      --ink: #1c160f;
+      --ink-soft: #6b6258;
+      --accent: #0f5bd8;
+      --line: rgba(40, 30, 20, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --shadow: 0 18px 40px rgba(28, 22, 15, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); font-family: Georgia, "Noto Serif SC", "Songti SC", serif; background: linear-gradient(180deg, #fbf8f4 0%, var(--bg) 100%); }
+    a { color: var(--accent); text-decoration: none; }
+    .site-shell { max-width: 1080px; margin: 0 auto; padding: 28px 20px 72px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; color: var(--ink-soft); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .hero, .section { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+    .hero { padding: 30px; border-radius: var(--radius-xl); }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 0.98; letter-spacing: -0.04em; }
+    .hero-copy, .section-copy { color: var(--ink-soft); line-height: 1.8; }
+    .hero-copy { max-width: 760px; margin: 16px 0 0; font-size: 1.04rem; }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .nav-link { display: inline-flex; padding: 10px 14px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.72); }
+    .section { margin-top: 22px; border-radius: var(--radius-lg); padding: 24px; }
+    .section h2 { margin: 0 0 10px; letter-spacing: -0.03em; }
+    .meta-list { display: grid; gap: 12px; margin-top: 14px; }
+    .meta-card { padding-top: 12px; border-top: 1px solid var(--line); }
+    .meta-card:first-child { padding-top: 0; border-top: 0; }
+    .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .chat-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 55; border: 0; border-radius: 999px; padding: 14px 18px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24); cursor: pointer; }
+    .chat-drawer[hidden] { display: none; }
+    .chat-drawer { position: fixed; top: 0; right: 0; z-index: 56; width: min(420px, 100vw); height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; padding: 22px 20px 20px; border-left: 1px solid rgba(40, 30, 20, 0.12); background: rgba(251, 247, 241, 0.96); box-shadow: -18px 0 48px rgba(28, 22, 15, 0.12); backdrop-filter: blur(18px); }
+    .chat-drawer-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .chat-kicker { margin: 0; color: var(--accent); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .chat-drawer-header h3 { margin: 4px 0 6px; }
+    .chat-subtitle, .chat-status, .chat-note { margin: 0; color: var(--ink-soft); line-height: 1.6; font-size: 0.9rem; }
+    .chat-close { border: 0; border-radius: 999px; width: 36px; height: 36px; background: rgba(40, 30, 20, 0.08); color: var(--ink); font-size: 1.1rem; cursor: pointer; }
+    .chat-quick-questions, .chat-follow-ups { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chat-chip, .chat-follow-up { border: 1px solid rgba(15, 91, 216, 0.14); border-radius: 999px; background: rgba(15, 91, 216, 0.08); color: var(--accent); padding: 8px 12px; font-size: 0.84rem; font-weight: 600; cursor: pointer; }
+    .chat-messages { display: grid; align-content: start; gap: 10px; overflow: auto; padding-right: 4px; }
+    .chat-message { max-width: 92%; padding: 12px 14px; border-radius: 16px; line-height: 1.7; font-size: 0.94rem; box-shadow: 0 10px 20px rgba(28, 22, 15, 0.05); }
+    .chat-message.agent { background: rgba(255,255,255,0.92); border: 1px solid rgba(40, 30, 20, 0.10); color: var(--ink); }
+    .chat-message.user { justify-self: end; background: rgba(15, 91, 216, 0.10); color: var(--ink); border: 1px solid rgba(15, 91, 216, 0.14); }
+    .chat-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    .chat-input { min-height: 46px; border: 1px solid rgba(40, 30, 20, 0.14); border-radius: 14px; padding: 0 14px; background: rgba(255,255,255,0.92); }
+    .chat-send { min-width: 84px; border: 0; border-radius: 14px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; cursor: pointer; }
+    .chat-evidence { display: grid; gap: 8px; margin-top: -2px; margin-bottom: 4px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.78); border: 1px solid rgba(40, 30, 20, 0.10); }
+  </style>
+</head>
+<body>
+  <main class="site-shell">
+    <header class="topbar">
+      <a href="../index.html">返回主刊首页</a>
+      <a href="./index.html">查看当日日报</a>
+    </header>
+    <section class="hero">
+      <p class="eyebrow">专题页</p>
+      <h1>$title</h1>
+      <p class="hero-copy">$summary</p>
+      <div class="nav-links">
+        <a class="nav-link" href="./dossier.html">查看主题档案</a>
+        <a class="nav-link" href="./index.html">回到日报正文</a>
+      </div>
+    </section>
+    <section class="section">
+      <h2>跨日观察</h2>
+      <p class="section-copy">$cross_day_summary</p>
+    </section>
+    <section class="section">
+      <h2>专题跟踪</h2>
+      <p class="section-copy">$theme_tracking_summary</p>
+      <div class="meta-list">$theme_tracking_meta</div>
+    </section>
+    <section class="section">
+      <h2>主题档案摘要</h2>
+      <p class="section-copy">$dossier_summary</p>
+      <div class="meta-list">$dossier_meta</div>
+    </section>
+  </main>
+  $chat_agent_shell
+</body>
+</html>

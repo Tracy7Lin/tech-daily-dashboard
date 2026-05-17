@@ -125,6 +125,9 @@ class PipelineTests(unittest.TestCase):
             report = generate_daily_report("2026-05-10", output_dir=Path(temp_dir))
             self.assertEqual(report.date, "2026-05-10")
             self.assertTrue((Path(temp_dir) / "index.html").exists())
+            self.assertTrue((Path(temp_dir) / "2026-05-10" / "topic.html").exists())
+            self.assertTrue((Path(temp_dir) / "2026-05-10" / "dossier.html").exists())
+            self.assertIn("cover", report.magazine_pages)
 
     @patch("tech_daily.pipeline.run_agent_pipeline")
     @patch("tech_daily.pipeline.run_cross_day_pipeline")
