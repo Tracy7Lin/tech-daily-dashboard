@@ -68,6 +68,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("Google", answer["answer"])
         self.assertGreaterEqual(len(answer["evidence_points"]), 1)
         self.assertTrue(any(item["source"] == "theme_dossier.json" for item in answer["evidence_items"]))
+        self.assertTrue(all("reference" in item for item in answer["evidence_items"]))
 
     def test_answer_chat_question_routes_theme_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -194,7 +195,7 @@ class ChatAgentResponseTests(unittest.TestCase):
                 "choices": [
                     {
                         "message": {
-                            "content": '{"answer":"今天最值得关注的是安全与治理，因为最近几天这一主题持续出现。","follow_up_suggestions":["为什么今天的主专题是这个？","Google 最近几天在做什么？"]}'
+                            "content": '{"answer":"今天最值得关注的是安全与治理，因为最近几天这一主题持续出现。","evidence_items":[{"source":"theme_dossier.json","label":"专题档案","detail":"当前主题阶段是 emerging。","reference":"theme_dossier.json · 专题档案"}],"follow_up_suggestions":["为什么今天的主专题是这个？","Google 最近几天在做什么？"]}'
                         }
                     }
                 ]
@@ -213,6 +214,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("安全与治理", answer["answer"])
         self.assertIn("evidence_points", answer)
         self.assertIn("evidence_items", answer)
+        self.assertEqual(answer["evidence_items"][0]["reference"], "theme_dossier.json · 专题档案")
 
     def test_build_chat_response_bank_uses_python_generated_answers(self) -> None:
         context = build_chat_context(self.inputs)

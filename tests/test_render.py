@@ -275,6 +275,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("messages: conversationHistory", html)
         self.assertIn("chat-follow-ups", html)
         self.assertIn("回答依据来源", html)
+        self.assertIn("chat-evidence-reference", html)
 
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(

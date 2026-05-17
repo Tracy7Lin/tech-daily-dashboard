@@ -11,6 +11,7 @@ def _evidence_item(source: str, label: str, detail: str) -> dict:
         "source": source,
         "label": label,
         "detail": detail,
+        "reference": f"{source} · {label}",
     }
 
 
@@ -400,8 +401,9 @@ class ChatAgentResponder:
                                     "source": {"type": "string"},
                                     "label": {"type": "string"},
                                     "detail": {"type": "string"},
+                                    "reference": {"type": "string"},
                                 },
-                                "required": ["source", "label", "detail"],
+                                "required": ["source", "label", "detail", "reference"],
                                 "additionalProperties": False,
                             },
                         },
