@@ -13,12 +13,13 @@ from .paths import DATA_DIR, SITE_DIR
 def handle_chat_request(site_dir: Path, payload: dict, data_dir: Path | None = None) -> tuple[int, dict]:
     report_date = (payload.get("date") or "").strip()
     question = (payload.get("question") or "").strip()
+    history = payload.get("messages") or []
     if not report_date or not question:
         return HTTPStatus.BAD_REQUEST, {
             "error": "Both 'date' and 'question' are required.",
         }
 
-    result = run_chat_agent(site_dir, report_date, question, data_dir=data_dir or DATA_DIR)
+    result = run_chat_agent(site_dir, report_date, question, data_dir=data_dir or DATA_DIR, history=history)
     return HTTPStatus.OK, result
 
 

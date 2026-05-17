@@ -10,11 +10,17 @@ from .models import DailyReport
 from .settings import DEFAULT_SETTINGS
 
 
-def run_chat_agent(site_dir: Path, report_date: str, question: str, data_dir: Path | None = None) -> dict:
+def run_chat_agent(
+    site_dir: Path,
+    report_date: str,
+    question: str,
+    data_dir: Path | None = None,
+    history: list[dict] | None = None,
+) -> dict:
     inputs = load_chat_agent_inputs(site_dir, report_date, data_dir=data_dir)
     context = build_chat_context(inputs)
     responder = _build_responder()
-    return responder.answer(question, context)
+    return responder.answer(question, context, history=history)
 
 
 def _build_responder() -> ChatAgentResponder:

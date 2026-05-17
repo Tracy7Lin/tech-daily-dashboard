@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .chat_agent_memory import resolve_follow_up_route, trim_history
 from .llm_client import LLMClient, LLMClientError
 from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
@@ -148,8 +149,8 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
     }
 
 
-def answer_chat_question(question: str, context: dict) -> dict:
-    question_type, entity = classify_chat_question(
+def answer_chat_question(question: str, context: dict, route: tuple[str, str] | None = None) -> dict:
+    question_type, entity = route or classify_chat_question(
         question,
         context.get("companies", []),
         context.get("theme_tracking", {}).get("primary_theme", ""),
@@ -242,6 +243,8 @@ def answer_chat_question(question: str, context: dict) -> dict:
     return {
         "answer": answer,
         "question_type": question_type,
+        "resolved_theme": context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
+        "resolved_company": entity if question_type in {"company_focus", "company_position"} else "",
         "sources_used": [
             "report.json",
             "daily_intel_brief.json",
@@ -286,8 +289,14 @@ class ChatAgentResponder:
         self.mode = mode
         self.client = client
 
-    def answer(self, question: str, context: dict) -> dict:
-        rule_answer = answer_chat_question(question, context)
+    def answer(self, question: str, context: dict, history: list[dict] | None = None) -> dict:
+        route = resolve_follow_up_route(
+            question,
+            history,
+            context.get("companies", []),
+            context.get("theme_tracking", {}).get("primary_theme", ""),
+        )
+        rule_answer = answer_chat_question(question, context, route=route)
         if self.mode == "rule":
             return rule_answer
         if self.client is None or not self.client.is_available():
@@ -301,6 +310,7 @@ class ChatAgentResponder:
                 ),
                 input_text=(
                     f"用户问题：{question}\n"
+                    f"最近会话：{trim_history(history)}\n"
                     f"问题类型：{rule_answer['question_type']}\n"
                     f"规则回答：{rule_answer['answer']}\n"
                     f"已有依据：{rule_answer['evidence_points']}\n"

@@ -128,6 +128,24 @@ class ChatAgentResponseTests(unittest.TestCase):
             any("2026-05-15" in point or "Google expands education safeguards" in point for point in answer["evidence_points"])
         )
 
+    def test_chat_responder_uses_history_for_follow_up(self) -> None:
+        context = build_chat_context(self.inputs)
+        responder = ChatAgentResponder(mode="rule", client=None)
+        answer = responder.answer(
+            "那 Google 呢？",
+            context,
+            history=[
+                {
+                    "role": "assistant",
+                    "question_type": "dossier_summary",
+                    "resolved_theme": "安全与治理",
+                    "resolved_company": "",
+                }
+            ],
+        )
+        self.assertEqual(answer["question_type"], "company_position")
+        self.assertEqual(answer["resolved_company"], "Google")
+
     def test_chat_responder_hybrid_falls_back_to_rule_when_llm_unavailable(self) -> None:
         context = build_chat_context(self.inputs)
         responder = ChatAgentResponder(mode="hybrid", client=None)
