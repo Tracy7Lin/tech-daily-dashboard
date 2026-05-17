@@ -263,6 +263,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("aria-expanded='false'", html)
         self.assertIn("/api/chat", html)
         self.assertIn("当前使用真实增强问答模式", html)
+        self.assertIn("chat-evidence", html)
 
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(

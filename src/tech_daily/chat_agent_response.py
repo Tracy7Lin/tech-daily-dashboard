@@ -155,23 +155,44 @@ def answer_chat_question(question: str, context: dict) -> dict:
         context.get("theme_tracking", {}).get("primary_theme", ""),
     )
 
+    evidence_points: list[str] = []
+
     if question_type == "daily_summary":
         answer = context.get("daily_summary", {}).get("answer", "今天还没有可直接回答的日报摘要。")
+        primary_theme = context.get("theme_tracking", {}).get("primary_theme", "")
+        if primary_theme:
+            evidence_points.append(f"当前主专题是 {primary_theme}。")
+        ops_answer = context.get("ops_status", {}).get("answer", "")
+        if ops_answer:
+            evidence_points.append(ops_answer)
     elif question_type == "company_focus":
         answer = context.get("company_answers", {}).get(
             entity.lower(),
             "当前还没有足够明确的公司上下文，建议直接问某家公司最近几天在做什么。",
         )
+        dossier = context.get("theme_dossier", {})
+        if dossier.get("primary_theme"):
+            evidence_points.append(f"当前主专题是 {dossier.get('primary_theme')}。")
+        if entity.lower() in context.get("company_answers", {}):
+            evidence_points.append(context["company_answers"][entity.lower()])
     elif question_type == "company_position":
         dossier = context.get("theme_dossier", {})
         primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
         position = dossier.get("company_positions", {}).get(entity, "")
         if position:
             answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。"
+            evidence_points.append(f"{entity} 在 dossier 中的当前位置是：{position}。")
+            if dossier.get("theme_state"):
+                evidence_points.append(f"当前主题阶段为 {dossier.get('theme_state')}。")
         else:
             answer = f"当前 dossier 里还没有足够明确地定义 {entity} 在这个专题中的位置。"
     elif question_type == "theme_focus":
         answer = context.get("theme_tracking", {}).get("answer", "当前还没有形成明确主专题。")
+        theme_tracking = context.get("theme_tracking", {})
+        if theme_tracking.get("primary_theme"):
+            evidence_points.append(f"最近几天持续聚焦的主专题是 {theme_tracking.get('primary_theme')}。")
+        if theme_tracking.get("participating_companies"):
+            evidence_points.append(f"当前参与公司包括：{'、'.join(theme_tracking.get('participating_companies', []))}。")
     elif question_type == "dossier_summary":
         dossier = context.get("theme_dossier", {})
         primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
@@ -179,6 +200,10 @@ def answer_chat_question(question: str, context: dict) -> dict:
         tracking_decision = dossier.get("tracking_decision", "")
         if primary_theme:
             answer = f"{primary_theme} 目前可以理解为：{theme_definition or context.get('theme_tracking', {}).get('answer', '')} {tracking_decision}".strip()
+            if dossier.get("theme_state"):
+                evidence_points.append(f"当前主题阶段是 {dossier.get('theme_state')}。")
+            if dossier.get("participating_companies"):
+                evidence_points.append(f"当前持续参与公司包括：{'、'.join(dossier.get('participating_companies', []))}。")
         else:
             answer = "当前还没有形成足够清晰的专题档案。"
     elif question_type == "theme_state":
@@ -188,6 +213,9 @@ def answer_chat_question(question: str, context: dict) -> dict:
         decision = dossier.get("tracking_decision", "")
         if state:
             answer = f"这个主题当前处于 {state}。{summary} {decision}".strip()
+            evidence_points.append(f"当前 dossier 状态机结果是 {state}。")
+            if summary:
+                evidence_points.append(summary)
         else:
             answer = "当前还没有足够明确的专题阶段判断。"
     elif question_type == "timeline_focus":
@@ -199,10 +227,15 @@ def answer_chat_question(question: str, context: dict) -> dict:
                 f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
                 f"{lead.get('why_it_matters', '')}"
             )
+            evidence_points.append(f"{lead.get('date', '')} · {lead.get('company', '相关公司')} · {lead.get('title', '代表事件')}")
+            if lead.get("why_it_matters"):
+                evidence_points.append(lead.get("why_it_matters"))
         else:
             answer = "当前 dossier 里还没有足够明确的关键时间线。"
     elif question_type == "ops_status":
         answer = context.get("ops_status", {}).get("answer", "当前没有额外运维提示。")
+        for company_slug in context.get("ops_status", {}).get("high_priority", []):
+            evidence_points.append(f"高优先级信源问题：{company_slug}")
     else:
         answer = "当前问答主要基于今日日报、跨日观察、专题跟踪和运维状态。你可以继续问今天重点、某家公司、主专题或信源状态。"
 
@@ -217,6 +250,7 @@ def answer_chat_question(question: str, context: dict) -> dict:
             "theme_dossier.json",
             "health_snapshot.json",
         ],
+        "evidence_points": evidence_points[:3],
         "follow_up_suggestions": context.get("follow_up_suggestions", []),
         "mode_used": context.get("mode_used", "rule"),
     }
@@ -269,6 +303,7 @@ class ChatAgentResponder:
                     f"用户问题：{question}\n"
                     f"问题类型：{rule_answer['question_type']}\n"
                     f"规则回答：{rule_answer['answer']}\n"
+                    f"已有依据：{rule_answer['evidence_points']}\n"
                     f"可用上下文：{context}\n"
                 ),
                 schema_name="chat_answer_payload",
@@ -276,12 +311,16 @@ class ChatAgentResponder:
                     "type": "object",
                     "properties": {
                         "answer": {"type": "string"},
+                        "evidence_points": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                         "follow_up_suggestions": {
                             "type": "array",
                             "items": {"type": "string"},
                         },
                     },
-                    "required": ["answer", "follow_up_suggestions"],
+                    "required": ["answer", "evidence_points", "follow_up_suggestions"],
                     "additionalProperties": False,
                 },
             )
@@ -294,6 +333,7 @@ class ChatAgentResponder:
         return {
             **rule_answer,
             "answer": answer,
+            "evidence_points": payload.get("evidence_points") or rule_answer["evidence_points"],
             "follow_up_suggestions": payload.get("follow_up_suggestions") or rule_answer["follow_up_suggestions"],
             "mode_used": "llm",
         }

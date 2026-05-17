@@ -66,6 +66,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("Google 最近几天在做什么？", context)
         self.assertEqual(answer["question_type"], "company_focus")
         self.assertIn("Google", answer["answer"])
+        self.assertGreaterEqual(len(answer["evidence_points"]), 1)
 
     def test_answer_chat_question_routes_theme_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -110,6 +111,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("为什么现在是 emerging？", context)
         self.assertEqual(answer["question_type"], "theme_state")
         self.assertIn("emerging", answer["answer"])
+        self.assertTrue(any("emerging" in point or "阶段" in point for point in answer["evidence_points"]))
 
     def test_answer_chat_question_routes_company_position_question(self) -> None:
         context = build_chat_context(self.inputs)
@@ -122,6 +124,9 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = answer_chat_question("最近几天关键时间线说明了什么？", context)
         self.assertEqual(answer["question_type"], "timeline_focus")
         self.assertIn("Google", answer["answer"])
+        self.assertTrue(
+            any("2026-05-15" in point or "Google expands education safeguards" in point for point in answer["evidence_points"])
+        )
 
     def test_chat_responder_hybrid_falls_back_to_rule_when_llm_unavailable(self) -> None:
         context = build_chat_context(self.inputs)
@@ -155,6 +160,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         answer = responder.answer("今天最值得关注什么？", context)
         self.assertEqual(answer["mode_used"], "llm")
         self.assertIn("安全与治理", answer["answer"])
+        self.assertIn("evidence_points", answer)
 
     def test_build_chat_response_bank_uses_python_generated_answers(self) -> None:
         context = build_chat_context(self.inputs)
