@@ -28,23 +28,93 @@
         radial-gradient(circle at top right, rgba(15, 91, 216, 0.10), transparent 22%),
         linear-gradient(180deg, #f8f3ec 0%, var(--bg) 100%);
     }
+    body[data-page-state="staging"] .site-shell { opacity: 0; transform: translateY(10px) scale(0.992); }
+    body[data-page-state="ready"] .site-shell { opacity: 1; transform: translateY(0) scale(1); transition: opacity 320ms ease, transform 440ms cubic-bezier(0.22, 1, 0.36, 1); }
+    body[data-page-state="leaving"] .site-shell { opacity: 0.62; transform: translateX(16px) scale(0.998); }
     a { color: var(--brand); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .site-shell {
-      max-width: 1120px;
+    .page-shell {
+      max-width: 1500px;
       margin: 0 auto;
       padding: 28px 20px 72px;
+      display: grid;
+      grid-template-columns: minmax(180px, 0.9fr) minmax(0, 3fr) minmax(320px, 1fr);
+      gap: 24px;
+      align-items: start;
     }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 20px;
-      color: var(--ink-soft);
+    .site-shell {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      min-width: 0;
+    }
+    .page-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      pointer-events: none;
+      opacity: 1;
+      overflow: hidden;
+      transition: opacity 240ms ease;
+    }
+    .page-curtain-ink, .page-curtain-accent {
+      position: absolute;
+      inset: 0 auto 0 0;
+      transform: translateX(-110%);
+      transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .page-curtain-ink {
+      width: clamp(34px, 5vw, 62px);
+      background: linear-gradient(180deg, #101821 0%, #132d54 100%);
+      box-shadow: 10px 0 30px rgba(8, 17, 32, 0.18);
+    }
+    .page-curtain-accent {
+      width: clamp(120px, 18vw, 220px);
+      background: linear-gradient(90deg, rgba(61, 145, 255, 0.32), rgba(61, 145, 255, 0));
+    }
+    .page-curtain-label {
+      position: fixed;
+      left: 26px;
+      top: 22px;
+      color: rgba(246, 242, 234, 0.86);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.94rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 180ms ease, transform 220ms ease;
     }
+    .page-curtain[data-state="revealed"] { opacity: 0; }
+    .page-curtain[data-state="revealed"] .page-curtain-ink,
+    .page-curtain[data-state="revealed"] .page-curtain-accent { transform: translateX(-110%); }
+    .page-curtain[data-state="revealed"] .page-curtain-label { opacity: 0; transform: translateX(-10px); }
+    .page-curtain[data-state="covering"] .page-curtain-ink,
+    .page-curtain[data-state="covering"] .page-curtain-accent { transform: translateX(0); }
+    .page-curtain[data-state="covering"] .page-curtain-label { opacity: 0.88; transform: translateX(0); }
+    .left-rail,
+    .right-rail { position: sticky; top: 24px; align-self: start; min-width: 0; }
+    .left-rail { display: grid; gap: 16px; }
+    .left-rail-card {
+      padding: 18px 18px 20px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.64)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.08), rgba(15, 91, 216, 0) 58%);
+      box-shadow: 0 18px 38px rgba(28, 22, 15, 0.08);
+    }
+    .left-rail-kicker,
+    .left-rail-link { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .left-rail-kicker { margin: 0 0 10px; color: var(--brand); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .left-rail-title { margin: 0; font-size: 1.1rem; line-height: 1.4; letter-spacing: -0.02em; }
+    .left-rail-copy { margin: 10px 0 0; color: var(--ink-soft); line-height: 1.7; font-size: 0.94rem; }
+    .left-rail-nav { display: grid; gap: 8px; margin-top: 14px; }
+    .left-rail-link { display: block; padding: 10px 12px; border-radius: 16px; border: 1px solid rgba(40, 30, 20, 0.10); background: rgba(255,255,255,0.56); color: var(--ink); font-size: 0.86rem; font-weight: 700; text-decoration: none; transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+    .left-rail-link:hover,
+    .left-rail-link.is-active { transform: translateX(2px); border-color: rgba(15, 91, 216, 0.22); background: rgba(255,255,255,0.84); text-decoration: none; }
+    .topbar { display: none; }
     .brand-lockup {
       display: flex;
       align-items: center;
@@ -187,27 +257,46 @@
       font-weight: 500;
       line-height: 1.6;
     }
+    .assistant-rail-shell, .chat-launcher, .chat-drawer, .chat-message, .chat-input-row, .chat-input, .chat-send, .chat-status, .chat-chip, .chat-quick-questions, .chat-messages, .chat-evidence, .chat-follow-ups, .chat-follow-up, .chat-close, .chat-drawer-header, .chat-kicker, .chat-subtitle, .chat-note, .assistant-panel { font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+    .assistant-rail-shell { position: relative; }
+    .chat-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 55; border: 0; border-radius: 999px; padding: 14px 18px; background: linear-gradient(135deg, #115ee0, #0a8bc8); color: #fff; font-weight: 700; box-shadow: 0 18px 36px rgba(15, 91, 216, 0.24); cursor: pointer; }
+    .chat-drawer { display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 14px; padding: 22px 20px 20px; background: rgba(251, 247, 241, 0.96); backdrop-filter: blur(18px); }
+    body[data-chat-layout="desktop"] .chat-launcher { display: none; }
+    body[data-chat-layout="desktop"] .assistant-rail.chat-drawer { position: sticky; top: 24px; width: 100%; min-height: 680px; max-height: calc(100vh - 48px); border: 1px solid rgba(40, 30, 20, 0.12); border-radius: var(--radius-xl); box-shadow: -10px 16px 42px rgba(28, 22, 15, 0.10); overflow: hidden; }
+    body[data-chat-layout="desktop"] .assistant-rail.chat-drawer[hidden] { display: grid; }
+    body[data-chat-layout="desktop"] .chat-close { display: none; }
+    body[data-chat-layout="mobile"] .chat-drawer[hidden] { display: none; }
+    body[data-chat-layout="mobile"] .assistant-rail.chat-drawer { position: fixed; top: 0; right: 0; z-index: 56; width: min(420px, 100vw); height: 100vh; border-left: 1px solid rgba(40, 30, 20, 0.12); box-shadow: -18px 0 48px rgba(28, 22, 15, 0.12); }
+    .assistant-panel { padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(40, 30, 20, 0.10); background: rgba(255,255,255,0.72); }
+    .assistant-panel-kicker { margin: 0 0 6px; color: var(--brand); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .assistant-panel-copy { margin: 0; color: var(--ink-soft); line-height: 1.6; font-size: 0.88rem; }
+    @media (max-width: 1280px) {
+      .page-shell { grid-template-columns: 1fr; }
+      .left-rail,
+      .right-rail { position: static; }
+    }
     @media (max-width: 860px) {
       .archive-grid { grid-template-columns: 1fr; }
-      .topbar { align-items: flex-start; flex-direction: column; }
-      .magazine-nav { justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
-  <main class="site-shell">
-    <header class="topbar">
-      <div class="brand-lockup">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span>Tech Intelligence Review / Archive</span>
-      </div>
-      <nav class="magazine-nav">
-        <a href="$home_href">主刊首页</a>
-        <a href="$latest_daily_href">最新日报</a>
-        <a href="$latest_topic_href">专题页</a>
-        <a href="$latest_dossier_href">主题档案</a>
+  <div class="page-shell">
+    <aside class="left-rail">
+      <section class="left-rail-card">
+        <p class="left-rail-kicker">Archive</p>
+        <h2 class="left-rail-title">历史归档</h2>
+        <p class="left-rail-copy">按期回看过去生成的日报、专题页和主题档案，同时从这里回到最新一期与当前主刊。</p>
+      </section>
+      <nav class="left-rail-card left-rail-nav">
+        <a class="left-rail-link" href="$home_href" data-page-link>主刊首页</a>
+        <a class="left-rail-link" href="$latest_daily_href" data-page-link>最新日报</a>
+        <a class="left-rail-link" href="$latest_topic_href" data-page-link>专题页</a>
+        <a class="left-rail-link" href="$latest_dossier_href" data-page-link>主题档案</a>
+        <a class="left-rail-link is-active" href="./archive.html" data-page-link>历史归档</a>
       </nav>
-    </header>
+    </aside>
+    <main class="site-shell">
     <section class="page-header">
       <p class="eyebrow">Archive</p>
       <h1>历史归档</h1>
@@ -230,5 +319,10 @@
       </aside>
     </section>
   </main>
+    <aside class="right-rail">
+      $chat_agent_shell
+    </aside>
+  </div>
+  $page_transition_shell
 </body>
 </html>
