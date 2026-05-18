@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from .chat_agent_memory import resolve_follow_up_route, trim_history
 from .llm_client import LLMClient, LLMClientError
-from .research_assistant_policy import build_evidence_item, finalize_answer_payload, follow_up_suggestions_for
+from .research_assistant_policy import (
+    build_company_position_answer,
+    build_evidence_item,
+    build_theme_state_answer,
+    build_timeline_focus_answer,
+    finalize_answer_payload,
+    follow_up_suggestions_for,
+)
 
 
 class ResearchAgentResponder:
@@ -71,13 +78,20 @@ class ResearchAgentResponder:
                 evidence_items.append(build_evidence_item("theme_dossier.json", "专题档案", f"当前主题阶段为 {theme_state}。"))
         elif question_type == "theme_state":
             summary = dossier.get("theme_summary", "") or context.get("cross_day_intel_brief", {}).get("editorial_signal", "")
-            answer = f"{primary_theme or '这个主题'} 当前处于 {theme_state or '观察期'}，因为它已经形成持续信号，但还没有完全稳定。{summary} {tracking_decision}".strip()
+            answer = build_theme_state_answer(
+                primary_theme=primary_theme,
+                theme_state=theme_state or "观察期",
+                summary=f"因为它已经形成持续信号，但还没有完全稳定。{summary}".strip(),
+                tracking_decision=tracking_decision,
+            )
             evidence_items.append(build_evidence_item("theme_dossier.json", "专题档案", f"状态机判断为 {theme_state or '观察期'}。"))
         elif question_type == "company_position":
             position = company_positions.get(entity, "")
-            answer = (
-                f"{entity} 在 {primary_theme} 这个专题里目前更偏向 {position or '持续参与但位置尚未完全稳定'}。"
-                f" {tracking_decision}".strip()
+            answer = build_company_position_answer(
+                primary_theme=primary_theme,
+                company=entity,
+                position=position,
+                tracking_decision=tracking_decision,
             )
             evidence_items.append(build_evidence_item("theme_dossier.json", "公司位置", f"{entity} 的 dossier 位置是：{position or '待进一步明确'}。"))
         elif question_type == "timeline_focus":
@@ -85,7 +99,7 @@ class ResearchAgentResponder:
             title = lead.get("title", "近期代表事件")
             why = lead.get("why_it_matters", "")
             company = lead.get("company", "相关公司")
-            answer = f"最近几天最关键的时间线信号来自 {company} 的“{title}”。{why}".strip()
+            answer = build_timeline_focus_answer(company=company, title=title, why_it_matters=why)
             evidence_items.append(build_evidence_item("theme_dossier.json", "关键时间线", f"{lead.get('date', '')} · {company} · {title}"))
         elif question_type == "company_focus":
             company_reports = report.get("company_reports", [])

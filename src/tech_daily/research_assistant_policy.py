@@ -17,6 +17,19 @@ def build_evidence_item(source: str, label: str, detail: str) -> dict:
     }
 
 
+def build_theme_state_answer(*, primary_theme: str, theme_state: str, summary: str, tracking_decision: str) -> str:
+    return f"{primary_theme or '这个主题'} 当前处于 {theme_state or '观察期'}。{summary} {tracking_decision}".strip()
+
+
+def build_company_position_answer(*, primary_theme: str, company: str, position: str, tracking_decision: str) -> str:
+    resolved_position = position or "持续参与但位置尚未完全稳定"
+    return f"{company} 在 {primary_theme or '当前主专题'} 里目前更偏向 {resolved_position}。{tracking_decision}".strip()
+
+
+def build_timeline_focus_answer(*, company: str, title: str, why_it_matters: str) -> str:
+    return f"最近几天最关键的时间线信号来自 {company or '相关公司'} 的“{title or '代表事件'}”。{timeline_explanation(why_it_matters)}".strip()
+
+
 def timeline_explanation(detail: str) -> str:
     if not detail:
         return ""

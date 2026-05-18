@@ -5,7 +5,10 @@ from .llm_client import LLMClient, LLMClientError
 from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
 from .research_assistant_policy import (
+    build_company_position_answer,
     build_evidence_item,
+    build_theme_state_answer,
+    build_timeline_focus_answer,
     finalize_answer_payload,
     follow_up_suggestions_for,
     timeline_explanation,
@@ -201,7 +204,12 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         position = dossier.get("company_positions", {}).get(entity, "")
         tracking_decision = dossier.get("tracking_decision", "")
         if position:
-            answer = f"{entity} 在 {primary_theme} 这个专题里当前更偏向 {position}。这说明它的切入点已经开始稳定下来。{tracking_decision}".strip()
+            answer = build_company_position_answer(
+                primary_theme=primary_theme,
+                company=entity,
+                position=position,
+                tracking_decision=tracking_decision,
+            )
             add_evidence("theme_dossier.json", "专题档案", f"{entity} 在 dossier 中的当前位置是：{position}。")
             if dossier.get("theme_state"):
                 add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段为 {dossier.get('theme_state')}。")
@@ -245,7 +253,12 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         summary = dossier.get("theme_summary", "")
         decision = dossier.get("tracking_decision", "")
         if state:
-            answer = f"这个主题当前处于 {state}。{summary} {decision}".strip()
+            answer = build_theme_state_answer(
+                primary_theme=dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
+                theme_state=state,
+                summary=summary,
+                tracking_decision=decision,
+            )
             add_evidence("theme_dossier.json", "专题档案", f"当前 dossier 状态机结果是 {state}。")
             if summary:
                 add_evidence("cross_day_intel_brief.json", "跨日观察", summary)
@@ -256,9 +269,10 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         timeline = dossier.get("timeline_events", [])
         if timeline:
             lead = timeline[-1]
-            answer = (
-                f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
-                f"{timeline_explanation(lead.get('why_it_matters', ''))}"
+            answer = build_timeline_focus_answer(
+                company=lead.get("company", "相关公司"),
+                title=lead.get("title", "代表事件"),
+                why_it_matters=lead.get("why_it_matters", ""),
             )
             add_evidence(
                 "theme_dossier.json",

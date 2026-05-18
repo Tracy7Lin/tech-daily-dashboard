@@ -148,6 +148,7 @@ class ChatAgentResponseTests(unittest.TestCase):
     def test_answer_chat_question_theme_state_carries_tracking_decision(self) -> None:
         context = build_chat_context(self.inputs)
         answer = answer_chat_question("为什么现在是 emerging？", context)
+        self.assertIn("当前处于", answer["answer"])
         self.assertIn("建议继续跟踪", answer["answer"])
 
     def test_answer_chat_question_company_position_uses_dossier_follow_ups(self) -> None:
