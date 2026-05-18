@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .chat_agent_analysis import classify_chat_question
+from .chat_agent_analysis import understand_chat_question
 from .llm_client import LLMClient
 from .research_agent_context_builder import build_research_context
 from .research_agent_input import load_research_agent_inputs
@@ -34,8 +34,16 @@ def run_research_agent(
         if report_item.get("company_name")
     ] or list((inputs.theme_dossier or {}).get("company_positions", {}).keys())
     primary_theme = (inputs.theme_dossier or {}).get("primary_theme", "") or (inputs.theme_tracking_brief or {}).get("primary_theme", "")
-    question_type, entity = classify_chat_question(question, companies, primary_theme)
-    context = build_research_context(question, question_type, entity, inputs)
+    understanding = understand_chat_question(question, companies, primary_theme)
+    context = build_research_context(question, understanding.question_type, understanding.entity, inputs)
+    context["question_understanding"] = {
+        "question_type": understanding.question_type,
+        "entity": understanding.entity,
+        "explanation_dimension": understanding.explanation_dimension,
+        "resolved_theme": understanding.resolved_theme,
+        "resolved_company": understanding.resolved_company,
+        "assumption_used": understanding.assumption_used,
+    }
     response = _build_responder().answer(context, history=history)
-    response.setdefault("question_type", question_type)
+    response.setdefault("question_type", understanding.question_type)
     return response

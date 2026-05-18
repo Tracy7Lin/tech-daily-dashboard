@@ -1,7 +1,7 @@
 import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.chat_agent_analysis import classify_chat_question
+from tech_daily.chat_agent_analysis import classify_chat_question, understand_chat_question
 from tech_daily.chat_agent_input import ChatAgentInputs
 from tech_daily.chat_agent_response import ChatAgentResponder, build_chat_context, answer_chat_question, build_chat_response_bank
 from tech_daily.llm_client import LLMClient
@@ -101,6 +101,18 @@ class ChatAgentResponseTests(unittest.TestCase):
             classify_chat_question("最近几天关键时间线说明了什么？", companies, primary_theme),
             ("timeline_focus", primary_theme),
         )
+
+    def test_understand_chat_question_returns_structured_meaning(self) -> None:
+        understanding = understand_chat_question("Google 在这个专题里处于什么位置？", ["Google"], "安全与治理")
+        self.assertEqual(understanding.question_type, "company_position")
+        self.assertEqual(understanding.resolved_company, "Google")
+        self.assertEqual(understanding.resolved_theme, "安全与治理")
+        self.assertEqual(understanding.explanation_dimension, "comparison")
+
+    def test_understand_chat_question_marks_primary_theme_assumption(self) -> None:
+        understanding = understand_chat_question("这个专题值得继续看吗？", ["Google"], "安全与治理")
+        self.assertEqual(understanding.question_type, "dossier_summary")
+        self.assertEqual(understanding.resolved_theme, "安全与治理")
 
     def test_answer_chat_question_routes_dossier_summary_question(self) -> None:
         context = build_chat_context(self.inputs)

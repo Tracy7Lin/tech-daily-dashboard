@@ -36,6 +36,12 @@ Follow this sequence:
 5. Attach explicit evidence references.
 6. Apply fallback behavior if context is weak or missing.
 
+Subflow references:
+
+- `subflows/question-understanding.md`
+- `subflows/answer-synthesis.md`
+- `subflows/evidence-and-followups.md`
+
 ## Step 1: Identify Intent
 
 Classify the question by meaning, not by shallow keyword match.
