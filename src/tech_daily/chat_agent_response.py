@@ -4,57 +4,12 @@ from .chat_agent_memory import resolve_follow_up_route, trim_history
 from .llm_client import LLMClient, LLMClientError
 from .chat_agent_analysis import classify_chat_question
 from .chat_agent_input import ChatAgentInputs
-
-
-def _evidence_item(source: str, label: str, detail: str) -> dict:
-    return {
-        "source": source,
-        "label": label,
-        "detail": detail,
-        "reference": f"{source} · {label}",
-    }
-
-
-def _follow_up_suggestions_for(question_type: str, context: dict, company: str = "") -> list[str]:
-    primary_theme = context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
-    if question_type == "company_position":
-        suggestions = [
-            "为什么现在是 emerging？",
-            "最近几天关键时间线说明了什么？",
-        ]
-        if company:
-            suggestions.insert(0, f"{company} 最近几天在做什么？")
-        return suggestions
-    if question_type == "timeline_focus":
-        return [
-            "这个主专题现在怎么理解？",
-            "为什么现在是 emerging？",
-        ]
-    if question_type == "theme_state":
-        return [
-            "最近几天关键时间线说明了什么？",
-            f"{company} 在这个专题里处于什么位置？" if company else "Google 在这个专题里处于什么位置？",
-        ]
-    if question_type == "dossier_summary":
-        return [
-            "为什么现在是 emerging？",
-            "最近几天关键时间线说明了什么？",
-        ]
-    if question_type == "theme_focus" and primary_theme:
-        return [
-            "这个主专题现在怎么理解？",
-            "最近几天关键时间线说明了什么？",
-        ]
-    return context.get("follow_up_suggestions", [])
-
-
-def _timeline_explanation(detail: str) -> str:
-    cleaned = (detail or "").strip()
-    if not cleaned:
-        return ""
-    if cleaned.startswith(("说明", "意味着", "反映出")):
-        return cleaned
-    return f"这说明 {cleaned}"
+from .research_assistant_policy import (
+    build_evidence_item,
+    finalize_answer_payload,
+    follow_up_suggestions_for,
+    timeline_explanation,
+)
 
 
 def _select_placeholder_status(statuses: list[dict]) -> dict | None:
@@ -218,7 +173,7 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
         if not detail:
             return
         evidence_points.append(detail)
-        evidence_items.append(_evidence_item(source, label, detail))
+        evidence_items.append(build_evidence_item(source, label, detail))
         if source not in sources_used:
             sources_used.append(source)
 
@@ -303,7 +258,7 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
             lead = timeline[-1]
             answer = (
                 f"最近几天最关键的时间线信号来自 {lead.get('company', '相关公司')} 的“{lead.get('title', '代表事件')}”。"
-                f"{_timeline_explanation(lead.get('why_it_matters', ''))}"
+                f"{timeline_explanation(lead.get('why_it_matters', ''))}"
             )
             add_evidence(
                 "theme_dossier.json",
@@ -321,17 +276,21 @@ def answer_chat_question(question: str, context: dict, route: tuple[str, str] | 
     else:
         answer = "当前问答主要基于今日日报、跨日观察、专题跟踪和运维状态。你可以继续问今天重点、某家公司、主专题或信源状态。"
 
-    return {
-        "answer": answer,
-        "question_type": question_type,
-        "resolved_theme": context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
-        "resolved_company": entity if question_type in {"company_focus", "company_position"} else "",
-        "sources_used": sources_used or ["report.json"],
-        "evidence_items": evidence_items[:3],
-        "evidence_points": evidence_points[:3],
-        "follow_up_suggestions": _follow_up_suggestions_for(question_type, context, entity),
-        "mode_used": context.get("mode_used", "rule"),
-    }
+    return finalize_answer_payload(
+        answer=answer,
+        question_type=question_type,
+        resolved_theme=context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
+        resolved_company=entity if question_type in {"company_focus", "company_position"} else "",
+        sources_used=sources_used,
+        evidence_items=evidence_items,
+        follow_up_suggestions=follow_up_suggestions_for(
+            question_type,
+            context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
+            context.get("theme_dossier", {}).get("company_positions", {}),
+            entity,
+        ),
+        mode_used=context.get("mode_used", "rule"),
+    )
 
 
 def build_chat_response_bank(context: dict, responder: "ChatAgentResponder") -> dict:

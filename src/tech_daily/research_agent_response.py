@@ -1,21 +1,8 @@
 from __future__ import annotations
 
 from .chat_agent_memory import resolve_follow_up_route, trim_history
-from .chat_agent_response import _evidence_item
 from .llm_client import LLMClient, LLMClientError
-
-
-def _follow_up_suggestions(context: dict) -> list[str]:
-    company_positions = context.get("company_positions", {})
-    suggestions = [
-        "这个主专题现在怎么理解？",
-        "为什么现在是 emerging？",
-        "最近几天关键时间线说明了什么？",
-    ]
-    if company_positions:
-        first_company = next(iter(company_positions))
-        suggestions.insert(1, f"{first_company} 在这个专题里处于什么位置？")
-    return suggestions
+from .research_assistant_policy import build_evidence_item, finalize_answer_payload, follow_up_suggestions_for
 
 
 class ResearchAgentResponder:
@@ -81,25 +68,25 @@ class ResearchAgentResponder:
             summary = dossier.get("theme_summary", "") or context.get("theme_tracking_brief", {}).get("theme_summary", "")
             answer = f"{primary_theme} 当前最值得从 {definition or summary or '主题持续升温'} 这个角度理解。{tracking_decision}".strip()
             if theme_state:
-                evidence_items.append(_evidence_item("theme_dossier.json", "专题档案", f"当前主题阶段为 {theme_state}。"))
+                evidence_items.append(build_evidence_item("theme_dossier.json", "专题档案", f"当前主题阶段为 {theme_state}。"))
         elif question_type == "theme_state":
             summary = dossier.get("theme_summary", "") or context.get("cross_day_intel_brief", {}).get("editorial_signal", "")
             answer = f"{primary_theme or '这个主题'} 当前处于 {theme_state or '观察期'}，因为它已经形成持续信号，但还没有完全稳定。{summary} {tracking_decision}".strip()
-            evidence_items.append(_evidence_item("theme_dossier.json", "专题档案", f"状态机判断为 {theme_state or '观察期'}。"))
+            evidence_items.append(build_evidence_item("theme_dossier.json", "专题档案", f"状态机判断为 {theme_state or '观察期'}。"))
         elif question_type == "company_position":
             position = company_positions.get(entity, "")
             answer = (
                 f"{entity} 在 {primary_theme} 这个专题里目前更偏向 {position or '持续参与但位置尚未完全稳定'}。"
                 f" {tracking_decision}".strip()
             )
-            evidence_items.append(_evidence_item("theme_dossier.json", "公司位置", f"{entity} 的 dossier 位置是：{position or '待进一步明确'}。"))
+            evidence_items.append(build_evidence_item("theme_dossier.json", "公司位置", f"{entity} 的 dossier 位置是：{position or '待进一步明确'}。"))
         elif question_type == "timeline_focus":
             lead = timeline_events[-1] if timeline_events else {}
             title = lead.get("title", "近期代表事件")
             why = lead.get("why_it_matters", "")
             company = lead.get("company", "相关公司")
             answer = f"最近几天最关键的时间线信号来自 {company} 的“{title}”。{why}".strip()
-            evidence_items.append(_evidence_item("theme_dossier.json", "关键时间线", f"{lead.get('date', '')} · {company} · {title}"))
+            evidence_items.append(build_evidence_item("theme_dossier.json", "关键时间线", f"{lead.get('date', '')} · {company} · {title}"))
         elif question_type == "company_focus":
             company_reports = report.get("company_reports", [])
             matched = next((item for item in company_reports if item.get("company_name", "").lower() == entity.lower()), {})
@@ -107,14 +94,14 @@ class ResearchAgentResponder:
             latest = entries[0].get("raw", {}).get("title", "") if entries else ""
             answer = f"{entity} 最近几天最值得看的动作是“{latest}”。" if latest else f"{entity} 最近几天没有明显的高价值动态被保留。"
             if latest:
-                evidence_items.append(_evidence_item("report.json", "公司动态", latest))
+                evidence_items.append(build_evidence_item("report.json", "公司动态", latest))
         elif question_type == "theme_focus":
             answer = context.get("theme_tracking_brief", {}).get("theme_summary", "") or context.get("editorial_signal", "") or "当前主专题仍在形成。"
         elif question_type == "ops_status":
             answer = context.get("operator_brief", "") or "当前没有额外运维提示。"
             for issue in (context.get("health_snapshot", {}).get("high_priority_runtime_issues") or [])[:2]:
                 evidence_items.append(
-                    _evidence_item(
+                    build_evidence_item(
                         "health_snapshot.json",
                         "运维快照",
                         f"{issue.get('company_slug', '')}：{','.join(issue.get('issues', []))}",
@@ -125,18 +112,21 @@ class ResearchAgentResponder:
         else:
             answer = "我会基于日报、跨日观察、专题跟踪和主题档案来回答。你可以直接追问主题、公司、时间线或状态判断。"
 
-        evidence_points = [item["detail"] for item in evidence_items[:3]]
-        return {
-            "answer": answer,
-            "question_type": question_type,
-            "resolved_theme": primary_theme,
-            "resolved_company": entity if question_type in {"company_focus", "company_position"} else "",
-            "sources_used": sources_used,
-            "evidence_items": evidence_items[:3],
-            "evidence_points": evidence_points,
-            "follow_up_suggestions": _follow_up_suggestions(context),
-            "mode_used": "rule",
-        }
+        return finalize_answer_payload(
+            answer=answer,
+            question_type=question_type,
+            resolved_theme=primary_theme,
+            resolved_company=entity if question_type in {"company_focus", "company_position"} else "",
+            sources_used=sources_used,
+            evidence_items=evidence_items,
+            follow_up_suggestions=follow_up_suggestions_for(
+                question_type,
+                primary_theme,
+                context.get("company_positions", {}),
+                entity,
+            ),
+            mode_used="rule",
+        )
 
     def _generate_llm_answer(self, context: dict, rule_answer: dict, history: list[dict] | None = None) -> dict:
         payload = self.client.generate_json(

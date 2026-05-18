@@ -117,6 +117,10 @@ class RenderTests(unittest.TestCase):
         self.assertIn("section-rail-asymmetric", html)
         self.assertIn("magazine-nav", html)
         self.assertIn("./archive.html", html)
+        self.assertIn("Research Assistant", html)
+        self.assertIn("主刊研究台", html)
+        self.assertIn("agent-desk", html)
+        self.assertIn("data-open-chat", html)
 
     def test_render_daily_includes_highlights_and_enriched_company_metadata(self) -> None:
         entry = _entry(
@@ -176,6 +180,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("返回主刊首页", html)
         self.assertIn("./topic.html", html)
         self.assertIn("./dossier.html", html)
+        self.assertIn("当期研究台", html)
+        self.assertIn("Research Assistant", html)
+        self.assertIn("data-open-chat", html)
 
     def test_render_daily_includes_agent_brief_block_when_present(self) -> None:
         report = DailyReport(
@@ -390,7 +397,7 @@ class RenderTests(unittest.TestCase):
             },
         )
         html = render_daily(report)
-        self.assertIn("情报问答", html)
+        self.assertIn("Research Assistant", html)
         self.assertIn("chat-drawer", html)
         self.assertIn("今天最值得关注什么？", html)
         self.assertIn("chat-status", html)
@@ -408,6 +415,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("chat-follow-ups", html)
         self.assertIn("回答依据来源", html)
         self.assertIn("chat-evidence-reference", html)
+        self.assertIn("研究助理", html)
+        self.assertIn("data-open-chat", html)
 
     def test_render_company_report_empty_state_uses_padded_card(self) -> None:
         report = DailyReport(

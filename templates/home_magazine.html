@@ -445,6 +445,109 @@
       gap: 16px;
       margin-top: 24px;
     }
+    .agent-desk {
+      margin-top: 28px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid rgba(16, 24, 38, 0.12);
+      background:
+        linear-gradient(135deg, #111926 0%, #15355f 56%, #0f5bd8 100%);
+      color: #f6f2ea;
+      box-shadow: 0 28px 64px rgba(8, 17, 32, 0.22);
+    }
+    .agent-desk-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.85fr);
+      gap: 0;
+    }
+    .agent-desk-panel {
+      padding: 28px 30px;
+      position: relative;
+    }
+    .agent-desk-panel + .agent-desk-panel {
+      border-left: 1px solid rgba(255, 255, 255, 0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+    .agent-desk-kicker {
+      margin: 0 0 8px;
+      color: #8ec4ff;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .agent-desk-title {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+    .agent-desk-copy,
+    .agent-desk-note,
+    .agent-desk-theme,
+    .agent-desk-signal {
+      color: rgba(246, 242, 234, 0.78);
+      line-height: 1.78;
+    }
+    .agent-desk-copy { margin: 12px 0 0; max-width: 48rem; }
+    .agent-desk-theme { margin: 18px 0 0; }
+    .agent-desk-signal {
+      margin: 12px 0 0;
+      font-size: 1.08rem;
+      color: #fff9f1;
+    }
+    .agent-desk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .agent-desk-button,
+    .agent-desk-chip {
+      border: 0;
+      border-radius: 999px;
+      min-height: 42px;
+      padding: 0 16px;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    .agent-desk-button.primary {
+      background: #f7f2ea;
+      color: #101821;
+      box-shadow: 0 14px 28px rgba(8, 17, 32, 0.18);
+    }
+    .agent-desk-chip {
+      background: rgba(255,255,255,0.10);
+      color: #f6f2ea;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .agent-desk-button:hover,
+    .agent-desk-chip:hover {
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    .agent-desk-stat {
+      display: grid;
+      gap: 6px;
+      margin: 0 0 14px;
+    }
+    .agent-desk-stat span {
+      color: rgba(246, 242, 234, 0.60);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .agent-desk-stat strong {
+      font-size: 1.08rem;
+      line-height: 1.55;
+      color: #fff9f1;
+    }
     .recent-item {
       display: flex;
       justify-content: space-between;
@@ -512,13 +615,15 @@
     @media (max-width: 1080px) {
       .cover-grid,
       .section-rail,
-      .section-rail-asymmetric { grid-template-columns: 1fr; grid-template-areas: none; }
+      .section-rail-asymmetric,
+      .agent-desk-grid { grid-template-columns: 1fr; grid-template-areas: none; }
       .cover-ledger { grid-template-columns: 1fr; }
       .section-slot-featured,
       .section-slot-topic,
       .section-slot-dossier,
       .section-slot-recent { grid-area: auto; }
       .cover-hero { min-height: auto; }
+      .agent-desk-panel + .agent-desk-panel { border-left: 0; border-top: 1px solid rgba(255,255,255,0.10); }
     }
     @media (max-width: 720px) {
       .cover-hero,
@@ -645,6 +750,8 @@
         <div class="recent-list">$recent_issues</div>
       </section>
     </section>
+
+    $agent_desk_section
 
     <section class="recent-list" data-reveal="archive">
       $recent_issues

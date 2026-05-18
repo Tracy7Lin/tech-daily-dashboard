@@ -182,6 +182,99 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
     }
+    .agent-desk {
+      margin-top: 24px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid rgba(16, 24, 38, 0.12);
+      background: linear-gradient(135deg, #101821 0%, #17385f 58%, #0f5bd8 100%);
+      color: #f6f2ea;
+      box-shadow: 0 28px 64px rgba(8, 17, 32, 0.20);
+    }
+    .agent-desk-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.85fr);
+    }
+    .agent-desk-panel {
+      padding: 26px 28px;
+    }
+    .agent-desk-panel + .agent-desk-panel {
+      border-left: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+    .agent-desk-kicker {
+      margin: 0 0 8px;
+      color: #8ec4ff;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .agent-desk-title {
+      margin: 0;
+      font-size: clamp(1.9rem, 3vw, 2.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+    }
+    .agent-desk-copy,
+    .agent-desk-note,
+    .agent-desk-theme,
+    .agent-desk-signal {
+      color: rgba(246, 242, 234, 0.78);
+      line-height: 1.76;
+    }
+    .agent-desk-copy { margin: 12px 0 0; }
+    .agent-desk-theme { margin: 18px 0 0; }
+    .agent-desk-signal { margin: 12px 0 0; color: #fff9f1; font-size: 1.04rem; }
+    .agent-desk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .agent-desk-button,
+    .agent-desk-chip {
+      border: 0;
+      border-radius: 999px;
+      min-height: 42px;
+      padding: 0 16px;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    .agent-desk-button.primary {
+      background: #f7f2ea;
+      color: #101821;
+      box-shadow: 0 14px 28px rgba(8, 17, 32, 0.18);
+    }
+    .agent-desk-chip {
+      background: rgba(255,255,255,0.10);
+      color: #f6f2ea;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .agent-desk-button:hover,
+    .agent-desk-chip:hover { transform: translateY(-2px); }
+    .agent-desk-stat {
+      display: grid;
+      gap: 6px;
+      margin: 0 0 14px;
+    }
+    .agent-desk-stat span {
+      color: rgba(246, 242, 234, 0.60);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .agent-desk-stat strong {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #fff9f1;
+    }
     .section h2 {
       margin: 0 0 8px;
       letter-spacing: -0.03em;
@@ -597,6 +690,8 @@
       .page-header,
       .section,
       .card { padding: 20px; }
+      .agent-desk-grid { grid-template-columns: 1fr; }
+      .agent-desk-panel + .agent-desk-panel { border-left: 0; border-top: 1px solid rgba(255,255,255,0.10); }
       .topbar { align-items: flex-start; flex-direction: column; }
       .magazine-nav { justify-content: flex-start; }
       .issue-nav { flex-direction: column; }
@@ -629,6 +724,8 @@
         <a href="$dossier_page_href" data-page-link>查看主题档案</a>
       </div>
     </section>
+
+    $agent_desk_section
 
     <section class="section">
       <h2>重点观察</h2>

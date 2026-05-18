@@ -326,6 +326,53 @@ def _render_theme_dossier_brief(brief: dict) -> str:
     )
 
 
+def _render_agent_desk_section(report: DailyReport, page: str) -> str:
+    context = report.chat_agent_context or {}
+    agent_brief = report.agent_brief or {}
+    tracking = report.theme_tracking_brief or {}
+    dossier = report.theme_dossier_brief or {}
+    health = getattr(report, "health_snapshot", {}) or {}
+    primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme") or "暂无主专题"
+    theme_state = dossier.get("theme_state") or "观察中"
+    editorial_signal = agent_brief.get("editorial_signal") or report.headline
+    ops_signal = agent_brief.get("ops_signal") or health.get("ops_status_analysis", {}).get("operator_brief", "") or "当前无额外运维提示。"
+    participating = "、".join(tracking.get("participating_companies", [])) or "暂无"
+    quick_questions = context.get("quick_questions", [])
+    quick_chips = "".join(
+        f"<button class='agent-desk-chip' type='button' data-open-chat='true'>{html.escape(question)}</button>"
+        for question in quick_questions[:3]
+    )
+    page_label = "主刊研究台" if page == "home" else "当期研究台"
+    page_copy = (
+        "研究助理会实时读取日报知识层、跨日观察和主题档案，而不是只回答预设问题。"
+        if page == "home"
+        else "这里突出运行时研究助理与主专题判断，方便从正文直接切入追问。"
+    )
+    return (
+        "<section class='agent-desk' data-reveal='agent-desk'>"
+        "<div class='agent-desk-grid'>"
+        "<article class='agent-desk-panel agent-desk-panel-primary'>"
+        f"<p class='agent-desk-kicker'>{page_label}</p>"
+        "<h2 class='agent-desk-title'>Research Assistant</h2>"
+        f"<p class='agent-desk-copy'>{html.escape(page_copy)}</p>"
+        f"<p class='agent-desk-theme'><strong>当前主专题：</strong>{html.escape(primary_theme)}</p>"
+        f"<p class='agent-desk-signal'>{html.escape(editorial_signal)}</p>"
+        "<div class='agent-desk-actions'>"
+        "<button class='agent-desk-button primary' type='button' data-open-chat='true'>向研究助理提问</button>"
+        f"{quick_chips}"
+        "</div>"
+        "</article>"
+        "<article class='agent-desk-panel'>"
+        "<p class='agent-desk-kicker'>Agent Focus</p>"
+        f"<p class='agent-desk-stat'><span>专题阶段</span><strong>{html.escape(theme_state)}</strong></p>"
+        f"<p class='agent-desk-stat'><span>参与公司</span><strong>{html.escape(participating)}</strong></p>"
+        f"<p class='agent-desk-note'>{html.escape(ops_signal)}</p>"
+        "</article>"
+        "</div>"
+        "</section>"
+    )
+
+
 def _json_script_payload(value: dict) -> str:
     return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
 
@@ -334,10 +381,10 @@ def _render_chat_agent_shell(context: dict) -> str:
     if not context:
         return ""
     return (
-        "<button class='chat-launcher' type='button' id='chat-launcher' aria-controls='chat-drawer' aria-expanded='false'>情报问答</button>"
+        "<button class='chat-launcher' type='button' id='chat-launcher' aria-controls='chat-drawer' aria-expanded='false'>Research Assistant</button>"
         "<aside class='chat-drawer' id='chat-drawer' role='dialog' aria-modal='false' hidden>"
         "<div class='chat-drawer-header'>"
-        "<div><p class='chat-kicker'>Agent v1</p><h3>情报问答</h3><p class='chat-subtitle'>基于今日日报、跨日观察与专题跟踪回答</p></div>"
+        "<div><p class='chat-kicker'>Research Assistant</p><h3>研究助理</h3><p class='chat-subtitle'>基于日报知识层、跨日观察与主题档案实时回答</p></div>"
         "<button class='chat-close' type='button' id='chat-close' aria-label='关闭问答'>×</button>"
         "</div>"
         "<div class='chat-quick-questions' id='chat-quick-questions'></div>"
@@ -354,6 +401,7 @@ def _render_chat_agent_shell(context: dict) -> str:
         "<script>"
         "(() => {"
         "const launcher = document.getElementById('chat-launcher');"
+        "const chatOpeners = document.querySelectorAll('[data-open-chat]');"
         "const drawer = document.getElementById('chat-drawer');"
         "const closeButton = document.getElementById('chat-close');"
         "const input = document.getElementById('chat-input');"
@@ -621,6 +669,7 @@ def _render_chat_agent_shell(context: dict) -> str:
         "}"
         "syncRuntimeHealth();"
         "launcher.addEventListener('click', openDrawer);"
+        "chatOpeners.forEach((node) => node.addEventListener('click', openDrawer));"
         "closeButton?.addEventListener('click', closeDrawer);"
         "send.addEventListener('click', () => ask(input.value));"
         "input.addEventListener('keydown', (event) => { if (event.key === 'Enter') ask(input.value); });"
@@ -648,7 +697,7 @@ def _render_chat_agent_shell(context: dict) -> str:
         "  empty.textContent = '今天没有额外快捷问题，你也可以直接输入问题。';"
         "  quickContainer.appendChild(empty);"
         "}"
-        "addMessage('agent', '可以直接问我今天重点、主专题、某家公司最近几天的动作，或者当前信源状态。');"
+        "addMessage('agent', '可以直接问我今天重点、主专题、某家公司最近几天的动作，也可以继续追问主题状态、时间线和跟踪决策。');"
         "})();"
         "</script>"
     )
@@ -802,6 +851,7 @@ def render_index(report: DailyReport) -> str:
         theme_state=html.escape(cover.get("theme_state", "暂无")),
         participating_companies=html.escape("、".join(cover.get("participating_companies", [])) or "暂无"),
         next_focus=html.escape("、".join(cover.get("next_focus", [])) or "暂无"),
+        agent_desk_section=_render_agent_desk_section(report, page="home"),
         recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
         archive_href="./archive.html",
         chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
@@ -827,6 +877,7 @@ def render_daily(report: DailyReport) -> str:
         archive_href="../archive.html",
         topic_page_href="./topic.html",
         dossier_page_href="./dossier.html",
+        agent_desk_section=_render_agent_desk_section(report, page="daily"),
         highlights=_render_highlights(report, limit=8),
         topic_cards="".join(_render_topic_card(cluster) for cluster in report.topic_clusters),
         company_cards="".join(
