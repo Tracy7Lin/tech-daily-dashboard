@@ -159,9 +159,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("validation_issue_count=0", output.getvalue())
         self.assertIn("source_diagnostic_count=20", output.getvalue())
 
-    @patch("tech_daily.cli.run_chat_agent")
-    def test_main_prints_chat_answer(self, mock_run_chat_agent) -> None:
-        mock_run_chat_agent.return_value = {
+    @patch("tech_daily.cli.run_research_agent")
+    def test_main_prints_chat_answer(self, mock_run_research_agent) -> None:
+        mock_run_research_agent.return_value = {
             "answer": "今天最值得关注的是安全与治理。",
             "question_type": "daily_summary",
             "sources_used": ["report.json"],

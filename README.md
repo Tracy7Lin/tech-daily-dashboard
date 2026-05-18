@@ -130,7 +130,9 @@ python run_dashboard.py serve --port 8080
 - [http://127.0.0.1:8080](http://127.0.0.1:8080)
 - [http://127.0.0.1:8080/2026-05-16/index.html](http://127.0.0.1:8080/2026-05-16/index.html)
 
-这时页面 chat 会优先调用 `/api/chat`，服务不可用时才回退到内嵌 response bank。
+这时页面 chat 会以 `runtime-first research assistant` 模式工作，优先实时读取日报 JSON 知识层并调用 `/api/chat`；只有服务不可用或你直接用 `file://` 预览页面时，才会回退到内嵌 response bank。
+
+你也可以通过 `/api/health` 确认当前页面是否真的连上了运行时问答服务，以及当前是否具备 LLM 可用性。
 
 ## Output
 

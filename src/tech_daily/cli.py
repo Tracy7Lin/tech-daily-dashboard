@@ -5,10 +5,10 @@ from pathlib import Path
 
 from .automation import generate_today_report, resolve_report_date
 from .backfill import generate_backfill_reports
-from .chat_agent_pipeline import run_chat_agent
 from .dry_run import run_dry_run
 from .healthcheck import run_health_check
 from .pipeline import generate_daily_report
+from .research_agent_pipeline import run_research_agent
 from .web_chat_server import serve_dashboard
 
 
@@ -176,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "chat":
         output_dir = Path(args.output_dir) if args.output_dir else Path("build/site")
-        result = run_chat_agent(output_dir, args.date, args.question)
+        result = run_research_agent(output_dir, Path("build/data"), args.date, args.question)
         _print_chat_answer(result)
         return 0
     if args.command == "serve":

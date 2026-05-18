@@ -27,8 +27,8 @@ class WebChatServerTests(unittest.TestCase):
     def test_handle_chat_request_returns_chat_answer_payload(self) -> None:
         with TemporaryDirectory() as tmpdir:
             site_dir = Path(tmpdir)
-            with patch("tech_daily.web_chat_server.run_chat_agent") as mock_run_chat_agent:
-                mock_run_chat_agent.return_value = {
+            with patch("tech_daily.web_chat_server.run_research_agent") as mock_run_research_agent:
+                mock_run_research_agent.return_value = {
                     "answer": "今天最值得关注的是安全与治理。",
                     "question_type": "daily_summary",
                     "sources_used": ["report.json"],
@@ -51,8 +51,8 @@ class WebChatServerTests(unittest.TestCase):
     def test_handle_chat_request_passes_message_history(self) -> None:
         with TemporaryDirectory() as tmpdir:
             site_dir = Path(tmpdir)
-            with patch("tech_daily.web_chat_server.run_chat_agent") as mock_run_chat_agent:
-                mock_run_chat_agent.return_value = {
+            with patch("tech_daily.web_chat_server.run_research_agent") as mock_run_research_agent:
+                mock_run_research_agent.return_value = {
                     "answer": "Google 在这个专题里更偏向产品功能约束。",
                     "question_type": "company_position",
                     "sources_used": ["theme_dossier.json"],
@@ -76,7 +76,7 @@ class WebChatServerTests(unittest.TestCase):
                 )
 
         self.assertEqual(status_code, 200)
-        self.assertEqual(mock_run_chat_agent.call_args.kwargs["history"][0]["question_type"], "dossier_summary")
+        self.assertEqual(mock_run_research_agent.call_args.kwargs["history"][0]["question_type"], "dossier_summary")
 
 
 if __name__ == "__main__":

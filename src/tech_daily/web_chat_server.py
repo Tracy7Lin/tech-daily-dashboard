@@ -6,9 +6,9 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from .chat_agent_pipeline import run_chat_agent
 from .llm_client import LLMClient
 from .paths import DATA_DIR, SITE_DIR
+from .research_agent_pipeline import run_research_agent
 from .settings import DEFAULT_SETTINGS
 
 
@@ -46,7 +46,7 @@ def handle_chat_request(site_dir: Path, payload: dict, data_dir: Path | None = N
             "error": "Both 'date' and 'question' are required.",
         }
 
-    result = run_chat_agent(site_dir, report_date, question, data_dir=data_dir or DATA_DIR, history=history)
+    result = run_research_agent(site_dir, data_dir or DATA_DIR, report_date, question, history=history)
     return HTTPStatus.OK, result
 
 

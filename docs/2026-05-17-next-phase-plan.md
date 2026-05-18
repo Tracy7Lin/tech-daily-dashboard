@@ -10,6 +10,7 @@
 - 运维闭环已经可持续运行
 - v1/v2/v3/v4 agent 增强链已经打通
 - 网页问答已经从静态 response bank 升级为真实运行时问答
+- `Runtime-First Research Assistant` 基线已经落地
 - chat 已经具备基础会话级上下文记忆
 
 因此，下一阶段不再以“补主链路缺口”为目标，而是以：
@@ -49,9 +50,11 @@
 - CLI `chat`
 - 页面右下角运行时 chat
 - `/api/chat`
+- `/api/health`
 - dossier-aware 问答
 - evidence-backed answers
 - session-memory follow-up
+- runtime-first JSON knowledge answering
 
 ## 3. 下一阶段目标
 
@@ -81,7 +84,7 @@
 
 ## 5. 主线批次设计
 
-### 批次 A：Research Assistant v2
+### 批次 A：Research Assistant v2（已完成基线）
 
 目标：
 
@@ -112,11 +115,12 @@
   - 公司追问
   - 时间线追问
 
-验收标准：
+当前状态：
 
-- 页面和 CLI 都能稳定处理 2-3 轮连续追问
-- 证据展示更清晰
-- 回答来源边界更明确
+- 页面和 CLI 已能稳定处理 2-3 轮连续追问
+- 证据展示已经结构化
+- 回答来源边界已经明确到 dossier / cross-day / report / health snapshot
+- runtime-first research assistant 已经取代旧的静态优先问答路径
 
 ### 批次 B：Theme Dossier 深化
 
