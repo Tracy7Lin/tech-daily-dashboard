@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .research_agent_input import ResearchAgentInputs
+from .research_agent_skill import load_research_agent_skill, preferred_sources_for_question
 
 
 def build_research_context(question: str, question_type: str, entity: str, inputs: ResearchAgentInputs) -> dict:
@@ -18,13 +19,24 @@ def build_research_context(question: str, question_type: str, entity: str, input
     if not companies:
         companies = list((dossier.get("company_positions") or {}).keys())
 
-    primary_source = "report.json"
-    if question_type in {"dossier_summary", "theme_state", "company_position", "timeline_focus"} and dossier:
-        primary_source = "theme_dossier.json"
-    elif question_type == "ops_status" and health:
-        primary_source = "health_snapshot.json"
-    elif question_type in {"theme_focus", "daily_summary"} and tracking:
-        primary_source = "theme_tracking_brief.json"
+    skill = load_research_agent_skill()
+    artifact_map = {
+        "report.json": report,
+        "daily_intel_brief.json": daily,
+        "cross_day_intel_brief.json": cross_day,
+        "theme_tracking_brief.json": tracking,
+        "theme_dossier.json": dossier,
+        "health_snapshot.json": health,
+    }
+    preferred_sources = preferred_sources_for_question(question_type)
+    selected_sources = [source for source in preferred_sources if artifact_map.get(source)]
+    if not selected_sources:
+        selected_sources = [source for source, payload in artifact_map.items() if payload][:3]
+    primary_source = selected_sources[0] if selected_sources else "report.json"
+    selected_context = {
+        source: artifact_map[source]
+        for source in selected_sources[:4]
+    }
 
     return {
         "question": question,
@@ -32,6 +44,13 @@ def build_research_context(question: str, question_type: str, entity: str, input
         "entity": entity,
         "primary_source": primary_source,
         "report_date": inputs.report_date,
+        "research_skill_path": skill["skill_path"],
+        "research_skill_text": skill["skill_text"],
+        "knowledge_sources_text": skill["knowledge_sources_text"],
+        "question_patterns_text": skill["question_patterns_text"],
+        "preferred_sources": preferred_sources,
+        "selected_sources": selected_sources,
+        "selected_context": selected_context,
         "report": report,
         "daily_intel_brief": daily,
         "cross_day_intel_brief": cross_day,

@@ -141,15 +141,22 @@ class ResearchAgentResponder:
     def _generate_llm_answer(self, context: dict, rule_answer: dict, history: list[dict] | None = None) -> dict:
         payload = self.client.generate_json(
             instructions=(
-                "你是科技日报的研究助理。你只能基于给定的日报结构化知识层回答，"
-                "不能引入外部事实。先给判断，再给 1-2 个依据，中文自然，避免模板腔。"
+                "你是科技日报的研究助理。你必须遵守给定的项目内 research skill。"
+                "你只能基于给定的日报结构化知识层回答，不能引入外部事实。"
+                "优先依据 selected_context 回答，先给判断，再给 1-2 个依据，中文自然，避免模板腔。"
             ),
             input_text=(
+                f"项目内 skill：\n{context.get('research_skill_text', '')}\n"
+                f"知识源说明：\n{context.get('knowledge_sources_text', '')}\n"
+                f"问题模式说明：\n{context.get('question_patterns_text', '')}\n"
                 f"用户问题：{context.get('question', '')}\n"
                 f"最近会话：{trim_history(history)}\n"
                 f"问题类型：{rule_answer['question_type']}\n"
+                f"优先来源：{context.get('preferred_sources', [])}\n"
+                f"实际选中来源：{context.get('selected_sources', [])}\n"
                 f"规则回答：{rule_answer['answer']}\n"
-                f"可用上下文：{context}\n"
+                f"选中上下文：{context.get('selected_context', {})}\n"
+                f"补充上下文：{context}\n"
             ),
             schema_name="runtime_research_answer",
             schema={

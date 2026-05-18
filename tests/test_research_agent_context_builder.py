@@ -6,27 +6,31 @@ from tech_daily.research_agent_input import ResearchAgentInputs
 
 
 class ResearchAgentContextBuilderTests(unittest.TestCase):
-    def test_build_research_context_prioritizes_dossier_for_theme_state_questions(self) -> None:
+    def test_builder_uses_project_skill_and_selected_sources_for_dossier_question(self) -> None:
         inputs = ResearchAgentInputs(
             report_date="2026-05-18",
             report={"headline": "headline"},
-            daily_intel_brief={"editorial_signal": "today"},
+            daily_intel_brief={"editorial_signal": "signal"},
             cross_day_intel_brief={"warming_themes": ["安全与治理"]},
             theme_tracking_brief={"primary_theme": "安全与治理"},
-            theme_dossier={"primary_theme": "安全与治理", "theme_state": "emerging", "tracking_decision": "继续跟踪"},
+            theme_dossier={"primary_theme": "安全与治理", "theme_state": "emerging", "company_positions": {"Google": "生态整合"}},
             health_snapshot={"operator_brief": "ops"},
         )
 
         context = build_research_context(
-            question="为什么现在是 emerging？",
-            question_type="theme_state",
-            entity="安全与治理",
-            inputs=inputs,
+            "Google 在这个专题里处于什么位置？",
+            "company_position",
+            "Google",
+            inputs,
         )
 
         self.assertEqual(context["primary_source"], "theme_dossier.json")
-        self.assertEqual(context["theme_state"], "emerging")
-        self.assertEqual(context["tracking_decision"], "继续跟踪")
+        self.assertIn("theme_dossier.json", context["selected_sources"])
+        self.assertIn("theme_tracking_brief.json", context["selected_sources"])
+        self.assertTrue(context["research_skill_text"])
+        self.assertTrue(context["knowledge_sources_text"])
+        self.assertTrue(context["question_patterns_text"])
+        self.assertIn("theme_dossier.json", context["selected_context"])
 
 
 if __name__ == "__main__":
