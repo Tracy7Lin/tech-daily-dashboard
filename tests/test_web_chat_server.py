@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.web_chat_server import handle_chat_request, runtime_health_payload
+from tech_daily.web_chat_server import handle_chat_request, handle_chat_stream_request, runtime_health_payload
 
 
 class WebChatServerTests(unittest.TestCase):
@@ -77,6 +77,31 @@ class WebChatServerTests(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
         self.assertEqual(mock_run_research_agent.call_args.kwargs["history"][0]["question_type"], "dossier_summary")
+
+    def test_handle_chat_stream_request_returns_sentence_events_and_final_payload(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            site_dir = Path(tmpdir)
+            with patch("tech_daily.web_chat_server.run_research_agent") as mock_run_research_agent:
+                mock_run_research_agent.return_value = {
+                    "answer": "安全与治理仍处萌芽阶段。建议继续跟踪。",
+                    "question_type": "theme_state",
+                    "sources_used": ["theme_dossier.json"],
+                    "evidence_items": [],
+                    "follow_up_suggestions": ["最近几天关键时间线说明了什么？"],
+                    "mode_used": "llm",
+                }
+                status_code, events = handle_chat_stream_request(
+                    site_dir,
+                    {"date": "2026-05-18", "question": "为什么现在是 emerging？"},
+                )
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(events[0]["type"], "status")
+        answer_events = [event for event in events if event["type"] == "answer_delta"]
+        self.assertTrue(answer_events)
+        self.assertIn("安全与治理仍处萌芽阶段。", answer_events[0]["text"])
+        self.assertEqual(events[-1]["type"], "final")
+        self.assertEqual(events[-1]["payload"]["mode_used"], "llm")
 
 
 if __name__ == "__main__":

@@ -400,6 +400,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("aria-live='polite'", html)
         self.assertIn("aria-expanded='false'", html)
         self.assertIn("/api/chat", html)
+        self.assertIn("/api/chat-stream", html)
         self.assertIn("/api/health", html)
         self.assertIn("当前使用运行时研究助理模式", html)
         self.assertIn("chat-evidence", html)
