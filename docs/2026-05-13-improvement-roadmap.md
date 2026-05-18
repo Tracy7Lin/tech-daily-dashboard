@@ -97,12 +97,14 @@
 这条线现在已经完成。当前主线应当切换到：
 
 - `Research Assistant v2`
+- `项目内 research orchestration skill`
 
 也就是在已经具备：
 
 - `theme_dossier`
 - `runtime web chat`
 - `session-memory chat`
+- `research-agent-question-orchestration`
 
 的基础上，把系统继续往“研究助理式问答与解释能力”推进。
 

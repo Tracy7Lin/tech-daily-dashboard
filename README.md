@@ -158,6 +158,7 @@ python run_dashboard.py serve --port 8080
 
 - `config/companies.json`: 公司与信源配置
 - `src/tech_daily`: 核心业务代码
+- `agent_skills/`: 项目内 agent 专用 skill 与研究流程规范
 - `templates/`: 静态页面模板
 - `scripts/`: 本地自动化与定时任务脚本
 - `tests/`: 单元测试与回归测试
@@ -204,6 +205,7 @@ python run_dashboard.py serve --port 8080
 - `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `theme_tracking_pipeline.py`: 专题跟踪 agent 编排入口
 - `chat_agent_pipeline.py`: 页面与 CLI 共享的本地问答 agent 编排入口
+- `agent_skills/research-agent-question-orchestration`: 项目内 research assistant 的问题理解、上下文选择与证据归因规范
 - `web_chat_server.py`: 本地静态站点 + 运行时 `/api/chat` 服务入口
 - `summarizer.py`: 单条摘要门面
 - `editorial.py`: 首页与主题分析门面
@@ -213,6 +215,22 @@ python run_dashboard.py serve --port 8080
 - `pipeline.py`: 日报生成编排
 
 其中 LLM 只用于表达层，不参与抓取、日期判断、去重和基础分类。
+
+## Project Agent Skill
+
+仓库内维护了一个**项目专用**的 agent skill：
+
+- `agent_skills/research-agent-question-orchestration/`
+
+它不是全局通用 skill，而是专门约束本项目 research assistant 如何：
+
+- 理解自由提问
+- 解析 follow-up
+- 选择最小充分的日报 JSON 上下文
+- 组织研究助理式回答
+- 标注证据来源与降级路径
+
+当你继续扩展运行时研究助理、dossier-aware chat 或后续更强的 agent 行为时，应先对齐这个 skill，而不是在不同模块里重复发明问答流程。
 
 ## Verification
 

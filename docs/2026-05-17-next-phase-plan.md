@@ -12,6 +12,7 @@
 - 网页问答已经从静态 response bank 升级为真实运行时问答
 - `Runtime-First Research Assistant` 基线已经落地
 - chat 已经具备基础会话级上下文记忆
+- 项目内 `research-agent-question-orchestration` skill 已落地
 
 因此，下一阶段不再以“补主链路缺口”为目标，而是以：
 
@@ -55,6 +56,7 @@
 - evidence-backed answers
 - session-memory follow-up
 - runtime-first JSON knowledge answering
+- 项目内 research orchestration skill
 
 ## 3. 下一阶段目标
 
@@ -77,10 +79,11 @@
 
 1. `Research Assistant v2`
 2. `Theme Dossier 深化`
-3. `内容质量第二轮提升`
-4. `前端阅读与问答体验精修`
-5. `信源可靠性剩余硬点`
-6. `兄弟日报与外部扩展`
+3. `项目内 research orchestration skill 对齐`
+4. `内容质量第二轮提升`
+5. `前端阅读与问答体验精修`
+6. `信源可靠性剩余硬点`
+7. `兄弟日报与外部扩展`
 
 ## 5. 主线批次设计
 
@@ -121,6 +124,7 @@
 - 证据展示已经结构化
 - 回答来源边界已经明确到 dossier / cross-day / report / health snapshot
 - runtime-first research assistant 已经取代旧的静态优先问答路径
+- 项目内 `research-agent-question-orchestration` skill 已作为统一流程规范落库
 
 ### 批次 B：Theme Dossier 深化
 
