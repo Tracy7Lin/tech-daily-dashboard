@@ -15,6 +15,7 @@ class Settings:
     max_topic_cards: int = 5
     summary_mode: str = "hybrid"
     editorial_mode: str = "hybrid"
+    research_mode: str = "hybrid"
     llm_api_url: str = "https://api.openai.com/v1/responses"
     llm_api_key: str = ""
     llm_model: str = "deepseekv4"
@@ -53,6 +54,7 @@ def load_settings(env_path: Path | None = None) -> Settings:
     return Settings(
         summary_mode=normalize_generation_mode(_read_value("TECH_DAILY_SUMMARY_MODE", "hybrid", dotenv_values)),
         editorial_mode=normalize_generation_mode(_read_value("TECH_DAILY_EDITORIAL_MODE", "hybrid", dotenv_values)),
+        research_mode=normalize_generation_mode(_read_value("TECH_DAILY_RESEARCH_MODE", "hybrid", dotenv_values)),
         llm_api_url=_read_value("TECH_DAILY_LLM_API_URL", "https://api.openai.com/v1/responses", dotenv_values),
         llm_api_key=_read_value("TECH_DAILY_LLM_API_KEY", "", dotenv_values),
         llm_model=_read_value("TECH_DAILY_LLM_MODEL", "deepseekv4", dotenv_values),

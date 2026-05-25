@@ -17,7 +17,7 @@ def _build_responder() -> ResearchAgentResponder:
         model=DEFAULT_SETTINGS.llm_model,
         timeout_seconds=DEFAULT_SETTINGS.llm_timeout_seconds,
     )
-    return ResearchAgentResponder(mode=DEFAULT_SETTINGS.editorial_mode, client=client)
+    return ResearchAgentResponder(mode=DEFAULT_SETTINGS.research_mode, client=client)
 
 
 def run_research_agent(

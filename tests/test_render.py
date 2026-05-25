@@ -609,6 +609,9 @@ class RenderTests(unittest.TestCase):
         self.assertIn("./2026-05-10/topic.html", html)
         self.assertIn("./2026-05-10/dossier.html", html)
         self.assertIn("page-curtain", html)
+        self.assertIn("chat-answer-note", html)
+        self.assertIn("chat-evidence-bucket-title", html)
+        self.assertIn("assistant-rail", html)
 
 
 if __name__ == "__main__":

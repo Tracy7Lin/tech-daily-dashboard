@@ -1,13 +1,35 @@
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.research_agent_pipeline import run_research_agent
+from tech_daily.research_agent_pipeline import _build_responder, run_research_agent
 
 
 class ResearchAgentPipelineTests(unittest.TestCase):
+    def test_build_responder_uses_research_mode(self) -> None:
+        fake_settings = SimpleNamespace(
+            llm_api_url="https://example.com/v1/responses",
+            llm_api_key="secret",
+            llm_model="model-x",
+            llm_timeout_seconds=18,
+            research_mode="rule",
+        )
+        with patch("tech_daily.research_agent_pipeline.DEFAULT_SETTINGS", fake_settings), patch(
+            "tech_daily.research_agent_pipeline.LLMClient"
+        ) as mock_client, patch("tech_daily.research_agent_pipeline.ResearchAgentResponder") as mock_responder:
+            _build_responder()
+
+        mock_client.assert_called_once_with(
+            api_url="https://example.com/v1/responses",
+            api_key="secret",
+            model="model-x",
+            timeout_seconds=18,
+        )
+        mock_responder.assert_called_once_with(mode="rule", client=mock_client.return_value)
+
     def test_run_research_agent_returns_runtime_answer(self) -> None:
         with TemporaryDirectory() as tmpdir:
             site_dir = Path(tmpdir) / "site"

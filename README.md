@@ -42,6 +42,7 @@ copy .env.example .env
 
 - `TECH_DAILY_SUMMARY_MODE`
 - `TECH_DAILY_EDITORIAL_MODE`
+- `TECH_DAILY_RESEARCH_MODE`
 - `TECH_DAILY_LLM_API_URL`
 - `TECH_DAILY_LLM_API_KEY`
 - `TECH_DAILY_LLM_MODEL`
@@ -177,6 +178,7 @@ python run_dashboard.py serve --port 8080
 
 - `TECH_DAILY_SUMMARY_MODE`: `rule` / `llm` / `hybrid`
 - `TECH_DAILY_EDITORIAL_MODE`: `rule` / `llm` / `hybrid`
+- `TECH_DAILY_RESEARCH_MODE`: `rule` / `llm` / `hybrid`
 - `TECH_DAILY_LLM_API_URL`: LLM API 地址
 - `TECH_DAILY_LLM_API_KEY`: LLM API Key
 - `TECH_DAILY_LLM_MODEL`: 模型名
@@ -187,6 +189,7 @@ python run_dashboard.py serve --port 8080
 
 - `TECH_DAILY_SUMMARY_MODE=hybrid`
 - `TECH_DAILY_EDITORIAL_MODE=hybrid`
+- `TECH_DAILY_RESEARCH_MODE=hybrid`
 
 ### 观察名单与信源
 

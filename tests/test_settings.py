@@ -15,6 +15,7 @@ class SettingsTests(unittest.TestCase):
             {
                 "TECH_DAILY_SUMMARY_MODE": "llm",
                 "TECH_DAILY_EDITORIAL_MODE": "hybrid",
+                "TECH_DAILY_RESEARCH_MODE": "rule",
                 "TECH_DAILY_LLM_MODEL": "gpt-test",
                 "TECH_DAILY_LLM_API_URL": "https://example.com/v1/responses",
                 "TECH_DAILY_LLM_API_KEY": "secret",
@@ -25,6 +26,7 @@ class SettingsTests(unittest.TestCase):
             settings = load_settings()
         self.assertEqual(settings.summary_mode, "llm")
         self.assertEqual(settings.editorial_mode, "hybrid")
+        self.assertEqual(settings.research_mode, "rule")
         self.assertEqual(settings.llm_model, "gpt-test")
         self.assertEqual(settings.llm_timeout_seconds, 12)
 
@@ -34,12 +36,14 @@ class SettingsTests(unittest.TestCase):
             {
                 "TECH_DAILY_SUMMARY_MODE": "unexpected",
                 "TECH_DAILY_EDITORIAL_MODE": "broken",
+                "TECH_DAILY_RESEARCH_MODE": "mystery",
             },
             clear=False,
         ):
             settings = load_settings()
         self.assertEqual(settings.summary_mode, "hybrid")
         self.assertEqual(settings.editorial_mode, "hybrid")
+        self.assertEqual(settings.research_mode, "hybrid")
 
     def test_load_settings_reads_defaults_from_dotenv_file(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -49,6 +53,7 @@ class SettingsTests(unittest.TestCase):
                     [
                         "TECH_DAILY_SUMMARY_MODE=hybrid",
                         "TECH_DAILY_EDITORIAL_MODE=llm",
+                        "TECH_DAILY_RESEARCH_MODE=rule",
                         "TECH_DAILY_LLM_MODEL=deepseekv4",
                         "TECH_DAILY_LLM_API_URL=https://example.com/v1/responses",
                         "TECH_DAILY_LLM_API_KEY=dotenv-secret",
@@ -60,6 +65,7 @@ class SettingsTests(unittest.TestCase):
                 settings = load_settings(env_path=env_path)
 
         self.assertEqual(settings.editorial_mode, "llm")
+        self.assertEqual(settings.research_mode, "rule")
         self.assertEqual(settings.llm_model, "deepseekv4")
         self.assertEqual(settings.llm_api_key, "dotenv-secret")
 
