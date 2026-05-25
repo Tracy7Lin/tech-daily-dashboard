@@ -1,20 +1,31 @@
 from __future__ import annotations
 
 
-def build_evidence_item(source: str, label: str, detail: str) -> dict:
+def build_evidence_item(source: str, label: str, detail: str, bucket: str = "report_basis") -> dict:
     reference = {
         "theme_dossier.json": "theme-dossier",
         "theme_tracking_brief.json": "theme-tracking",
         "cross_day_intel_brief.json": "cross-day-brief",
         "health_snapshot.json": "health-snapshot",
         "report.json": "daily-report",
+        "model_reasoning": "model-judgment",
+        "general_knowledge": "general-knowledge",
     }.get(source, "knowledge-layer")
     return {
         "source": source,
         "label": label,
         "detail": detail,
         "reference": reference,
+        "bucket": bucket,
     }
+
+
+def build_answer_note(grounding_mode: str) -> str:
+    if grounding_mode == "hybrid":
+        return "这部分判断结合了当前日报内容与模型推断。"
+    if grounding_mode == "general":
+        return "这部分回答不直接来自当前日报，仅供参考。"
+    return ""
 
 
 def build_theme_state_answer(*, primary_theme: str, theme_state: str, summary: str, tracking_decision: str) -> str:
@@ -88,10 +99,13 @@ def finalize_answer_payload(
     evidence_items: list[dict],
     follow_up_suggestions: list[str],
     mode_used: str,
+    grounding_mode: str = "grounded",
+    answer_note: str = "",
 ) -> dict:
     evidence_points = [item["detail"] for item in evidence_items if item.get("detail")]
     return {
         "answer": answer.strip(),
+        "answer_note": answer_note,
         "question_type": question_type,
         "resolved_theme": resolved_theme,
         "resolved_company": resolved_company,
@@ -100,4 +114,5 @@ def finalize_answer_payload(
         "evidence_points": evidence_points,
         "follow_up_suggestions": follow_up_suggestions,
         "mode_used": mode_used,
+        "grounding_mode": grounding_mode,
     }

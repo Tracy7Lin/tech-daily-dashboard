@@ -40,12 +40,44 @@ class ResearchAgentResponseTests(unittest.TestCase):
                 "answer": "安全与治理仍处萌芽阶段，但值得继续跟踪。",
                 "mode_used": "llm",
                 "evidence_items": [],
+                "grounding_mode": "grounded",
+                "answer_note": "",
             },
         ):
             answer = responder.answer(context)
 
         self.assertEqual(answer["mode_used"], "llm")
         self.assertIn("萌芽阶段", answer["answer"])
+
+    def test_responder_allows_general_llm_answer_with_reference_note(self) -> None:
+        context = {
+            "question": "什么是知识蒸馏，它通常适合用在什么场景？",
+            "question_type": "out_of_scope",
+            "primary_theme": "",
+            "theme_state": "",
+            "tracking_decision": "",
+            "primary_source": "report.json",
+            "grounding_mode": "general",
+            "selected_context": {},
+            "selected_sources": [],
+        }
+        responder = ResearchAgentResponder(mode="hybrid", client=object())
+
+        with patch.object(
+            responder,
+            "_generate_llm_answer",
+            return_value={
+                "answer": "知识蒸馏通常是把大模型的行为压缩到更小模型里，常用于部署成本敏感或边缘侧推理场景。",
+                "mode_used": "llm",
+                "evidence_items": [],
+                "grounding_mode": "general",
+                "answer_note": "这部分回答不直接来自当前日报，仅供参考。",
+            },
+        ):
+            answer = responder.answer(context)
+
+        self.assertEqual(answer["grounding_mode"], "general")
+        self.assertIn("不直接来自当前日报", answer["answer_note"])
 
 
 if __name__ == "__main__":

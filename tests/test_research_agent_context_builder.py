@@ -32,6 +32,28 @@ class ResearchAgentContextBuilderTests(unittest.TestCase):
         self.assertTrue(context["question_patterns_text"])
         self.assertIn("theme_dossier.json", context["selected_context"])
 
+    def test_builder_marks_general_mode_when_daily_knowledge_has_no_direct_match(self) -> None:
+        inputs = ResearchAgentInputs(
+            report_date="2026-05-25",
+            report={"headline": "headline"},
+            daily_intel_brief={"editorial_signal": "signal"},
+            cross_day_intel_brief={"warming_themes": ["安全与治理"]},
+            theme_tracking_brief={"primary_theme": "安全与治理"},
+            theme_dossier={"primary_theme": "安全与治理", "theme_state": "emerging"},
+            health_snapshot={"operator_brief": "ops"},
+        )
+
+        context = build_research_context(
+            "什么是知识蒸馏，它通常适合用在什么场景？",
+            "out_of_scope",
+            "",
+            inputs,
+        )
+
+        self.assertEqual(context["grounding_mode"], "general")
+        self.assertEqual(context["selected_sources"], [])
+        self.assertEqual(context["selected_context"], {})
+
 
 if __name__ == "__main__":
     unittest.main()

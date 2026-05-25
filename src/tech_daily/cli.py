@@ -131,12 +131,15 @@ def _print_dry_run_summary(result: dict) -> None:
 def _print_chat_answer(result: dict) -> None:
     print(f"question_type={result['question_type']} mode_used={result['mode_used']}")
     print(f"answer={result['answer']}")
+    if result.get("answer_note"):
+        print(f"answer_note={result['answer_note']}")
     evidence_items = result.get("evidence_items", [])
     if evidence_items:
         for evidence in evidence_items[:3]:
             print(
                 f"evidence_source={evidence.get('source', '-')}"
                 f" evidence_label={evidence.get('label', '-')}"
+                f" evidence_bucket={evidence.get('bucket', '-')}"
                 f" evidence_detail={evidence.get('detail', '-')}"
             )
     else:
