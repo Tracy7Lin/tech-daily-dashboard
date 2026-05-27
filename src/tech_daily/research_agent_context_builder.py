@@ -188,9 +188,13 @@ def _score_source(
         score += 4
     if question_scope == "report" and source in {"daily_intel_brief.json", "report.json"}:
         score += 3
-    if needs_general_knowledge and question_scope == "general" and source == "theme_dossier.json":
-        score += 1
     return score
+
+
+def _minimum_match_score(*, question_scope: str, needs_general_knowledge: bool) -> int:
+    if question_scope == "general" and needs_general_knowledge:
+        return 4
+    return 1
 
 
 def _determine_grounding_mode(
@@ -363,8 +367,12 @@ def build_research_context(
         )
         for block in all_blocks
     ]
-    matched_sources = list(dict.fromkeys(block["source"] for block, score in scored_blocks if score > 0))
-    ranked_blocks = [block for block, score in sorted(scored_blocks, key=lambda item: item[1], reverse=True) if score > 0]
+    minimum_score = _minimum_match_score(
+        question_scope=question_scope,
+        needs_general_knowledge=needs_general_knowledge,
+    )
+    matched_sources = list(dict.fromkeys(block["source"] for block, score in scored_blocks if score >= minimum_score))
+    ranked_blocks = [block for block, score in sorted(scored_blocks, key=lambda item: item[1], reverse=True) if score >= minimum_score]
     candidate_blocks = ranked_blocks[:12]
     selected_blocks: list[dict[str, str]] = []
     selected_sources: list[str] = []

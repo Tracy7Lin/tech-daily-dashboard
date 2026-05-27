@@ -130,6 +130,34 @@ class ResearchAgentContextBuilderTests(unittest.TestCase):
         self.assertEqual(context["grounding_mode"], "general")
         self.assertEqual(context["preferred_sources"], [])
 
+    def test_builder_avoids_weak_theme_matches_for_general_questions(self) -> None:
+        inputs = ResearchAgentInputs(
+            report_date="2026-05-27",
+            report={"headline": "headline"},
+            daily_intel_brief={"editorial_signal": "signal"},
+            cross_day_intel_brief={},
+            theme_tracking_brief={"primary_theme": "其他重要动态"},
+            theme_dossier={
+                "primary_theme": "其他重要动态",
+                "theme_summary": "其他重要动态仍是近日内最值得持续关注的主专题，当前重点集中在 OpenAI 与 xAI。",
+                "tracking_decision": "本主题仍值得继续观察，但目前尚处于刚冒头阶段。",
+            },
+            health_snapshot={},
+        )
+
+        context = build_research_context(
+            "什么是知识蒸馏，它通常适合用在什么场景？",
+            "general_explainer",
+            "",
+            inputs,
+            explanation_dimension="explanation",
+            question_scope="general",
+            needs_general_knowledge=True,
+        )
+
+        self.assertEqual(context["selected_sources"], [])
+        self.assertEqual(context["grounding_mode"], "general")
+
     def test_builder_uses_llm_selected_block_ids_when_available(self) -> None:
         class FakeClient:
             def is_available(self) -> bool:
