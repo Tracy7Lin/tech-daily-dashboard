@@ -79,6 +79,72 @@ class ResearchAgentResponseTests(unittest.TestCase):
         self.assertEqual(answer["grounding_mode"], "general")
         self.assertIn("不直接来自当前日报", answer["answer_note"])
 
+    def test_generate_llm_answer_uses_selected_blocks_as_primary_rag_context(self) -> None:
+        captured: dict[str, str] = {}
+
+        class FakeClient:
+            def is_available(self) -> bool:
+                return True
+
+            def generate_json(self, *, instructions: str, input_text: str, schema_name: str, schema: dict) -> dict:
+                captured["instructions"] = instructions
+                captured["input_text"] = input_text
+                return {
+                    "answer": "这个专题目前仍在升温，Google 的动作说明它正在从原则走向执行。",
+                    "evidence_items": [],
+                    "evidence_points": ["2026-05-18 Google expands model safeguards"],
+                    "follow_up_suggestions": ["为什么现在是 emerging？"],
+                    "answer_note": "这部分判断结合了当前日报内容与模型推断。",
+                }
+
+        context = {
+            "question": "最近几天关键时间线说明了什么？",
+            "question_type": "timeline_focus",
+            "primary_theme": "安全与治理",
+            "tracking_decision": "建议继续跟踪。",
+            "theme_state": "emerging",
+            "primary_source": "theme_dossier.json",
+            "grounding_mode": "hybrid",
+            "selected_sources": ["theme_dossier.json"],
+            "selected_blocks": [
+                {
+                    "source": "theme_dossier.json",
+                    "kind": "timeline_event",
+                    "block_id": "timeline-0",
+                    "text": "2026-05-18 Google expands model safeguards 说明主题正在从原则走向执行。",
+                }
+            ],
+            "selected_context": {
+                "theme_dossier.json": [
+                    {
+                        "source": "theme_dossier.json",
+                        "kind": "timeline_event",
+                        "block_id": "timeline-0",
+                        "text": "2026-05-18 Google expands model safeguards 说明主题正在从原则走向执行。",
+                    }
+                ]
+            },
+            "question_understanding": {
+                "question_type": "timeline_focus",
+                "entity": "",
+                "explanation_dimension": "evolution",
+                "resolved_theme": "安全与治理",
+                "resolved_company": "",
+                "assumption_used": "",
+            },
+            "research_skill_text": "skill",
+            "knowledge_sources_text": "sources",
+            "question_patterns_text": "patterns",
+        }
+
+        responder = ResearchAgentResponder(mode="hybrid", client=FakeClient())
+        answer = responder.answer(context)
+
+        self.assertEqual(answer["mode_used"], "llm")
+        self.assertIn("选中证据块", captured["input_text"])
+        self.assertIn("timeline_event", captured["input_text"])
+        self.assertIn("grounding / evidence layer", captured["instructions"])
+
 
 if __name__ == "__main__":
     unittest.main()

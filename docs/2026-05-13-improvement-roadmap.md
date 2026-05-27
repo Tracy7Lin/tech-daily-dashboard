@@ -22,6 +22,12 @@
 
 `可持续迭代的个人情报日报产品雏形`
 
+当前 agent 相关能力采用的总体哲学是：
+
+`AGENT = LLM + SKILLS + TOOLS + RAG + 边界控制`
+
+其中日报知识层承担的是 grounding / evidence layer 的角色，而不是唯一答案来源。
+
 ## 3. 已完成的改进线
 
 以下工作已经不再是待办，而是当前基线能力：
@@ -107,6 +113,13 @@
 - `research-agent-question-orchestration`
 
 的基础上，把系统继续往“研究助理式问答与解释能力”推进。
+
+这意味着后续 agent 迭代应遵循：
+
+- `LLM-first`
+- `日报 RAG as grounding`
+- `skills orchestrate tools and RAG`
+- `边界控制负责来源归因与风险提示`
 
 ## 4. 当前仍值得推进的改进方向
 

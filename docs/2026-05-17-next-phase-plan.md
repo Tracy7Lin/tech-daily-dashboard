@@ -11,6 +11,7 @@
 - v1/v2/v3/v4 agent 增强链已经打通
 - 网页问答已经从静态 response bank 升级为真实运行时问答
 - `Runtime-First Research Assistant` 基线已经落地
+- `Adaptive Research Assistant` 已具备“日报依据 + 模型补充 + 通用知识回答”的基础链路
 - chat 已经具备基础会话级上下文记忆
 - 项目内 `research-agent-question-orchestration` skill 已落地
 
@@ -19,6 +20,18 @@
 `把系统从可用 agent 产品雏形，推进到更像研究助理的平台`
 
 为目标。
+
+这条主线采用的总体哲学是：
+
+`AGENT = LLM + SKILLS + TOOLS + RAG + 边界控制`
+
+其中：
+
+- `LLM` 是问题理解、推理与表达的核心
+- `SKILLS` 负责约束研究流程和回答规范
+- `TOOLS` 负责执行动作，后续可扩展到联网搜索与更多诊断能力
+- `RAG` 负责从日报 JSON 知识层里提供 grounding
+- `边界控制` 负责区分日报依据、模型补充判断与通用知识回答
 
 ## 2. 当前阶段结论
 
@@ -126,6 +139,7 @@
 - 回答来源边界已经明确到 dossier / cross-day / report / health snapshot
 - runtime-first research assistant 已经取代旧的静态优先问答路径
 - 项目内 `research-agent-question-orchestration` skill 已作为统一流程规范落库
+- 当前下一步重点不再是细拆更多硬分类，而是继续增强 `LLM-first + daily-intelligence RAG` 的自由提问能力
 
 ### 批次 B：Theme Dossier 深化
 
@@ -256,3 +270,5 @@
 - 保持高内聚、低耦合
 - 每个可识别里程碑都要提交并推送到远程
 - 不把实验性能力直接耦入日报主链
+- 研究助理优先遵循 `LLM + SKILLS + TOOLS + RAG + 边界控制`
+- 不把日报知识层误当成唯一答案来源，而应把它作为 grounding / evidence layer

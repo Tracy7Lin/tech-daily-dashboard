@@ -6,6 +6,18 @@ This is a project-local skill for the `tech-daily-dashboard` research assistant.
 
 It is not a global Codex skill and should not be treated as a reusable generic chat workflow. It exists to guide this repository's runtime research agent when answering free-form questions against the project's own daily intelligence knowledge layer.
 
+This skill follows the repository architecture:
+
+`AGENT = LLM + SKILLS + TOOLS + RAG + boundary control`
+
+In practice:
+
+- `LLM` remains the main reasoning and answer-synthesis engine.
+- `SKILLS` define how the agent interprets questions, selects context, and explains boundaries.
+- `TOOLS` execute actions such as local runtime chat, generation, health-check, and future search.
+- `RAG` grounds answers in this project's generated JSON intelligence layer.
+- `boundary control` decides when to mark a statement as report-based, model-extended, or general-reference only.
+
 ## Scope
 
 Use this skill when a user asks an open-ended or follow-up question about:
@@ -20,10 +32,14 @@ Use this skill when a user asks an open-ended or follow-up question about:
 
 Do not use this skill to:
 
-- search the public internet
-- answer from general world knowledge when the report knowledge layer is silent
-- invent facts beyond the generated JSON artifacts
+- search the public internet unless a future tool-enabled workflow explicitly allows it
+- invent facts beyond the generated JSON artifacts while pretending they came from the report
 - replace source collection, classification, or rendering logic
+
+When the report knowledge layer is silent, the agent may still answer from general knowledge if:
+
+- it explicitly marks the answer as not directly grounded in the current report
+- it avoids pretending the answer came from the project knowledge layer
 
 ## Required Workflow
 
@@ -41,6 +57,7 @@ Subflow references:
 - `subflows/question-understanding.md`
 - `subflows/answer-synthesis.md`
 - `subflows/evidence-and-followups.md`
+- `subflows/rag-and-boundaries.md`
 
 ## Step 1: Identify Intent
 

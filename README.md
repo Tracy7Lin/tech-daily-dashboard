@@ -225,6 +225,37 @@ python run_dashboard.py serve --port 8080
 
 其中 LLM 只用于表达层，不参与抓取、日期判断、去重和基础分类。
 
+## Agent Philosophy
+
+当前项目的 agent 总体设计哲学是：
+
+`AGENT = LLM + SKILLS + TOOLS + RAG + 边界控制`
+
+各层职责如下：
+
+- `LLM`
+  - 负责理解问题、组织回答、做解释与归纳
+- `SKILLS`
+  - 负责约束研究助理该如何理解问题、选择上下文、组织证据与降级
+- `TOOLS`
+  - 负责执行动作
+  - 当前主要是本地运行时服务、health-check、日报生成链
+  - 后续可扩展到联网搜索、日志诊断等
+- `RAG`
+  - 负责提供日报知识层 grounding
+  - 当前主要来自：
+    - `report.json`
+    - `daily_intel_brief.json`
+    - `cross_day_intel_brief.json`
+    - `theme_tracking_brief.json`
+    - `theme_dossier.json`
+    - `health_snapshot.json`
+- `边界控制`
+  - 负责区分日报依据、模型补充判断和通用知识回答
+  - 并在需要时提示“非日报依据，仅供参考”
+
+当前 research assistant 的目标不是把 LLM 压成固定问答器，而是让它以 LLM 为主、以日报 RAG 为 grounding，并通过 skills 和边界控制保证回答可解释、可追溯、可降级。
+
 ## Project Agent Skill
 
 仓库内维护了一个**项目专用**的 agent skill：
@@ -240,6 +271,15 @@ python run_dashboard.py serve --port 8080
 - 标注证据来源与降级路径
 
 当你继续扩展运行时研究助理、dossier-aware chat 或后续更强的 agent 行为时，应先对齐这个 skill，而不是在不同模块里重复发明问答流程。
+
+这个 skill 当前服务的是：
+
+- `LLM-first` 的研究助理回答链
+- 以日报 JSON 产物为核心的本地 RAG
+- 未来可接入的 tools，例如：
+  - 联网搜索
+  - 日报重生成
+  - 运行状态诊断
 
 ## Verification
 

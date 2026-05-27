@@ -156,11 +156,19 @@ class ResearchAgentResponder:
             answering_policy = "优先依据 selected_context 回答；若日报证据不足，可以结合模型推断补足解释，但要把补充判断与日报依据区分开。"
         else:
             answering_policy = "如果日报知识层没有直接覆盖，可以基于你的通用知识回答，但要明确说明这部分回答不直接来自当前日报，仅供参考。"
+        selected_blocks = context.get("selected_blocks", []) or []
+        selected_block_lines = "\n".join(
+            f"- [{block.get('source', '')}::{block.get('kind', '')}] {block.get('text', '')}"
+            for block in selected_blocks
+        )
+        question_understanding = context.get("question_understanding", {})
         payload = self.client.generate_json(
             instructions=(
                 "你是科技日报的研究助理。你必须遵守给定的项目内 research skill。"
                 f"{answering_policy}"
                 "先给判断，再给 1-2 个依据，中文自然，避免模板腔。"
+                "日报知识层是 grounding / evidence layer，不是唯一答案来源。"
+                "当日报证据不足时，可以给出一般性的模型解释，但不要伪装成日报依据。"
             ),
             input_text=(
                 f"项目内 skill：\n{context.get('research_skill_text', '')}\n"
@@ -168,13 +176,13 @@ class ResearchAgentResponder:
                 f"问题模式说明：\n{context.get('question_patterns_text', '')}\n"
                 f"用户问题：{context.get('question', '')}\n"
                 f"最近会话：{trim_history(history)}\n"
-                f"问题类型：{rule_answer['question_type']}\n"
+                f"问题理解：{question_understanding}\n"
                 f"回答模式：{grounding_mode}\n"
                 f"优先来源：{context.get('preferred_sources', [])}\n"
                 f"实际选中来源：{context.get('selected_sources', [])}\n"
-                f"规则回答：{rule_answer['answer']}\n"
+                f"选中证据块：\n{selected_block_lines or '无直接命中的日报证据块'}\n"
                 f"选中上下文：{context.get('selected_context', {})}\n"
-                f"补充上下文：{context}\n"
+                f"回退基线：{rule_answer['answer']}\n"
             ),
             schema_name="runtime_research_answer",
             schema={
