@@ -59,6 +59,44 @@ class ResearchAgentPipelineTests(unittest.TestCase):
         self.assertEqual(result["mode_used"], "llm")
         self.assertEqual(result["question_type"], "theme_state")
 
+    def test_run_research_agent_passes_structured_question_understanding_into_context(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            site_dir = Path(tmpdir) / "site"
+            data_dir = Path(tmpdir) / "data"
+            daily_dir = site_dir / "2026-05-18"
+            daily_dir.mkdir(parents=True)
+            data_dir.mkdir(parents=True)
+            for name, payload in {
+                "report.json": '{"date":"2026-05-18","headline":"h"}',
+                "daily_intel_brief.json": '{"editorial_signal":"d"}',
+                "cross_day_intel_brief.json": '{"warming_themes":["安全与治理"]}',
+                "theme_tracking_brief.json": '{"primary_theme":"安全与治理"}',
+                "theme_dossier.json": '{"primary_theme":"安全与治理"}',
+            }.items():
+                (daily_dir / name).write_text(payload, encoding="utf-8")
+            (data_dir / "health_snapshot.json").write_text("{}", encoding="utf-8")
+
+            with patch("tech_daily.research_agent_pipeline._build_responder") as mock_builder:
+                def fake_answer(context, history=None):
+                    return {
+                        "answer": "知识蒸馏是一种模型压缩方法。",
+                        "mode_used": "llm",
+                        "question_type": context["question_understanding"]["question_type"],
+                        "question_scope": context["question_understanding"]["question_scope"],
+                        "evidence_items": [],
+                    }
+
+                mock_builder.return_value.answer.side_effect = fake_answer
+                result = run_research_agent(
+                    site_dir,
+                    data_dir,
+                    "2026-05-18",
+                    "什么是知识蒸馏，它通常适合用在什么场景？",
+                )
+
+        self.assertEqual(result["question_type"], "general_explainer")
+        self.assertEqual(result["question_scope"], "general")
+
 
 if __name__ == "__main__":
     unittest.main()

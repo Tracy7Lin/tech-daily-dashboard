@@ -35,13 +35,24 @@ def run_research_agent(
     ] or list((inputs.theme_dossier or {}).get("company_positions", {}).keys())
     primary_theme = (inputs.theme_dossier or {}).get("primary_theme", "") or (inputs.theme_tracking_brief or {}).get("primary_theme", "")
     understanding = understand_chat_question(question, companies, primary_theme)
-    context = build_research_context(question, understanding.question_type, understanding.entity, inputs)
+    context = build_research_context(
+        question,
+        understanding.question_type,
+        understanding.entity,
+        inputs,
+        explanation_dimension=understanding.explanation_dimension,
+        question_scope=understanding.question_scope,
+        needs_general_knowledge=understanding.needs_general_knowledge,
+    )
     context["question_understanding"] = {
         "question_type": understanding.question_type,
         "entity": understanding.entity,
         "explanation_dimension": understanding.explanation_dimension,
         "resolved_theme": understanding.resolved_theme,
         "resolved_company": understanding.resolved_company,
+        "question_scope": understanding.question_scope,
+        "needs_general_knowledge": understanding.needs_general_knowledge,
+        "confidence": understanding.confidence,
         "assumption_used": understanding.assumption_used,
     }
     response = _build_responder().answer(context, history=history)

@@ -6,6 +6,7 @@ from typing import Any
 
 from .research_agent_input import ResearchAgentInputs
 from .research_agent_skill import load_research_agent_skill, preferred_sources_for_question
+from .research_agent_tools import list_research_agent_tools, render_research_tools_text
 
 
 def _tokenize(text: str) -> list[str]:
@@ -200,7 +201,16 @@ def _determine_grounding_mode(question_type: str, matched_sources: list[str], en
     return "general"
 
 
-def build_research_context(question: str, question_type: str, entity: str, inputs: ResearchAgentInputs) -> dict:
+def build_research_context(
+    question: str,
+    question_type: str,
+    entity: str,
+    inputs: ResearchAgentInputs,
+    *,
+    explanation_dimension: str = "judgment",
+    question_scope: str = "report",
+    needs_general_knowledge: bool = False,
+) -> dict:
     report = inputs.report or {}
     daily = inputs.daily_intel_brief or {}
     cross_day = inputs.cross_day_intel_brief or {}
@@ -216,6 +226,7 @@ def build_research_context(question: str, question_type: str, entity: str, input
         companies = list((dossier.get("company_positions") or {}).keys())
 
     skill = load_research_agent_skill()
+    available_tools = list_research_agent_tools()
     primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme", "")
     preferred_sources = preferred_sources_for_question(question_type)
     artifact_map = {
@@ -267,6 +278,8 @@ def build_research_context(question: str, question_type: str, entity: str, input
     for block in selected_blocks:
         selected_context.setdefault(block["source"], []).append(block)
     grounding_mode = _determine_grounding_mode(question_type, matched_sources, entity, primary_theme)
+    if needs_general_knowledge and not matched_sources:
+        grounding_mode = "general"
     if not selected_sources and grounding_mode != "general":
         for source in [source for source in preferred_sources if artifact_map.get(source)][:3]:
             source_blocks = _artifact_blocks(source, artifact_map[source])[:2]
@@ -288,12 +301,18 @@ def build_research_context(question: str, question_type: str, entity: str, input
         "research_skill_text": skill["skill_text"],
         "knowledge_sources_text": skill["knowledge_sources_text"],
         "question_patterns_text": skill["question_patterns_text"],
+        "rag_and_boundaries_text": skill.get("rag_and_boundaries_text", ""),
+        "available_tools": available_tools,
+        "available_tools_text": render_research_tools_text(),
         "preferred_sources": preferred_sources,
         "selected_sources": selected_sources,
         "selected_blocks": selected_blocks,
         "matched_sources": matched_sources,
         "selected_context": selected_context,
         "grounding_mode": grounding_mode,
+        "question_scope": question_scope,
+        "explanation_dimension": explanation_dimension,
+        "needs_general_knowledge": needs_general_knowledge,
         "report": report,
         "daily_intel_brief": daily,
         "cross_day_intel_brief": cross_day,

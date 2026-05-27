@@ -15,6 +15,9 @@ class ChatQuestionUnderstanding:
     explanation_dimension: str
     resolved_theme: str
     resolved_company: str
+    question_scope: str = "report"
+    needs_general_knowledge: bool = False
+    confidence: str = "medium"
     assumption_used: str = ""
 
 
@@ -29,6 +32,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="evolution",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="theme",
         )
 
     if any(token in lowered for token in ("emerging", "active", "fragmenting", "cooling")) or "阶段" in normalized:
@@ -38,6 +42,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="judgment",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="theme",
         )
 
     if any(token in normalized for token in ("怎么理解", "值得跟踪", "值得继续跟踪", "值得继续看", "主专题现在")):
@@ -47,6 +52,19 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="judgment",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="theme",
+        )
+
+    if any(token in normalized for token in ("什么是", "是什么", "通常适合", "适合用在", "原理", "区别", "如何理解")):
+        return ChatQuestionUnderstanding(
+            question_type="general_explainer",
+            entity="",
+            explanation_dimension="explanation",
+            resolved_theme=primary_theme,
+            resolved_company="",
+            question_scope="general",
+            needs_general_knowledge=True,
+            confidence="low",
         )
 
     for company in companies:
@@ -57,6 +75,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
                 explanation_dimension="comparison",
                 resolved_theme=primary_theme,
                 resolved_company=company,
+                question_scope="company",
             )
         if company and company.lower() in lowered:
             return ChatQuestionUnderstanding(
@@ -65,6 +84,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
                 explanation_dimension="judgment",
                 resolved_theme=primary_theme,
                 resolved_company=company,
+                question_scope="company",
             )
 
     if any(token in normalized for token in ("信源", "抓取", "异常", "问题", "恢复", "运维")):
@@ -74,6 +94,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="evidence",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="ops",
         )
 
     if primary_theme and primary_theme in normalized:
@@ -83,6 +104,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="judgment",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="theme",
         )
 
     if any(token in normalized for token in ("主题", "专题")):
@@ -92,6 +114,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="judgment",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="theme",
             assumption_used="defaulted_to_primary_theme",
         )
 
@@ -102,6 +125,7 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
             explanation_dimension="judgment",
             resolved_theme=primary_theme,
             resolved_company="",
+            question_scope="report",
         )
 
     return ChatQuestionUnderstanding(
@@ -110,6 +134,9 @@ def understand_chat_question(question: str, companies: list[str], primary_theme:
         explanation_dimension="judgment",
         resolved_theme=primary_theme,
         resolved_company="",
+        question_scope="general",
+        needs_general_knowledge=True,
+        confidence="low",
     )
 
 

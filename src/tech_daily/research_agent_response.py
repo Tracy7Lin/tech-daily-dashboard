@@ -127,8 +127,10 @@ class ResearchAgentResponder:
                 )
         elif question_type == "daily_summary":
             answer = context.get("editorial_signal", "") or report.get("headline", "") or "今天暂时没有足够高价值的内容被保留下来。"
-        else:
+        elif question_type in {"general_explainer", "out_of_scope"}:
             answer = "当前日报知识层里没有直接覆盖这个问题。我可以先给你一个通用解释，如果你愿意，也可以把问题收回到今天的主题、公司或专题档案上。"
+        else:
+            answer = "我会先按当前日报知识层和已有研究上下文来理解这个问题；如果日报依据不够，我会补充一个更通用的解释。"
 
         return finalize_answer_payload(
             answer=answer,
@@ -174,6 +176,8 @@ class ResearchAgentResponder:
                 f"项目内 skill：\n{context.get('research_skill_text', '')}\n"
                 f"知识源说明：\n{context.get('knowledge_sources_text', '')}\n"
                 f"问题模式说明：\n{context.get('question_patterns_text', '')}\n"
+                f"RAG 与边界控制说明：\n{context.get('rag_and_boundaries_text', '')}\n"
+                f"可用工具：\n{context.get('available_tools_text', '')}\n"
                 f"用户问题：{context.get('question', '')}\n"
                 f"最近会话：{trim_history(history)}\n"
                 f"问题理解：{question_understanding}\n"

@@ -12,12 +12,16 @@ class ResearchAgentSkillTests(unittest.TestCase):
         self.assertIn("Identify the user's intent", skill["skill_text"])
         self.assertIn("theme_dossier.json", skill["knowledge_sources_text"])
         self.assertIn("那 Google 呢", skill["question_patterns_text"])
+        self.assertIn("grounded", skill["rag_and_boundaries_text"])
 
     def test_preferred_sources_for_dossier_questions_prioritize_dossier(self) -> None:
         sources = preferred_sources_for_question("theme_state")
 
         self.assertEqual(sources[0], "theme_dossier.json")
         self.assertIn("cross_day_intel_brief.json", sources)
+
+    def test_preferred_sources_for_general_explainer_does_not_force_report_artifacts(self) -> None:
+        self.assertEqual(preferred_sources_for_question("general_explainer"), [])
 
 
 if __name__ == "__main__":
