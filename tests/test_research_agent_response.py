@@ -145,6 +145,42 @@ class ResearchAgentResponseTests(unittest.TestCase):
         self.assertIn("timeline_event", captured["input_text"])
         self.assertIn("grounding / evidence layer", captured["instructions"])
 
+    def test_responder_normalizes_mode_like_answer_note_and_filters_out_of_scope_evidence(self) -> None:
+        context = {
+            "question": "什么是知识蒸馏？",
+            "question_type": "general_explainer",
+            "grounding_mode": "general",
+            "selected_sources": [],
+            "selected_blocks": [],
+            "selected_context": {},
+            "primary_source": "",
+        }
+        responder = ResearchAgentResponder(mode="hybrid", client=object())
+
+        with patch.object(
+            responder,
+            "_generate_llm_answer",
+            return_value={
+                "answer": "知识蒸馏通常用于把大模型能力压缩到更小模型中。",
+                "mode_used": "llm",
+                "evidence_items": [
+                    {
+                        "source": "theme_dossier.json",
+                        "label": "专题档案",
+                        "detail": "irrelevant",
+                        "reference": "theme-dossier",
+                        "bucket": "report_basis",
+                    }
+                ],
+                "grounding_mode": "general",
+                "answer_note": "general",
+            },
+        ):
+            answer = responder.answer(context)
+
+        self.assertEqual(answer["answer_note"], "这部分回答不直接来自当前日报，仅供参考。")
+        self.assertEqual(answer["evidence_items"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

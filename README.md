@@ -223,7 +223,11 @@ python run_dashboard.py serve --port 8080
 - `render.py`: 静态页面渲染
 - `pipeline.py`: 日报生成编排
 
-其中 LLM 只用于表达层，不参与抓取、日期判断、去重和基础分类。
+其中：
+
+- 日报抓取、日期判断、去重和基础分类仍然是规则与流水线主导
+- 日报摘要、编辑判断和运行时 research assistant 已经转向 `LLM-first`
+- research assistant 会以日报 JSON 知识层作为 RAG grounding，并在日报证据不足时给出带边界提示的通用回答
 
 ## Agent Philosophy
 

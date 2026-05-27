@@ -24,31 +24,56 @@ def load_research_agent_skill() -> dict[str, str]:
     }
 
 
-def preferred_sources_for_question(question_type: str) -> list[str]:
-    if question_type == "general_explainer":
-        return []
-    if question_type in {"dossier_summary", "theme_state", "company_position", "timeline_focus"}:
-        return [
-            "theme_dossier.json",
-            "theme_tracking_brief.json",
-            "cross_day_intel_brief.json",
-            "daily_intel_brief.json",
-            "report.json",
-        ]
-    if question_type in {"theme_focus", "comparison", "next_step"}:
-        return [
-            "theme_tracking_brief.json",
-            "cross_day_intel_brief.json",
-            "theme_dossier.json",
-            "daily_intel_brief.json",
-            "report.json",
-        ]
-    if question_type == "ops_status":
+def preferred_sources_for_understanding(
+    *,
+    question_scope: str,
+    explanation_dimension: str,
+    needs_general_knowledge: bool = False,
+    requested_tool: str = "",
+) -> list[str]:
+    if requested_tool == "local_health_check":
         return [
             "health_snapshot.json",
             "report.json",
         ]
-    if question_type == "daily_summary":
+    if requested_tool == "report_generation":
+        return [
+            "daily_intel_brief.json",
+            "report.json",
+            "theme_tracking_brief.json",
+        ]
+    if needs_general_knowledge and question_scope == "general":
+        return []
+    if question_scope == "theme":
+        if explanation_dimension == "evolution":
+            return [
+                "theme_dossier.json",
+                "cross_day_intel_brief.json",
+                "theme_tracking_brief.json",
+                "daily_intel_brief.json",
+                "report.json",
+            ]
+        return [
+            "theme_dossier.json",
+            "theme_tracking_brief.json",
+            "cross_day_intel_brief.json",
+            "daily_intel_brief.json",
+            "report.json",
+        ]
+    if question_scope == "company":
+        return [
+            "theme_dossier.json",
+            "theme_tracking_brief.json",
+            "report.json",
+            "cross_day_intel_brief.json",
+            "daily_intel_brief.json",
+        ]
+    if question_scope == "ops":
+        return [
+            "health_snapshot.json",
+            "report.json",
+        ]
+    if question_scope == "report":
         return [
             "daily_intel_brief.json",
             "report.json",
@@ -61,3 +86,41 @@ def preferred_sources_for_question(question_type: str) -> list[str]:
         "daily_intel_brief.json",
         "report.json",
     ]
+
+
+def preferred_sources_for_question(question_type: str) -> list[str]:
+    if question_type == "general_explainer":
+        return preferred_sources_for_understanding(
+            question_scope="general",
+            explanation_dimension="explanation",
+            needs_general_knowledge=True,
+        )
+    if question_type in {"dossier_summary", "theme_state", "theme_focus"}:
+        return preferred_sources_for_understanding(
+            question_scope="theme",
+            explanation_dimension="judgment",
+        )
+    if question_type == "timeline_focus":
+        return preferred_sources_for_understanding(
+            question_scope="theme",
+            explanation_dimension="evolution",
+        )
+    if question_type in {"company_position", "company_focus"}:
+        return preferred_sources_for_understanding(
+            question_scope="company",
+            explanation_dimension="comparison",
+        )
+    if question_type == "ops_status":
+        return preferred_sources_for_understanding(
+            question_scope="ops",
+            explanation_dimension="evidence",
+        )
+    if question_type == "daily_summary":
+        return preferred_sources_for_understanding(
+            question_scope="report",
+            explanation_dimension="judgment",
+        )
+    return preferred_sources_for_understanding(
+        question_scope="report",
+        explanation_dimension="judgment",
+    )

@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from .research_agent_input import ResearchAgentInputs
-from .research_agent_skill import load_research_agent_skill, preferred_sources_for_question
+from .research_agent_skill import load_research_agent_skill, preferred_sources_for_understanding
 from .research_agent_tools import list_research_agent_tools, render_research_tools_text
 
 
@@ -151,6 +151,9 @@ def _score_source(
     *,
     question: str,
     question_type: str,
+    question_scope: str,
+    explanation_dimension: str,
+    needs_general_knowledge: bool,
     entity: str,
     primary_theme: str,
     preferred_sources: list[str],
@@ -160,7 +163,7 @@ def _score_source(
         return 0
     score = 0
     source = block["source"]
-    if question_type != "out_of_scope" and source in preferred_sources:
+    if question_scope != "general" and source in preferred_sources:
         score += max(1, len(preferred_sources) - preferred_sources.index(source))
     lowered_question = question.lower()
     if entity and entity.lower() in lowered_question and entity.lower() in payload_text:
@@ -170,37 +173,60 @@ def _score_source(
     for token in _tokenize(question):
         if token in payload_text:
             score += 2
-    if question_type in {"dossier_summary", "theme_state", "company_position", "timeline_focus"} and source == "theme_dossier.json":
+    if question_scope == "theme" and source == "theme_dossier.json":
         score += 4
-    if question_type == "timeline_focus" and block.get("kind") == "timeline_event":
+    if question_scope == "theme" and explanation_dimension == "evolution" and block.get("kind") == "timeline_event":
         score += 6
-    if question_type == "company_position" and block.get("kind") == "company_position":
+    if question_scope == "company" and block.get("kind") == "company_position":
         score += 6
     if block.get("kind") == "tool_result":
         score += 7
-    if question_type == "theme_state" and block.get("kind") in {"theme_state", "theme_summary", "tracking_decision"}:
+    if question_scope == "theme" and explanation_dimension == "judgment" and block.get("kind") in {"theme_state", "theme_summary", "tracking_decision"}:
         score += 4
-    if question_type == "ops_status" and source == "health_snapshot.json":
+    if question_scope == "ops" and source == "health_snapshot.json":
         score += 4
-    if question_type == "daily_summary" and source in {"daily_intel_brief.json", "report.json"}:
+    if question_scope == "report" and source in {"daily_intel_brief.json", "report.json"}:
         score += 3
+    if needs_general_knowledge and question_scope == "general" and source == "theme_dossier.json":
+        score += 1
     return score
 
 
-def _determine_grounding_mode(question_type: str, matched_sources: list[str], entity: str, primary_theme: str) -> str:
-    if question_type == "ops_status":
+def _determine_grounding_mode(
+    *,
+    question_scope: str,
+    needs_general_knowledge: bool,
+    matched_sources: list[str],
+    entity: str,
+    primary_theme: str,
+) -> str:
+    if question_scope == "ops":
         return "grounded" if "health_snapshot.json" in matched_sources else "hybrid"
-    if question_type in {"dossier_summary", "theme_state", "company_position", "timeline_focus"}:
+    if question_scope == "theme":
         return "grounded" if "theme_dossier.json" in matched_sources else "hybrid"
-    if question_type in {"company_focus", "theme_focus", "daily_summary"}:
+    if question_scope in {"company", "report"}:
         return "grounded" if matched_sources else "hybrid"
-    if question_type == "out_of_scope":
-        if matched_sources:
-            return "hybrid"
-        return "general"
+    if needs_general_knowledge:
+        return "hybrid" if matched_sources else "general"
     if entity or primary_theme:
         return "hybrid" if matched_sources else "general"
     return "general"
+
+
+def _legacy_scope_defaults(question_type: str) -> tuple[str, str, bool]:
+    if question_type in {"dossier_summary", "theme_state", "theme_focus"}:
+        return "theme", "judgment", False
+    if question_type == "timeline_focus":
+        return "theme", "evolution", False
+    if question_type in {"company_position", "company_focus"}:
+        return "company", "comparison", False
+    if question_type == "ops_status":
+        return "ops", "evidence", False
+    if question_type == "daily_summary":
+        return "report", "judgment", False
+    if question_type in {"general_explainer", "out_of_scope"}:
+        return "general", "explanation", True
+    return "report", "judgment", False
 
 
 def build_research_context(
@@ -214,6 +240,9 @@ def build_research_context(
     needs_general_knowledge: bool = False,
     tool_result: dict | None = None,
 ) -> dict:
+    if (question_scope, explanation_dimension, needs_general_knowledge) == ("report", "judgment", False):
+        question_scope, explanation_dimension, needs_general_knowledge = _legacy_scope_defaults(question_type)
+
     report = inputs.report or {}
     daily = inputs.daily_intel_brief or {}
     cross_day = inputs.cross_day_intel_brief or {}
@@ -231,7 +260,12 @@ def build_research_context(
     skill = load_research_agent_skill()
     available_tools = list_research_agent_tools()
     primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme", "")
-    preferred_sources = preferred_sources_for_question(question_type)
+    preferred_sources = preferred_sources_for_understanding(
+        question_scope=question_scope,
+        explanation_dimension=explanation_dimension,
+        needs_general_knowledge=needs_general_knowledge,
+        requested_tool=(tool_result or {}).get("tool_name", ""),
+    )
     artifact_map = {
         "report.json": report,
         "daily_intel_brief.json": daily,
@@ -264,6 +298,9 @@ def build_research_context(
                 block,
                 question=question,
                 question_type=question_type,
+                question_scope=question_scope,
+                explanation_dimension=explanation_dimension,
+                needs_general_knowledge=needs_general_knowledge,
                 entity=entity,
                 primary_theme=primary_theme,
                 preferred_sources=preferred_sources,
@@ -291,9 +328,13 @@ def build_research_context(
     selected_context: dict[str, list[dict[str, str]]] = {}
     for block in selected_blocks:
         selected_context.setdefault(block["source"], []).append(block)
-    grounding_mode = _determine_grounding_mode(question_type, matched_sources, entity, primary_theme)
-    if needs_general_knowledge and not matched_sources:
-        grounding_mode = "general"
+    grounding_mode = _determine_grounding_mode(
+        question_scope=question_scope,
+        needs_general_knowledge=needs_general_knowledge,
+        matched_sources=matched_sources,
+        entity=entity,
+        primary_theme=primary_theme,
+    )
     if not selected_sources and grounding_mode != "general":
         for source in [source for source in preferred_sources if artifact_map.get(source)][:3]:
             source_blocks = _artifact_blocks(source, artifact_map[source])[:2]
