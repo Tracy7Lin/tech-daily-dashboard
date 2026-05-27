@@ -65,6 +65,7 @@ def run_research_agent(
         question_scope=understanding.question_scope,
         needs_general_knowledge=understanding.needs_general_knowledge,
         tool_result=tool_result,
+        selector_client=responder.client if isinstance(responder.client, LLMClient) else None,
     )
     context["question_understanding"] = {
         "question_type": understanding.question_type,

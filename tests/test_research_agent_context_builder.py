@@ -130,6 +130,45 @@ class ResearchAgentContextBuilderTests(unittest.TestCase):
         self.assertEqual(context["grounding_mode"], "general")
         self.assertEqual(context["preferred_sources"], [])
 
+    def test_builder_uses_llm_selected_block_ids_when_available(self) -> None:
+        class FakeClient:
+            def is_available(self) -> bool:
+                return True
+
+            def generate_json(self, **kwargs):
+                return {"selected_block_ids": ["timeline-0", "theme-state"]}
+
+        inputs = ResearchAgentInputs(
+            report_date="2026-05-18",
+            report={"headline": "headline"},
+            daily_intel_brief={"editorial_signal": "signal"},
+            cross_day_intel_brief={"warming_themes": ["安全与治理"]},
+            theme_tracking_brief={"primary_theme": "安全与治理"},
+            theme_dossier={
+                "primary_theme": "安全与治理",
+                "theme_state": "active",
+                "timeline_events": [
+                    {
+                        "date": "2026-05-18",
+                        "company": "OpenAI",
+                        "title": "OpenAI expands governance controls",
+                        "why_it_matters": "说明主题正在从原则走向执行。",
+                    }
+                ],
+            },
+            health_snapshot={},
+        )
+
+        context = build_research_context(
+            "最近几天关键时间线说明了什么？",
+            "timeline_focus",
+            "",
+            inputs,
+            selector_client=FakeClient(),
+        )
+
+        self.assertEqual(context["selected_blocks"][0]["block_id"], "timeline-0")
+
 
 if __name__ == "__main__":
     unittest.main()

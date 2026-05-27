@@ -4,6 +4,7 @@ import json
 import re
 from typing import Any
 
+from .llm_client import LLMClient, LLMClientError
 from .research_agent_input import ResearchAgentInputs
 from .research_agent_skill import load_research_agent_skill, preferred_sources_for_understanding
 from .research_agent_tools import list_research_agent_tools, render_research_tools_text
@@ -213,6 +214,59 @@ def _determine_grounding_mode(
     return "general"
 
 
+def _llm_select_blocks(
+    *,
+    client: LLMClient | None,
+    question: str,
+    question_scope: str,
+    explanation_dimension: str,
+    needs_general_knowledge: bool,
+    primary_theme: str,
+    entity: str,
+    candidate_blocks: list[dict[str, str]],
+) -> list[str]:
+    if client is None or not client.is_available() or not candidate_blocks:
+        return []
+    try:
+        payload = client.generate_json(
+            instructions=(
+                "你负责为科技日报研究助理挑选最相关的 RAG 证据块。"
+                "请从候选块里选择最少但足够回答问题的 block_id。"
+                "优先选择高信息密度、和问题最直接相关的块；一般不超过 4 个。"
+            ),
+            input_text=(
+                f"用户问题：{question}\n"
+                f"问题范围：{question_scope}\n"
+                f"解释维度：{explanation_dimension}\n"
+                f"是否需要通用知识补充：{needs_general_knowledge}\n"
+                f"当前主专题：{primary_theme}\n"
+                f"目标公司：{entity}\n"
+                "候选证据块：\n"
+                + "\n".join(
+                    f"- {block['block_id']} | {block['source']} | {block['kind']} | {block['text']}"
+                    for block in candidate_blocks
+                )
+            ),
+            schema_name="rag_block_selection",
+            schema={
+                "type": "object",
+                "properties": {
+                    "selected_block_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    }
+                },
+                "required": ["selected_block_ids"],
+                "additionalProperties": False,
+            },
+        )
+    except (LLMClientError, KeyError, TypeError, ValueError):
+        return []
+    selected_ids = [str(item).strip() for item in payload.get("selected_block_ids", []) if str(item).strip()]
+    allowed = {block["block_id"] for block in candidate_blocks}
+    return [block_id for block_id in selected_ids if block_id in allowed]
+
+
 def _legacy_scope_defaults(question_type: str) -> tuple[str, str, bool]:
     if question_type in {"dossier_summary", "theme_state", "theme_focus"}:
         return "theme", "judgment", False
@@ -239,6 +293,7 @@ def build_research_context(
     question_scope: str = "report",
     needs_general_knowledge: bool = False,
     tool_result: dict | None = None,
+    selector_client: LLMClient | None = None,
 ) -> dict:
     if (question_scope, explanation_dimension, needs_general_knowledge) == ("report", "judgment", False):
         question_scope, explanation_dimension, needs_general_knowledge = _legacy_scope_defaults(question_type)
@@ -310,21 +365,42 @@ def build_research_context(
     ]
     matched_sources = list(dict.fromkeys(block["source"] for block, score in scored_blocks if score > 0))
     ranked_blocks = [block for block, score in sorted(scored_blocks, key=lambda item: item[1], reverse=True) if score > 0]
+    candidate_blocks = ranked_blocks[:12]
     selected_blocks: list[dict[str, str]] = []
     selected_sources: list[str] = []
-    per_source_counts: dict[str, int] = {}
-    for block in ranked_blocks:
-        source = block["source"]
-        if per_source_counts.get(source, 0) >= 2:
-            continue
-        if len(selected_blocks) >= 6:
-            break
-        selected_blocks.append(block)
-        per_source_counts[source] = per_source_counts.get(source, 0) + 1
-        if source not in selected_sources:
-            selected_sources.append(source)
-        if len(selected_sources) >= 4 and len(selected_blocks) >= 4:
-            break
+    selected_block_ids = _llm_select_blocks(
+        client=selector_client,
+        question=question,
+        question_scope=question_scope,
+        explanation_dimension=explanation_dimension,
+        needs_general_knowledge=needs_general_knowledge,
+        primary_theme=primary_theme,
+        entity=entity,
+        candidate_blocks=candidate_blocks,
+    )
+    if selected_block_ids:
+        selected_lookup = {block["block_id"]: block for block in candidate_blocks}
+        for block_id in selected_block_ids[:6]:
+            block = selected_lookup.get(block_id)
+            if not block:
+                continue
+            selected_blocks.append(block)
+            if block["source"] not in selected_sources:
+                selected_sources.append(block["source"])
+    else:
+        per_source_counts: dict[str, int] = {}
+        for block in ranked_blocks:
+            source = block["source"]
+            if per_source_counts.get(source, 0) >= 2:
+                continue
+            if len(selected_blocks) >= 6:
+                break
+            selected_blocks.append(block)
+            per_source_counts[source] = per_source_counts.get(source, 0) + 1
+            if source not in selected_sources:
+                selected_sources.append(source)
+            if len(selected_sources) >= 4 and len(selected_blocks) >= 4:
+                break
     selected_context: dict[str, list[dict[str, str]]] = {}
     for block in selected_blocks:
         selected_context.setdefault(block["source"], []).append(block)
