@@ -8,6 +8,14 @@ def trim_history(messages: list[dict] | None, limit: int = 6) -> list[dict]:
     return normalized[-limit:]
 
 
+def _turn_scope(turn: dict) -> str:
+    return turn.get("question_scope", "") or turn.get("scope", "")
+
+
+def _turn_dimension(turn: dict) -> str:
+    return turn.get("explanation_dimension", "") or turn.get("dimension", "")
+
+
 def resolve_follow_up_route(
     question: str,
     messages: list[dict] | None,
@@ -23,12 +31,14 @@ def resolve_follow_up_route(
     assistant_turns = [item for item in history if item.get("role") == "assistant"]
     last_assistant = assistant_turns[-1] if assistant_turns else {}
     last_question_type = last_assistant.get("question_type", "")
+    last_scope = _turn_scope(last_assistant)
+    last_dimension = _turn_dimension(last_assistant)
     last_theme = last_assistant.get("resolved_theme") or primary_theme
     last_company = last_assistant.get("resolved_company", "")
 
     company_match = next((company for company in companies if company and company.lower() in lowered), "")
     if company_match and any(token in normalized for token in ("那", "呢", "角色", "位置")):
-        if last_question_type in {"dossier_summary", "theme_state", "timeline_focus", "theme_focus", "company_position"}:
+        if last_scope == "theme" or last_dimension in {"evolution", "comparison"} or last_question_type in {"dossier_summary", "theme_state", "timeline_focus", "theme_focus", "company_position"}:
             return "company_position", company_match
         return "company_focus", company_match
 
@@ -36,6 +46,8 @@ def resolve_follow_up_route(
         return "timeline_focus", last_theme
 
     if any(token in normalized for token in ("为什么", "为何")):
+        if last_scope == "theme" and last_dimension in {"judgment", "evolution"}:
+            return "theme_state" if last_question_type == "theme_state" else "dossier_summary", last_theme
         if last_question_type in {"theme_state", "dossier_summary"}:
             return last_question_type, last_theme
         if last_question_type == "company_position" and last_company:
@@ -44,15 +56,15 @@ def resolve_follow_up_route(
             return "timeline_focus", last_theme
 
     if any(token in normalized for token in ("还有别的", "还有别的吗", "还有吗")):
-        if last_question_type in {"company_position", "company_focus"} and last_theme:
+        if (last_scope == "company" or last_question_type in {"company_position", "company_focus"}) and last_theme:
             return "dossier_summary", last_theme
-        if last_question_type in {"timeline_focus", "theme_state", "dossier_summary"} and last_theme:
+        if (last_scope == "theme" or last_question_type in {"timeline_focus", "theme_state", "dossier_summary"}) and last_theme:
             return last_question_type, last_theme
 
     if normalized in {"继续", "接着说", "展开说说"}:
-        if last_question_type == "timeline_focus" and last_theme:
+        if last_dimension == "evolution" and last_theme:
             return "timeline_focus", last_theme
-        if last_question_type in {"dossier_summary", "theme_state", "theme_focus"} and last_theme:
+        if (last_scope == "theme" or last_question_type in {"dossier_summary", "theme_state", "theme_focus"}) and last_theme:
             return "dossier_summary", last_theme
         if last_question_type == "company_position" and last_company:
             return "company_position", last_company

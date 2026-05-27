@@ -109,7 +109,7 @@ class _WebChatRequestHandler(SimpleHTTPRequestHandler):
                 runtime_health_payload(
                     self._site_dir,
                     llm_available=_llm_available(),
-                    mode=DEFAULT_SETTINGS.editorial_mode,
+                    mode=DEFAULT_SETTINGS.research_mode,
                 ),
             )
             return

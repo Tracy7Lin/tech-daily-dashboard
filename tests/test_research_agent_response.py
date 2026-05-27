@@ -181,6 +181,44 @@ class ResearchAgentResponseTests(unittest.TestCase):
         self.assertEqual(answer["answer_note"], "这部分回答不直接来自当前日报，仅供参考。")
         self.assertEqual(answer["evidence_items"], [])
 
+    def test_rule_answer_follow_up_rehydrates_scope_and_dimension_for_company_position(self) -> None:
+        context = {
+            "question": "那 Google 呢？",
+            "question_type": "general_explainer",
+            "question_scope": "general",
+            "explanation_dimension": "explanation",
+            "primary_theme": "安全与治理",
+            "tracking_decision": "建议继续跟踪。",
+            "theme_state": "emerging",
+            "primary_source": "theme_dossier.json",
+            "company_positions": {"Google": "更偏产品功能约束"},
+            "entity": "",
+            "companies": ["Google"],
+            "question_understanding": {
+                "question_type": "general_explainer",
+                "question_scope": "general",
+                "explanation_dimension": "explanation",
+                "resolved_theme": "安全与治理",
+                "resolved_company": "",
+                "needs_general_knowledge": True,
+            },
+        }
+        history = [
+            {
+                "role": "assistant",
+                "question_type": "dossier_summary",
+                "question_scope": "theme",
+                "explanation_dimension": "judgment",
+                "resolved_theme": "安全与治理",
+                "resolved_company": "",
+            }
+        ]
+        responder = ResearchAgentResponder(mode="rule", client=None)
+        response = responder._rule_answer(context, history=history)
+        self.assertEqual(response["question_type"], "company_position")
+        self.assertEqual(response["resolved_company"], "Google")
+        self.assertIn("Google", response["answer"])
+
 
 if __name__ == "__main__":
     unittest.main()

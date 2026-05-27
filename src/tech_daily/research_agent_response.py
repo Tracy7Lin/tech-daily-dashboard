@@ -9,6 +9,7 @@ from .research_assistant_policy import (
     build_runtime_answer_frame,
     finalize_answer_payload,
     follow_up_suggestions_for_scope,
+    legacy_scope_defaults,
 )
 
 
@@ -94,6 +95,12 @@ class ResearchAgentResponder:
         if resolved_question_type != question_type:
             question_type = resolved_question_type
             entity = resolved_entity
+            resolved_scope, resolved_dimension = legacy_scope_defaults(question_type)
+            question_understanding = {
+                **question_understanding,
+                "question_scope": resolved_scope,
+                "explanation_dimension": resolved_dimension,
+            }
         resolved_understanding = {
             **question_understanding,
             "question_type": question_type,

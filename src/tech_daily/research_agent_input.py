@@ -3,6 +3,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .models import DailyReport
 
 
 @dataclass(frozen=True)
@@ -32,4 +36,23 @@ def load_research_agent_inputs(site_dir: Path, data_dir: Path, report_date: str)
         theme_tracking_brief=_load_json(daily_dir / "theme_tracking_brief.json"),
         theme_dossier=_load_json(daily_dir / "theme_dossier.json"),
         health_snapshot=_load_json(data_dir / "health_snapshot.json"),
+    )
+
+
+def build_research_agent_inputs_from_report(report: "DailyReport") -> ResearchAgentInputs:
+    health_snapshot = {
+        "ops_status_analysis": {
+            "operator_brief": (report.agent_brief or {}).get("ops_signal", ""),
+        },
+        "high_priority_runtime_issues": [],
+        "recently_recovered_runtime_issues": [],
+    }
+    return ResearchAgentInputs(
+        report_date=report.date,
+        report=report.to_dict(),
+        daily_intel_brief=report.agent_brief or {},
+        cross_day_intel_brief=report.cross_day_brief or {},
+        theme_tracking_brief=report.theme_tracking_brief or {},
+        theme_dossier=report.theme_dossier_brief or {},
+        health_snapshot=health_snapshot,
     )

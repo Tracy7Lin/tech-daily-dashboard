@@ -186,7 +186,7 @@ def follow_up_suggestions_for_scope(
     ]
 
 
-def _legacy_scope_defaults(question_type: str) -> tuple[str, str]:
+def legacy_scope_defaults(question_type: str) -> tuple[str, str]:
     if question_type in {"dossier_summary", "theme_state", "theme_focus"}:
         return "theme", "judgment"
     if question_type == "timeline_focus":
@@ -206,7 +206,7 @@ def build_runtime_answer_frame(context: dict) -> dict:
     question_scope = understanding.get("question_scope") or context.get("question_scope", "report")
     explanation_dimension = understanding.get("explanation_dimension") or context.get("explanation_dimension", "judgment")
     if question_scope == "report" and explanation_dimension == "judgment":
-        question_scope, explanation_dimension = _legacy_scope_defaults(question_type)
+        question_scope, explanation_dimension = legacy_scope_defaults(question_type)
     requested_tool = understanding.get("requested_tool", "")
     primary_theme = context.get("primary_theme", "")
     entity = context.get("entity", "") or understanding.get("resolved_company", "")

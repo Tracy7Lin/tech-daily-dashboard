@@ -213,7 +213,8 @@ python run_dashboard.py serve --port 8080
 - `agent_pipeline.py`: 最小情报分析 agent 编排入口
 - `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `theme_tracking_pipeline.py`: 专题跟踪 agent 编排入口
-- `chat_agent_pipeline.py`: 页面与 CLI 共享的本地问答 agent 编排入口
+- `research_agent_pipeline.py`: 运行时研究助理主链，负责问题理解、RAG 选择、tool 执行与回答组织
+- `chat_agent_pipeline.py`: 页面嵌入式问答预览与静态 fallback 的兼容层
 - `agent_skills/research-agent-question-orchestration`: 项目内 research assistant 的问题理解、上下文选择与证据归因规范
 - `web_chat_server.py`: 本地静态站点 + 运行时 `/api/chat` 服务入口
 - `summarizer.py`: 单条摘要门面
