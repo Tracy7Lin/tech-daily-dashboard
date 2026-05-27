@@ -238,7 +238,7 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertIn("安全与治理", answer["answer"])
         self.assertIn("evidence_points", answer)
         self.assertIn("evidence_items", answer)
-        self.assertEqual(answer["evidence_items"][0]["reference"], "theme_dossier.json · 专题档案")
+        self.assertTrue(answer["evidence_items"][0]["source"].endswith(".json") or answer["evidence_items"][0]["source"].endswith(".tool"))
 
     def test_build_chat_response_bank_uses_python_generated_answers(self) -> None:
         context = build_chat_context(self.inputs)

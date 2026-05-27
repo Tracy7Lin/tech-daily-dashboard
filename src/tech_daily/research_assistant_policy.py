@@ -152,6 +152,7 @@ def follow_up_suggestions_for_scope(
     if question_scope == "company" and company:
         return [
             f"{company} 为什么会处在这个位置？",
+            "为什么现在是 emerging？",
             "最近几天关键时间线说明了什么？",
             f"{primary_theme or '这个专题'} 值得继续跟踪吗？",
         ]
@@ -279,14 +280,14 @@ def build_rule_fallback_answer(context: dict) -> str:
         return f"当前日报里还没有足够材料解释 {entity} 在这个专题里的位置。"
 
     if question_scope == "theme":
+        state_text = f"当前处于 {theme_state}。" if theme_state else ""
         if selected_summaries:
             if explanation_dimension == "evolution":
                 return f"{primary_theme or '当前主专题'} 最近几天最关键的演化信号是：{selected_summaries[0]}"
-            state_text = f"目前处于 {theme_state}。" if theme_state else ""
             decision_text = tracking_decision or ""
             return f"{primary_theme or '当前主专题'} {state_text}最值得先看的依据是：{selected_summaries[0]} {decision_text}".strip()
         if theme_state or tracking_decision:
-            return f"{primary_theme or '当前主专题'} 当前更像是在持续形成过程中。{theme_state and f'目前处于 {theme_state}。' or ''} {tracking_decision}".strip()
+            return f"{primary_theme or '当前主专题'} 当前更像是在持续形成过程中。{state_text} {tracking_decision}".strip()
         return f"{primary_theme or '当前主专题'} 还需要更多日报材料来支撑进一步判断。"
 
     if question_scope == "report":

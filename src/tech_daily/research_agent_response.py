@@ -3,6 +3,7 @@ from __future__ import annotations
 from .chat_agent_memory import resolve_follow_up_route, trim_history
 from .llm_client import LLMClient, LLMClientError
 from .research_assistant_policy import (
+    build_evidence_item,
     build_answer_note,
     build_evidence_items_from_blocks,
     build_rule_fallback_answer,
@@ -111,7 +112,20 @@ class ResearchAgentResponder:
             "question_understanding": resolved_understanding,
         }
         answer = build_rule_fallback_answer(local_context)
+        theme_state = (local_context.get("theme_state") or "").strip()
         evidence_items = build_evidence_items_from_blocks(selected_blocks)
+        if question_type == "theme_state" and theme_state and not any(
+            item.get("label") in {"状态判断", "专题档案"} and theme_state in item.get("detail", "")
+            for item in evidence_items
+        ):
+            evidence_items.insert(
+                0,
+                build_evidence_item(
+                    "theme_dossier.json",
+                    "专题档案",
+                    f"当前主题阶段为 {theme_state}。",
+                ),
+            )
         frame = build_runtime_answer_frame(local_context)
 
         return finalize_answer_payload(

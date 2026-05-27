@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-from .chat_agent_memory import resolve_follow_up_route, trim_history
-from .llm_client import LLMClient, LLMClientError
-from .chat_agent_analysis import classify_chat_question
+from dataclasses import replace
+
+from .chat_agent_analysis import ChatQuestionUnderstanding, classify_chat_question, understand_chat_question
 from .chat_agent_input import ChatAgentInputs
-from .research_assistant_policy import (
-    build_company_position_answer,
-    build_evidence_item,
-    build_theme_state_answer,
-    build_timeline_focus_answer,
-    finalize_answer_payload,
-    follow_up_suggestions_for,
-    timeline_explanation,
-)
+from .chat_agent_memory import resolve_follow_up_route
+from .llm_client import LLMClient
+from .research_agent_context_builder import build_research_context
+from .research_agent_input import ResearchAgentInputs, build_research_agent_inputs_from_chat_inputs
+from .research_agent_response import ResearchAgentResponder as RuntimeResearchAgentResponder
+from .research_assistant_policy import legacy_scope_defaults
 
 
 def _select_placeholder_status(statuses: list[dict]) -> dict | None:
@@ -102,9 +99,6 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
         )
 
     primary_theme = inputs.theme_tracking_brief.get("primary_theme", "")
-    theme_summary = inputs.theme_tracking_brief.get("theme_summary", "") or "当前还没有形成明确主专题。"
-    theme_evolution = inputs.theme_tracking_brief.get("theme_evolution", "")
-    participating_companies = inputs.theme_tracking_brief.get("participating_companies", [])
     theme_dossier = {
         "primary_theme": inputs.theme_dossier_brief.get("primary_theme", ""),
         "theme_definition": inputs.theme_dossier_brief.get("theme_definition", ""),
@@ -115,8 +109,6 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
         "tracking_decision": inputs.theme_dossier_brief.get("tracking_decision", ""),
         "next_day_focus": inputs.theme_dossier_brief.get("next_day_focus", []),
     }
-    ops_brief = inputs.health_snapshot.get("ops_status_analysis", {}).get("operator_brief", "") or "当前没有额外运维提示。"
-    high_priority = [issue.get("company_slug", "") for issue in inputs.health_snapshot.get("high_priority_runtime_issues", [])]
 
     return {
         "report_date": inputs.report_date,
@@ -127,13 +119,13 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
         },
         "theme_tracking": {
             "primary_theme": primary_theme,
-            "answer": f"{theme_summary} {theme_evolution}".strip(),
-            "participating_companies": participating_companies,
+            "answer": f"{inputs.theme_tracking_brief.get('theme_summary', '')} {inputs.theme_tracking_brief.get('theme_evolution', '')}".strip(),
+            "participating_companies": inputs.theme_tracking_brief.get("participating_companies", []),
         },
         "theme_dossier": theme_dossier,
         "ops_status": {
-            "answer": ops_brief,
-            "high_priority": high_priority,
+            "answer": inputs.health_snapshot.get("ops_status_analysis", {}).get("operator_brief", "") or "当前没有额外运维提示。",
+            "high_priority": [issue.get("company_slug", "") for issue in inputs.health_snapshot.get("high_priority_runtime_issues", [])],
         },
         "company_answers": company_answers,
         "companies": company_names,
@@ -158,153 +150,78 @@ def build_chat_context(inputs: ChatAgentInputs) -> dict:
             "serve_hint": "使用 python run_dashboard.py serve --port 8080 启动实时问答服务。",
         },
         "mode_used": "rule",
+        "_research_inputs": build_research_agent_inputs_from_chat_inputs(inputs),
     }
 
 
-def answer_chat_question(question: str, context: dict, route: tuple[str, str] | None = None) -> dict:
-    question_type, entity = route or classify_chat_question(
+def _build_runtime_context(
+    question: str,
+    context: dict,
+    understanding: ChatQuestionUnderstanding,
+) -> dict:
+    inputs: ResearchAgentInputs = context["_research_inputs"]
+    runtime_context = build_research_context(
+        question,
+        understanding.question_type,
+        understanding.entity,
+        inputs,
+        explanation_dimension=understanding.explanation_dimension,
+        question_scope=understanding.question_scope,
+        needs_general_knowledge=understanding.needs_general_knowledge,
+    )
+    runtime_context["question_understanding"] = {
+        "question_type": understanding.question_type,
+        "entity": understanding.entity,
+        "explanation_dimension": understanding.explanation_dimension,
+        "resolved_theme": understanding.resolved_theme,
+        "resolved_company": understanding.resolved_company,
+        "question_scope": understanding.question_scope,
+        "needs_general_knowledge": understanding.needs_general_knowledge,
+        "confidence": understanding.confidence,
+        "requested_tool": understanding.requested_tool,
+        "assumption_used": understanding.assumption_used,
+    }
+    return runtime_context
+
+
+def _understanding_from_route(
+    question: str,
+    context: dict,
+    route: tuple[str, str] | None,
+) -> ChatQuestionUnderstanding:
+    base = understand_chat_question(
         question,
         context.get("companies", []),
         context.get("theme_tracking", {}).get("primary_theme", ""),
     )
-
-    evidence_points: list[str] = []
-    evidence_items: list[dict] = []
-    sources_used: list[str] = []
-
-    def add_evidence(source: str, label: str, detail: str) -> None:
-        if not detail:
-            return
-        evidence_points.append(detail)
-        evidence_items.append(build_evidence_item(source, label, detail))
-        if source not in sources_used:
-            sources_used.append(source)
-
-    if question_type == "daily_summary":
-        answer = context.get("daily_summary", {}).get("answer", "今天还没有可直接回答的日报摘要。")
-        primary_theme = context.get("theme_tracking", {}).get("primary_theme", "")
-        if primary_theme:
-            add_evidence("theme_tracking_brief.json", "专题跟踪", f"当前主专题是 {primary_theme}。")
-        ops_answer = context.get("ops_status", {}).get("answer", "")
-        if ops_answer:
-            add_evidence("health_snapshot.json", "运维快照", ops_answer)
-    elif question_type == "company_focus":
-        answer = context.get("company_answers", {}).get(
-            entity.lower(),
-            "当前还没有足够明确的公司上下文，建议直接问某家公司最近几天在做什么。",
-        )
-        dossier = context.get("theme_dossier", {})
-        if dossier.get("primary_theme"):
-            add_evidence("theme_dossier.json", "专题档案", f"当前主专题是 {dossier.get('primary_theme')}。")
-        if entity.lower() in context.get("company_answers", {}):
-            add_evidence("report.json", "公司日报", context["company_answers"][entity.lower()])
-    elif question_type == "company_position":
-        dossier = context.get("theme_dossier", {})
-        primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
-        position = dossier.get("company_positions", {}).get(entity, "")
-        tracking_decision = dossier.get("tracking_decision", "")
-        if position:
-            answer = build_company_position_answer(
-                primary_theme=primary_theme,
-                company=entity,
-                position=position,
-                tracking_decision=tracking_decision,
-            )
-            add_evidence("theme_dossier.json", "专题档案", f"{entity} 在 dossier 中的当前位置是：{position}。")
-            if dossier.get("theme_state"):
-                add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段为 {dossier.get('theme_state')}。")
-        else:
-            answer = f"当前 dossier 里还没有足够明确地定义 {entity} 在这个专题中的位置。"
-    elif question_type == "theme_focus":
-        answer = context.get("theme_tracking", {}).get("answer", "当前还没有形成明确主专题。")
-        theme_tracking = context.get("theme_tracking", {})
-        if theme_tracking.get("primary_theme"):
-            add_evidence(
-                "theme_tracking_brief.json",
-                "专题跟踪",
-                f"最近几天持续聚焦的主专题是 {theme_tracking.get('primary_theme')}。",
-            )
-        if theme_tracking.get("participating_companies"):
-            add_evidence(
-                "theme_tracking_brief.json",
-                "专题跟踪",
-                f"当前参与公司包括：{'、'.join(theme_tracking.get('participating_companies', []))}。",
-            )
-    elif question_type == "dossier_summary":
-        dossier = context.get("theme_dossier", {})
-        primary_theme = dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", "")
-        theme_definition = dossier.get("theme_definition", "")
-        tracking_decision = dossier.get("tracking_decision", "")
-        if primary_theme:
-            answer = f"{primary_theme} 目前可以理解为：{theme_definition or context.get('theme_tracking', {}).get('answer', '')} {tracking_decision}".strip()
-            if dossier.get("theme_state"):
-                add_evidence("theme_dossier.json", "专题档案", f"当前主题阶段是 {dossier.get('theme_state')}。")
-            if dossier.get("company_positions"):
-                add_evidence(
-                    "theme_dossier.json",
-                    "专题档案",
-                    f"当前持续参与公司包括：{'、'.join(dossier.get('company_positions', {}).keys())}。",
-                )
-        else:
-            answer = "当前还没有形成足够清晰的专题档案。"
-    elif question_type == "theme_state":
-        dossier = context.get("theme_dossier", {})
-        state = dossier.get("theme_state", "")
-        summary = dossier.get("theme_summary", "")
-        decision = dossier.get("tracking_decision", "")
-        if state:
-            answer = build_theme_state_answer(
-                primary_theme=dossier.get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
-                theme_state=state,
-                summary=summary,
-                tracking_decision=decision,
-            )
-            add_evidence("theme_dossier.json", "专题档案", f"当前 dossier 状态机结果是 {state}。")
-            if summary:
-                add_evidence("cross_day_intel_brief.json", "跨日观察", summary)
-        else:
-            answer = "当前还没有足够明确的专题阶段判断。"
-    elif question_type == "timeline_focus":
-        dossier = context.get("theme_dossier", {})
-        timeline = dossier.get("timeline_events", [])
-        if timeline:
-            lead = timeline[-1]
-            answer = build_timeline_focus_answer(
-                company=lead.get("company", "相关公司"),
-                title=lead.get("title", "代表事件"),
-                why_it_matters=lead.get("why_it_matters", ""),
-            )
-            add_evidence(
-                "theme_dossier.json",
-                "主题时间线",
-                f"{lead.get('date', '')} · {lead.get('company', '相关公司')} · {lead.get('title', '代表事件')}",
-            )
-            if lead.get("why_it_matters"):
-                add_evidence("theme_dossier.json", "主题时间线", lead.get("why_it_matters"))
-        else:
-            answer = "当前 dossier 里还没有足够明确的关键时间线。"
-    elif question_type == "ops_status":
-        answer = context.get("ops_status", {}).get("answer", "当前没有额外运维提示。")
-        for company_slug in context.get("ops_status", {}).get("high_priority", []):
-            add_evidence("health_snapshot.json", "运维快照", f"高优先级信源问题：{company_slug}")
-    else:
-        answer = "当前问答主要基于今日日报、跨日观察、专题跟踪和运维状态。你可以继续问今天重点、某家公司、主专题或信源状态。"
-
-    return finalize_answer_payload(
-        answer=answer,
-        question_type=question_type,
-        resolved_theme=context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
-        resolved_company=entity if question_type in {"company_focus", "company_position"} else "",
-        sources_used=sources_used,
-        evidence_items=evidence_items,
-        follow_up_suggestions=follow_up_suggestions_for(
-            question_type,
-            context.get("theme_dossier", {}).get("primary_theme", "") or context.get("theme_tracking", {}).get("primary_theme", ""),
-            context.get("theme_dossier", {}).get("company_positions", {}),
-            entity,
-        ),
-        mode_used=context.get("mode_used", "rule"),
+    if not route:
+        return base
+    question_type, entity = route
+    scope, dimension = legacy_scope_defaults(question_type)
+    resolved_company = entity if scope == "company" else ""
+    resolved_theme = (
+        context.get("theme_dossier", {}).get("primary_theme", "")
+        or context.get("theme_tracking", {}).get("primary_theme", "")
     )
+    if scope != "theme":
+        resolved_theme = base.resolved_theme or resolved_theme
+    return replace(
+        base,
+        question_type=question_type,
+        entity=entity,
+        explanation_dimension=dimension,
+        resolved_theme=resolved_theme,
+        resolved_company=resolved_company,
+        question_scope=scope,
+        needs_general_knowledge=(scope == "general"),
+    )
+
+
+def answer_chat_question(question: str, context: dict, route: tuple[str, str] | None = None) -> dict:
+    understanding = _understanding_from_route(question, context, route)
+    runtime_context = _build_runtime_context(question, context, understanding)
+    responder = RuntimeResearchAgentResponder(mode="rule", client=None)
+    return responder.answer(runtime_context)
 
 
 def build_chat_response_bank(context: dict, responder: "ChatAgentResponder") -> dict:
@@ -344,69 +261,8 @@ class ChatAgentResponder:
             context.get("companies", []),
             context.get("theme_tracking", {}).get("primary_theme", ""),
         )
-        rule_answer = answer_chat_question(question, context, route=route)
-        if self.mode == "rule":
-            return rule_answer
-        if self.client is None or not self.client.is_available():
-            return rule_answer
-        try:
-            payload = self.client.generate_json(
-                instructions=(
-                    "你是科技日报的情报助理。请基于给定上下文回答用户问题。"
-                    "回答必须简洁、可信、中文自然，不能引入上下文之外的新事实。"
-                    "先给结论，再给 1-2 个依据。"
-                ),
-                input_text=(
-                    f"用户问题：{question}\n"
-                    f"最近会话：{trim_history(history)}\n"
-                    f"问题类型：{rule_answer['question_type']}\n"
-                    f"规则回答：{rule_answer['answer']}\n"
-                    f"已有依据：{rule_answer['evidence_points']}\n"
-                    f"可用上下文：{context}\n"
-                ),
-                schema_name="chat_answer_payload",
-                schema={
-                    "type": "object",
-                    "properties": {
-                        "answer": {"type": "string"},
-                        "evidence_items": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "source": {"type": "string"},
-                                    "label": {"type": "string"},
-                                    "detail": {"type": "string"},
-                                    "reference": {"type": "string"},
-                                },
-                                "required": ["source", "label", "detail", "reference"],
-                                "additionalProperties": False,
-                            },
-                        },
-                        "evidence_points": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                        },
-                        "follow_up_suggestions": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                        },
-                    },
-                    "required": ["answer", "evidence_points", "follow_up_suggestions"],
-                    "additionalProperties": False,
-                },
-            )
-        except (LLMClientError, KeyError, TypeError, ValueError):
-            return rule_answer
+        understanding = _understanding_from_route(question, context, route)
+        runtime_context = _build_runtime_context(question, context, understanding)
+        runtime_responder = RuntimeResearchAgentResponder(mode=self.mode, client=self.client)
+        return runtime_responder.answer(runtime_context, history=history)
 
-        answer = (payload.get("answer") or "").strip()
-        if not answer:
-            return rule_answer
-        return {
-            **rule_answer,
-            "answer": answer,
-            "evidence_items": payload.get("evidence_items") or rule_answer["evidence_items"],
-            "evidence_points": payload.get("evidence_points") or rule_answer["evidence_points"],
-            "follow_up_suggestions": payload.get("follow_up_suggestions") or rule_answer["follow_up_suggestions"],
-            "mode_used": "llm",
-        }

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from .chat_agent_input import ChatAgentInputs
     from .models import DailyReport
 
 
@@ -55,4 +56,16 @@ def build_research_agent_inputs_from_report(report: "DailyReport") -> ResearchAg
         theme_tracking_brief=report.theme_tracking_brief or {},
         theme_dossier=report.theme_dossier_brief or {},
         health_snapshot=health_snapshot,
+    )
+
+
+def build_research_agent_inputs_from_chat_inputs(inputs: "ChatAgentInputs") -> ResearchAgentInputs:
+    return ResearchAgentInputs(
+        report_date=inputs.report_date,
+        report=inputs.report or {},
+        daily_intel_brief=inputs.daily_brief or {},
+        cross_day_intel_brief=inputs.cross_day_brief or {},
+        theme_tracking_brief=inputs.theme_tracking_brief or {},
+        theme_dossier=inputs.theme_dossier_brief or {},
+        health_snapshot=inputs.health_snapshot or {},
     )
