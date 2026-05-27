@@ -8,6 +8,7 @@ from .research_agent_context_builder import build_research_context
 from .research_agent_input import load_research_agent_inputs
 from .research_agent_response import ResearchAgentResponder
 from .settings import DEFAULT_SETTINGS
+from .research_agent_tool_runner import run_research_agent_tool
 
 
 def _build_responder() -> ResearchAgentResponder:
@@ -35,6 +36,14 @@ def run_research_agent(
     ] or list((inputs.theme_dossier or {}).get("company_positions", {}).keys())
     primary_theme = (inputs.theme_dossier or {}).get("primary_theme", "") or (inputs.theme_tracking_brief or {}).get("primary_theme", "")
     understanding = understand_chat_question(question, companies, primary_theme)
+    tool_result = {}
+    if understanding.requested_tool:
+        tool_result = run_research_agent_tool(
+            understanding.requested_tool,
+            report_date=report_date,
+            site_dir=site_dir,
+            data_dir=data_dir,
+        )
     context = build_research_context(
         question,
         understanding.question_type,
@@ -43,6 +52,7 @@ def run_research_agent(
         explanation_dimension=understanding.explanation_dimension,
         question_scope=understanding.question_scope,
         needs_general_knowledge=understanding.needs_general_knowledge,
+        tool_result=tool_result,
     )
     context["question_understanding"] = {
         "question_type": understanding.question_type,
@@ -53,6 +63,7 @@ def run_research_agent(
         "question_scope": understanding.question_scope,
         "needs_general_knowledge": understanding.needs_general_knowledge,
         "confidence": understanding.confidence,
+        "requested_tool": understanding.requested_tool,
         "assumption_used": understanding.assumption_used,
     }
     response = _build_responder().answer(context, history=history)

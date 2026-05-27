@@ -114,6 +114,17 @@ class ChatAgentResponseTests(unittest.TestCase):
         self.assertEqual(understanding.question_type, "dossier_summary")
         self.assertEqual(understanding.resolved_theme, "安全与治理")
 
+    def test_understand_chat_question_detects_general_explainer(self) -> None:
+        understanding = understand_chat_question("什么是知识蒸馏，它通常适合用在什么场景？", ["Google"], "安全与治理")
+        self.assertEqual(understanding.question_type, "general_explainer")
+        self.assertTrue(understanding.needs_general_knowledge)
+        self.assertEqual(understanding.question_scope, "general")
+
+    def test_understand_chat_question_detects_tool_requests(self) -> None:
+        understanding = understand_chat_question("运行一次健康检查", ["Google"], "安全与治理")
+        self.assertEqual(understanding.requested_tool, "local_health_check")
+        self.assertEqual(understanding.question_scope, "tool")
+
     def test_answer_chat_question_routes_dossier_summary_question(self) -> None:
         context = build_chat_context(self.inputs)
         answer = answer_chat_question("这个主专题现在怎么理解？", context)

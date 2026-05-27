@@ -58,6 +58,7 @@ class ResearchAgentResponder:
         grounding_mode = context.get("grounding_mode", "grounded")
         evidence_items: list[dict] = []
         sources_used: list[str] = [source for source in [context.get("primary_source", "")] if source]
+        tool_result = context.get("tool_result", {}) or {}
 
         resolved_route = resolve_follow_up_route(
             question,
@@ -73,7 +74,17 @@ class ResearchAgentResponder:
             question_type = resolved_question_type
             entity = resolved_entity
 
-        if question_type == "dossier_summary":
+        if tool_result.get("status") == "ok":
+            answer = tool_result.get("summary", "") or "工具执行已完成。"
+            evidence_items.append(
+                build_evidence_item(
+                    f"{tool_result.get('tool_name', 'tool')}.tool",
+                    "本地工具结果",
+                    tool_result.get("summary", ""),
+                    "report_basis",
+                )
+            )
+        elif question_type == "dossier_summary":
             definition = dossier.get("theme_definition", "")
             summary = dossier.get("theme_summary", "") or context.get("theme_tracking_brief", {}).get("theme_summary", "")
             answer = f"{primary_theme} 当前最值得从 {definition or summary or '主题持续升温'} 这个角度理解。{tracking_decision}".strip()
@@ -152,6 +163,7 @@ class ResearchAgentResponder:
 
     def _generate_llm_answer(self, context: dict, rule_answer: dict, history: list[dict] | None = None) -> dict:
         grounding_mode = context.get("grounding_mode", "grounded")
+        tool_result = context.get("tool_result", {}) or {}
         if grounding_mode == "grounded":
             answering_policy = "优先依据 selected_context 和日报证据回答，不要脱离证据层。"
         elif grounding_mode == "hybrid":
@@ -178,6 +190,7 @@ class ResearchAgentResponder:
                 f"问题模式说明：\n{context.get('question_patterns_text', '')}\n"
                 f"RAG 与边界控制说明：\n{context.get('rag_and_boundaries_text', '')}\n"
                 f"可用工具：\n{context.get('available_tools_text', '')}\n"
+                f"已执行工具结果：{tool_result}\n"
                 f"用户问题：{context.get('question', '')}\n"
                 f"最近会话：{trim_history(history)}\n"
                 f"问题理解：{question_understanding}\n"

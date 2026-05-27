@@ -176,6 +176,8 @@ def _score_source(
         score += 6
     if question_type == "company_position" and block.get("kind") == "company_position":
         score += 6
+    if block.get("kind") == "tool_result":
+        score += 7
     if question_type == "theme_state" and block.get("kind") in {"theme_state", "theme_summary", "tracking_decision"}:
         score += 4
     if question_type == "ops_status" and source == "health_snapshot.json":
@@ -210,6 +212,7 @@ def build_research_context(
     explanation_dimension: str = "judgment",
     question_scope: str = "report",
     needs_general_knowledge: bool = False,
+    tool_result: dict | None = None,
 ) -> dict:
     report = inputs.report or {}
     daily = inputs.daily_intel_brief or {}
@@ -243,6 +246,17 @@ def build_research_context(
         for block in _artifact_blocks(source, payload)
         if block.get("text")
     ]
+    if tool_result:
+        tool_summary = (tool_result.get("summary") or "").strip()
+        if tool_summary:
+            all_blocks.append(
+                _build_evidence_block(
+                    f"{tool_result.get('tool_name', 'tool')}.tool",
+                    "tool_result",
+                    f"tool-{tool_result.get('tool_name', 'tool')}",
+                    tool_summary,
+                )
+            )
     scored_blocks = [
         (
             block,
@@ -304,6 +318,7 @@ def build_research_context(
         "rag_and_boundaries_text": skill.get("rag_and_boundaries_text", ""),
         "available_tools": available_tools,
         "available_tools_text": render_research_tools_text(),
+        "tool_result": tool_result or {},
         "preferred_sources": preferred_sources,
         "selected_sources": selected_sources,
         "selected_blocks": selected_blocks,
