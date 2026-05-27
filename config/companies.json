@@ -10,6 +10,17 @@
         "url": "https://openai.com/news/rss.xml",
         "include_patterns": ["openai", "gpt", "model", "agent", "api"],
         "exclude_patterns": ["careers", "jobs"]
+      },
+      {
+        "kind": "html",
+        "label": "OpenAI Index",
+        "url": "https://openai.com/index/",
+        "path_prefixes": ["/index/"],
+        "include_patterns": ["openai", "gpt", "model", "agent", "api", "operator", "reasoning"],
+        "exclude_patterns": ["careers", "jobs"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 4,
+        "require_published_at": true
       }
     ]
   },
@@ -24,6 +35,13 @@
         "url": "https://blog.google/rss/",
         "include_patterns": ["ai", "gemini", "cloud", "workspace", "android"],
         "exclude_patterns": ["culture", "keyword"]
+      },
+      {
+        "kind": "rss",
+        "label": "Google Developers Blog",
+        "url": "https://developers.googleblog.com/feeds/posts/default?alt=rss",
+        "include_patterns": ["ai", "gemini", "api", "developer", "android", "cloud"],
+        "exclude_patterns": ["culture", "keyword"]
       }
     ]
   },
@@ -37,6 +55,13 @@
         "label": "Microsoft Blogs",
         "url": "https://blogs.microsoft.com/feed/",
         "include_patterns": ["copilot", "azure", "ai", "windows", "microsoft 365"],
+        "exclude_patterns": ["career", "jobs"]
+      },
+      {
+        "kind": "rss",
+        "label": "Azure Blog",
+        "url": "https://azure.microsoft.com/en-us/blog/feed/",
+        "include_patterns": ["azure", "ai", "copilot", "developer", "model"],
         "exclude_patterns": ["career", "jobs"]
       }
     ]
@@ -106,6 +131,13 @@
         "fetch_article_details": true,
         "detail_fetch_limit": 4,
         "require_published_at": true
+      },
+      {
+        "kind": "rss",
+        "label": "AWS News Blog",
+        "url": "https://aws.amazon.com/blogs/aws/feed/",
+        "include_patterns": ["aws", "ai", "agent", "cloud", "inference", "developer"],
+        "exclude_patterns": ["career", "jobs"]
       }
     ]
   },
@@ -119,6 +151,13 @@
         "label": "NVIDIA Blog",
         "url": "https://blogs.nvidia.com/feed/",
         "include_patterns": ["ai", "nvidia", "robotics", "software", "omniverse"],
+        "exclude_patterns": ["career", "jobs"]
+      },
+      {
+        "kind": "rss",
+        "label": "NVIDIA Developer Blog",
+        "url": "https://developer.nvidia.com/blog/feed/",
+        "include_patterns": ["ai", "cuda", "developer", "software", "robotics"],
         "exclude_patterns": ["career", "jobs"]
       }
     ]

@@ -23,9 +23,130 @@ def _payload_text(payload: Any) -> str:
     return serialized.lower()
 
 
+def _build_evidence_block(source: str, kind: str, block_id: str, text: str) -> dict[str, str]:
+    return {
+        "source": source,
+        "kind": kind,
+        "block_id": block_id,
+        "text": text.strip(),
+    }
+
+
+def _iter_report_blocks(report: dict[str, Any]) -> list[dict[str, str]]:
+    blocks: list[dict[str, str]] = []
+    headline = report.get("headline", "")
+    if headline:
+        blocks.append(_build_evidence_block("report.json", "headline", "report-headline", headline))
+    for company_report in report.get("company_reports", []) or []:
+        company_name = company_report.get("company_name", "")
+        entries = company_report.get("entries", []) or []
+        if company_name:
+            blocks.append(
+                _build_evidence_block(
+                    "report.json",
+                    "company_summary",
+                    f"company-{company_name.lower()}",
+                    f"{company_name} 当日动态数量 {len(entries)}。",
+                )
+            )
+        for index, entry in enumerate(entries[:3]):
+            title = ((entry.get("raw") or {}).get("title") or "").strip()
+            summary = (entry.get("summary_cn") or "").strip()
+            comparison = (entry.get("comparison_angle") or "").strip()
+            text = " ".join(part for part in [company_name, title, summary, comparison] if part).strip()
+            if text:
+                blocks.append(
+                    _build_evidence_block(
+                        "report.json",
+                        "entry",
+                        f"entry-{company_name.lower()}-{index}",
+                        text,
+                    )
+                )
+    return blocks
+
+
+def _iter_brief_blocks(source: str, payload: dict[str, Any]) -> list[dict[str, str]]:
+    blocks: list[dict[str, str]] = []
+    for key in [
+        "editorial_signal",
+        "ops_signal",
+        "theme_summary",
+        "theme_evolution",
+        "tracking_decision",
+        "theme_definition",
+        "timeline_highlight",
+        "operator_brief",
+    ]:
+        value = payload.get(key, "")
+        if isinstance(value, str) and value.strip():
+            blocks.append(_build_evidence_block(source, key, key.replace("_", "-"), value))
+    for key in [
+        "warming_themes",
+        "steady_companies",
+        "swing_companies",
+        "persistent_source_risks",
+        "recent_source_recoveries",
+        "next_day_focus",
+        "next_day_theme_focus",
+        "watchlist",
+        "participating_companies",
+        "candidate_themes",
+        "lead_positions",
+    ]:
+        value = payload.get(key, [])
+        if value:
+            joined = "、".join(str(item) for item in value if item)
+            if joined:
+                blocks.append(_build_evidence_block(source, key, key.replace("_", "-"), joined))
+    company_positions = payload.get("company_positions") or {}
+    if isinstance(company_positions, dict):
+        for company, position in company_positions.items():
+            text = f"{company}：{position}".strip()
+            if position:
+                blocks.append(_build_evidence_block(source, "company_position", f"company-position-{company.lower()}", text))
+    timeline_events = payload.get("timeline_events") or []
+    for index, event in enumerate(timeline_events[:6]):
+        company = event.get("company", "")
+        title = event.get("title", "")
+        why = event.get("why_it_matters", "")
+        date = event.get("date", "")
+        text = " ".join(part for part in [date, company, title, why] if part).strip()
+        if text:
+            blocks.append(_build_evidence_block(source, "timeline_event", f"timeline-{index}", text))
+    return blocks
+
+
+def _iter_health_blocks(payload: dict[str, Any]) -> list[dict[str, str]]:
+    blocks: list[dict[str, str]] = []
+    operator_brief = (payload.get("ops_status_analysis") or {}).get("operator_brief", "") or payload.get("operator_brief", "")
+    if operator_brief:
+        blocks.append(_build_evidence_block("health_snapshot.json", "operator_brief", "operator-brief", operator_brief))
+    for key in ["recent_runtime_diagnostics", "high_priority_runtime_issues", "recently_recovered_runtime_issues"]:
+        for index, item in enumerate(payload.get(key, []) or []):
+            company = item.get("company_slug", "") or item.get("company", "")
+            issues = "、".join(item.get("issues", []) or [])
+            latest = item.get("latest_report_date", "")
+            text = " ".join(part for part in [company, issues, latest] if part).strip()
+            if text:
+                blocks.append(_build_evidence_block("health_snapshot.json", key, f"{key}-{index}", text))
+    return blocks
+
+
+def _artifact_blocks(source: str, payload: Any) -> list[dict[str, str]]:
+    if not payload:
+        return []
+    if source == "report.json" and isinstance(payload, dict):
+        return _iter_report_blocks(payload)
+    if source == "health_snapshot.json" and isinstance(payload, dict):
+        return _iter_health_blocks(payload)
+    if isinstance(payload, dict):
+        return _iter_brief_blocks(source, payload)
+    return [_build_evidence_block(source, "raw", "raw", _payload_text(payload))]
+
+
 def _score_source(
-    source: str,
-    payload: Any,
+    block: dict[str, str],
     *,
     question: str,
     question_type: str,
@@ -33,10 +154,11 @@ def _score_source(
     primary_theme: str,
     preferred_sources: list[str],
 ) -> int:
-    if not payload:
+    payload_text = block.get("text", "").lower()
+    if not payload_text:
         return 0
     score = 0
-    payload_text = _payload_text(payload)
+    source = block["source"]
     if question_type != "out_of_scope" and source in preferred_sources:
         score += max(1, len(preferred_sources) - preferred_sources.index(source))
     lowered_question = question.lower()
@@ -48,6 +170,12 @@ def _score_source(
         if token in payload_text:
             score += 2
     if question_type in {"dossier_summary", "theme_state", "company_position", "timeline_focus"} and source == "theme_dossier.json":
+        score += 4
+    if question_type == "timeline_focus" and block.get("kind") == "timeline_event":
+        score += 6
+    if question_type == "company_position" and block.get("kind") == "company_position":
+        score += 6
+    if question_type == "theme_state" and block.get("kind") in {"theme_state", "theme_summary", "tracking_decision"}:
         score += 4
     if question_type == "ops_status" and source == "health_snapshot.json":
         score += 4
@@ -89,6 +217,7 @@ def build_research_context(question: str, question_type: str, entity: str, input
 
     skill = load_research_agent_skill()
     primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme", "")
+    preferred_sources = preferred_sources_for_question(question_type)
     artifact_map = {
         "report.json": report,
         "daily_intel_brief.json": daily,
@@ -97,13 +226,17 @@ def build_research_context(question: str, question_type: str, entity: str, input
         "theme_dossier.json": dossier,
         "health_snapshot.json": health,
     }
-    preferred_sources = preferred_sources_for_question(question_type)
-    scored_sources = [
+    all_blocks = [
+        block
+        for source, payload in artifact_map.items()
+        for block in _artifact_blocks(source, payload)
+        if block.get("text")
+    ]
+    scored_blocks = [
         (
-            source,
+            block,
             _score_source(
-                source,
-                payload,
+                block,
                 question=question,
                 question_type=question_type,
                 entity=entity,
@@ -111,17 +244,37 @@ def build_research_context(question: str, question_type: str, entity: str, input
                 preferred_sources=preferred_sources,
             ),
         )
-        for source, payload in artifact_map.items()
-        if payload
+        for block in all_blocks
     ]
-    matched_sources = [source for source, score in scored_sources if score > 0]
-    sorted_sources = [source for source, _ in sorted(scored_sources, key=lambda item: item[1], reverse=True)]
-    selected_sources = sorted_sources[:4] if matched_sources else []
-    selected_context = {source: artifact_map[source] for source in selected_sources}
+    matched_sources = list(dict.fromkeys(block["source"] for block, score in scored_blocks if score > 0))
+    ranked_blocks = [block for block, score in sorted(scored_blocks, key=lambda item: item[1], reverse=True) if score > 0]
+    selected_blocks: list[dict[str, str]] = []
+    selected_sources: list[str] = []
+    per_source_counts: dict[str, int] = {}
+    for block in ranked_blocks:
+        source = block["source"]
+        if per_source_counts.get(source, 0) >= 2:
+            continue
+        if len(selected_blocks) >= 6:
+            break
+        selected_blocks.append(block)
+        per_source_counts[source] = per_source_counts.get(source, 0) + 1
+        if source not in selected_sources:
+            selected_sources.append(source)
+        if len(selected_sources) >= 4 and len(selected_blocks) >= 4:
+            break
+    selected_context: dict[str, list[dict[str, str]]] = {}
+    for block in selected_blocks:
+        selected_context.setdefault(block["source"], []).append(block)
     grounding_mode = _determine_grounding_mode(question_type, matched_sources, entity, primary_theme)
     if not selected_sources and grounding_mode != "general":
-        selected_sources = [source for source in preferred_sources if artifact_map.get(source)][:3]
-        selected_context = {source: artifact_map[source] for source in selected_sources}
+        for source in [source for source in preferred_sources if artifact_map.get(source)][:3]:
+            source_blocks = _artifact_blocks(source, artifact_map[source])[:2]
+            if not source_blocks:
+                continue
+            selected_sources.append(source)
+            selected_context[source] = source_blocks
+            selected_blocks.extend(source_blocks)
 
     primary_source = selected_sources[0] if selected_sources else ""
 
@@ -137,6 +290,7 @@ def build_research_context(question: str, question_type: str, entity: str, input
         "question_patterns_text": skill["question_patterns_text"],
         "preferred_sources": preferred_sources,
         "selected_sources": selected_sources,
+        "selected_blocks": selected_blocks,
         "matched_sources": matched_sources,
         "selected_context": selected_context,
         "grounding_mode": grounding_mode,

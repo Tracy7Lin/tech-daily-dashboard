@@ -39,6 +39,24 @@ class ConfigLoaderTests(unittest.TestCase):
         self.assertEqual(huawei_source.url, "https://www.huawei.com/en/media-center")
         self.assertIn("/en/news/", huawei_source.path_prefixes)
 
+    def test_high_value_us_companies_have_secondary_official_sources_for_broader_signal_coverage(self) -> None:
+        companies = {company.slug: company for company in load_companies()}
+
+        self.assertGreaterEqual(len(companies["google"].sources), 2)
+        self.assertEqual(companies["google"].sources[1].label, "Google Developers Blog")
+
+        self.assertGreaterEqual(len(companies["microsoft"].sources), 2)
+        self.assertEqual(companies["microsoft"].sources[1].label, "Azure Blog")
+
+        self.assertGreaterEqual(len(companies["amazon"].sources), 2)
+        self.assertEqual(companies["amazon"].sources[1].label, "AWS News Blog")
+
+        self.assertGreaterEqual(len(companies["nvidia"].sources), 2)
+        self.assertEqual(companies["nvidia"].sources[1].label, "NVIDIA Developer Blog")
+
+        self.assertGreaterEqual(len(companies["openai"].sources), 2)
+        self.assertEqual(companies["openai"].sources[1].label, "OpenAI Index")
+
 
 if __name__ == "__main__":
     unittest.main()
