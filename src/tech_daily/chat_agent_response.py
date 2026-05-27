@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .chat_agent_analysis import ChatQuestionUnderstanding, classify_chat_question, understand_chat_question
+from .chat_agent_analysis import (
+    ChatQuestionUnderstanding,
+    classify_chat_question,
+    serialize_question_understanding,
+)
 from .chat_agent_input import ChatAgentInputs
 from .chat_agent_memory import resolve_follow_up_route
 from .llm_client import LLMClient
@@ -10,6 +14,7 @@ from .research_agent_context_builder import build_research_context
 from .research_agent_input import ResearchAgentInputs, build_research_agent_inputs_from_chat_inputs
 from .research_agent_response import ResearchAgentResponder as RuntimeResearchAgentResponder
 from .research_assistant_policy import legacy_scope_defaults
+from .research_agent_understanding import resolve_runtime_question_understanding
 
 
 def _select_placeholder_status(statuses: list[dict]) -> dict | None:
@@ -169,18 +174,7 @@ def _build_runtime_context(
         question_scope=understanding.question_scope,
         needs_general_knowledge=understanding.needs_general_knowledge,
     )
-    runtime_context["question_understanding"] = {
-        "question_type": understanding.question_type,
-        "entity": understanding.entity,
-        "explanation_dimension": understanding.explanation_dimension,
-        "resolved_theme": understanding.resolved_theme,
-        "resolved_company": understanding.resolved_company,
-        "question_scope": understanding.question_scope,
-        "needs_general_knowledge": understanding.needs_general_knowledge,
-        "confidence": understanding.confidence,
-        "requested_tool": understanding.requested_tool,
-        "assumption_used": understanding.assumption_used,
-    }
+    runtime_context["question_understanding"] = serialize_question_understanding(understanding)
     return runtime_context
 
 
@@ -189,10 +183,12 @@ def _understanding_from_route(
     context: dict,
     route: tuple[str, str] | None,
 ) -> ChatQuestionUnderstanding:
-    base = understand_chat_question(
+    base = resolve_runtime_question_understanding(
         question,
         context.get("companies", []),
         context.get("theme_tracking", {}).get("primary_theme", ""),
+        mode="rule",
+        client=None,
     )
     if not route:
         return base
@@ -265,4 +261,3 @@ class ChatAgentResponder:
         runtime_context = _build_runtime_context(question, context, understanding)
         runtime_responder = RuntimeResearchAgentResponder(mode=self.mode, client=self.client)
         return runtime_responder.answer(runtime_context, history=history)
-

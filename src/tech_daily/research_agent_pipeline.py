@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .chat_agent_analysis import serialize_question_understanding
 from .llm_client import LLMClient
 from .research_agent_context_builder import build_research_context
 from .research_agent_input import load_research_agent_inputs
@@ -67,18 +68,7 @@ def run_research_agent(
         tool_result=tool_result,
         selector_client=responder.client if isinstance(responder.client, LLMClient) else None,
     )
-    context["question_understanding"] = {
-        "question_type": understanding.question_type,
-        "entity": understanding.entity,
-        "explanation_dimension": understanding.explanation_dimension,
-        "resolved_theme": understanding.resolved_theme,
-        "resolved_company": understanding.resolved_company,
-        "question_scope": understanding.question_scope,
-        "needs_general_knowledge": understanding.needs_general_knowledge,
-        "confidence": understanding.confidence,
-        "requested_tool": understanding.requested_tool,
-        "assumption_used": understanding.assumption_used,
-    }
+    context["question_understanding"] = serialize_question_understanding(understanding)
     response = responder.answer(context, history=history)
     response.setdefault("question_type", understanding.question_type)
     response.setdefault("question_scope", understanding.question_scope)

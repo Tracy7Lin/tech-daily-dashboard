@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import asdict
 from dataclasses import dataclass
 
 
@@ -20,6 +21,10 @@ class ChatQuestionUnderstanding:
     confidence: str = "medium"
     requested_tool: str = ""
     assumption_used: str = ""
+
+
+def serialize_question_understanding(understanding: ChatQuestionUnderstanding) -> dict:
+    return asdict(understanding)
 
 
 def understand_chat_question(question: str, companies: list[str], primary_theme: str) -> ChatQuestionUnderstanding:

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .chat_agent_analysis import understand_chat_question
+from .chat_agent_analysis import serialize_question_understanding
 from .models import DailyReport
 from .research_agent_context_builder import build_research_context
 from .research_agent_input import build_research_agent_inputs_from_report
 from .research_agent_response import ResearchAgentResponder
+from .research_agent_understanding import resolve_runtime_question_understanding
 from .settings import DEFAULT_SETTINGS
 
 
@@ -37,7 +38,13 @@ def _answer_preview_question(
     primary_theme: str,
 ) -> dict:
     inputs = build_research_agent_inputs_from_report(report)
-    understanding = understand_chat_question(question, companies, primary_theme)
+    understanding = resolve_runtime_question_understanding(
+        question,
+        companies,
+        primary_theme,
+        mode="rule",
+        client=None,
+    )
     context = build_research_context(
         question,
         understanding.question_type,
@@ -47,18 +54,7 @@ def _answer_preview_question(
         question_scope=understanding.question_scope,
         needs_general_knowledge=understanding.needs_general_knowledge,
     )
-    context["question_understanding"] = {
-        "question_type": understanding.question_type,
-        "entity": understanding.entity,
-        "explanation_dimension": understanding.explanation_dimension,
-        "resolved_theme": understanding.resolved_theme,
-        "resolved_company": understanding.resolved_company,
-        "question_scope": understanding.question_scope,
-        "needs_general_knowledge": understanding.needs_general_knowledge,
-        "confidence": understanding.confidence,
-        "requested_tool": "",
-        "assumption_used": understanding.assumption_used,
-    }
+    context["question_understanding"] = serialize_question_understanding(understanding)
     return responder.answer(context)
 
 
