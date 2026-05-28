@@ -34,7 +34,7 @@
 - `RAG` 负责从日报 JSON 知识层里提供 grounding
 - `边界控制` 负责区分日报依据、模型补充判断与通用知识回答
 
-## 2. 当前阶段结论
+## 2. 当前阶段基线
 
 以下能力已经可以视为当前基线：
 
@@ -72,37 +72,55 @@
 - runtime-first JSON knowledge answering
 - 项目内 research orchestration skill
 
-## 3. 下一阶段目标
+## 3. 为什么进入下一阶段
+
+到当前版本为止，`Research Assistant v2` 的主线已经基本完成，具体包括：
+
+- `runtime-first research assistant`
+- `adaptive research assistant`
+- `session-memory` 多轮追问
+- `LLM-first + daily-intelligence RAG` 回答链
+- `local tools` 接口与首批本地工具执行
+- `research-agent-question-orchestration` 项目内 skill
+- `chat_agent_*` 已降级为 preview / fallback compatibility layer
+
+因此，下一阶段不再以“把 chat 做得更像研究助理”为主目标，而是进入：
+
+- 提高研究助理自由提问质量
+- 继续增强高质量官方信源广度
+- 为未来 tools 扩展留出更稳的接入边界
+
+## 4. 下一阶段目标
 
 下一阶段的主线目标定为：
 
-`Research Assistant v2`
+`Research Assistant v3`
 
-也就是把现在的日报问答器，继续推进成一个：
+也就是把当前已经成形的研究助理，继续推进成一个：
 
-- 更会解释
-- 更会引用依据
-- 更能连续追问
-- 更像研究助理
+- 更自由提问
+- 更自然选择上下文
+- 更清楚区分日报依据与通用知识补充
+- 更容易接入未来 tools
 
 的系统。
 
-## 4. 下一阶段优先级
+## 5. 下一阶段优先级
 
 下一阶段建议优先级如下：
 
-1. `Research Assistant v2`
-2. `Theme Dossier 深化`
-3. `项目内 research orchestration skill 对齐`
-4. `内容质量第二轮提升`
-5. `前端阅读与问答体验精修`
-6. `信源可靠性剩余硬点`
-7. `信源广度与信息量增强`
+1. `Research Assistant v3`
+2. `信源广度与信息量增强`
+3. `Theme Dossier 深化`
+4. `项目内 research orchestration skill 对齐`
+5. `内容质量第二轮提升`
+6. `前端阅读与问答体验精修`
+7. `信源可靠性剩余硬点`
 8. `兄弟日报与外部扩展`
 
-## 5. 主线批次设计
+## 6. 主线批次设计
 
-### 批次 A：Research Assistant v2（已完成基线）
+### 批次 A：Research Assistant v2（已完成）
 
 目标：
 
@@ -140,7 +158,27 @@
 - 回答来源边界已经明确到 dossier / cross-day / report / health snapshot
 - runtime-first research assistant 已经取代旧的静态优先问答路径
 - 项目内 `research-agent-question-orchestration` skill 已作为统一流程规范落库
-- 当前下一步重点不再是细拆更多硬分类，而是继续增强 `LLM-first + daily-intelligence RAG` 的自由提问能力
+- 当前这条批次可以视为完成，后续增强已转移到 `Research Assistant v3`
+
+### 批次 A2：Research Assistant v3
+
+目标：
+
+- 让研究助理更接近 `LLM + SKILLS + TOOLS + RAG + 边界控制`
+
+建议任务：
+
+- 继续弱化硬分类感，让问题理解更粗粒度、更 LLM-first
+- 继续增强自由提问场景下的上下文选择
+- 在不依赖日报时，允许更自然的通用知识回答，但保留边界提示
+- 为未来 `web_search` 等工具接入保留清晰的工具编排边界
+
+验收标准：
+
+- 对开放式问题不再显得像固定问答器
+- 对日报相关问题仍保持 grounding
+- 对通用知识问题不错误挂载日报证据
+- tools / rag / llm 的边界在实现和 UI 上都更清楚
 
 ### 批次 B：Theme Dossier 深化
 
@@ -164,7 +202,24 @@
 - dossier Markdown 更像研究简报
 - chat 对 dossier 的消费更自然
 
-### 批次 C：内容质量第二轮提升
+### 批次 C：信源广度与信息量增强
+
+目标：
+
+- 在维持“官方信源优先”的前提下，提高信息量与主题形成能力
+
+建议任务：
+
+- 为高价值公司继续补第二、第三官方入口
+- 提高单日有效内容密度，而不是只追求抓取成功率
+- 为低产出但稳定的公司增加更丰富的官方栏目覆盖
+
+验收标准：
+
+- 连续多天日报不再因为低产出显得过空
+- 更容易形成 2-3 个值得阅读的主线主题
+
+### 批次 D：内容质量第二轮提升
 
 目标：
 
@@ -181,7 +236,7 @@
 - 同日不同区块的文风更一致
 - 低信息密度主题进一步减少
 
-### 批次 D：前端体验精修
+### 批次 E：前端体验精修
 
 目标：
 
@@ -198,7 +253,7 @@
 - 页面阅读更轻松
 - chat 交互更自然
 
-### 批次 E：信源可靠性剩余硬点
+### 批次 F：信源可靠性剩余硬点
 
 目标：
 
@@ -215,31 +270,6 @@
 - 不因这两家问题破坏主系统节奏
 - 前端状态持续可解释
 
-### 批次 F：信源广度与信息量增强
-
-目标：
-
-- 在不破坏“官方信源优先”原则的前提下，提高每日有效信息量与主题密度
-
-建议任务：
-
-- 为高价值公司补充第二官方入口
-  - 例如 newsroom / blog / developer / IR / product update 多入口并存
-- 为已稳定但低产出的公司增加更丰富的官方栏目覆盖
-- 区分“可靠性修复”和“信息量增强”
-  - 前者关注抓不抓得到
-  - 后者关注抓到的内容够不够形成日报价值
-- 为新增入口补轻量 source audit
-  - 发布时间稳定性
-  - 正文可提取性
-  - 同日有效条目密度
-
-验收标准：
-
-- 连续多天的主刊不再频繁因为单日低产出显得过空
-- 主题聚合有更高概率形成 2-3 个值得阅读的主线
-- 新增入口不会显著拉高噪音和误抓
-
 ## 6. 暂不优先项
 
 以下方向明确不作为最近一批主线：
@@ -254,13 +284,13 @@
 
 如果按当前状态继续推进，我建议下一步直接进入：
 
-`批次 A：Research Assistant v2`
+`批次 A2：Research Assistant v3`
 
 理由：
 
-- 它能最大化放大已经完成的 dossier、tracking、cross-day、runtime chat 能力
-- 它比再做一层新 agent 更能提升实际使用体验
-- 它仍然保持在系统框架深化，而不是偏外围修补
+- 它能继续巩固 `LLM-first` 设计哲学
+- 它比继续堆规则更能提升研究助理真实能力
+- 它和未来 tools / web search 接入最直接相关
 
 ## 8. 执行原则
 
