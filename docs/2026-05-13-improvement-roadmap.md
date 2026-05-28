@@ -28,6 +28,11 @@
 
 其中日报知识层承担的是 grounding / evidence layer 的角色，而不是唯一答案来源。
 
+当前代码层也已经明确：
+
+- `research_agent_*` 是运行时研究助理主链
+- `chat_agent_*` 仅保留 preview / fallback compatibility 职责
+
 ## 3. 已完成的改进线
 
 以下工作已经不再是待办，而是当前基线能力：

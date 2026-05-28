@@ -14,6 +14,7 @@
 - `Adaptive Research Assistant` 已具备“日报依据 + 模型补充 + 通用知识回答”的基础链路
 - chat 已经具备基础会话级上下文记忆
 - 项目内 `research-agent-question-orchestration` skill 已落地
+- `chat_agent_*` 已降级为 preview / fallback compatibility layer，不再作为并行主链维护
 
 因此，下一阶段不再以“补主链路缺口”为目标，而是以：
 

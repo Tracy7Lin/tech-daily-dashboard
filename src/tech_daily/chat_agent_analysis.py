@@ -1,3 +1,10 @@
+"""Rule-based fallback understanding for preview/compatibility chat.
+
+The runtime assistant now uses research_agent_understanding.py as the primary
+LLM-first understanding layer. This module remains as a coarse fallback and
+shared compatibility shape for preview chat and tests.
+"""
+
 from __future__ import annotations
 
 import re

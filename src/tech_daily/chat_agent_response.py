@@ -1,3 +1,11 @@
+"""Compatibility responder for preview/fallback chat behavior.
+
+The actual runtime assistant answer chain lives under research_agent_*.
+Everything here exists to preserve embedded preview behavior, placeholder
+company messaging, and backward-compatible helper entry points while delegating
+answer generation to the runtime research assistant.
+"""
+
 from __future__ import annotations
 
 from dataclasses import replace

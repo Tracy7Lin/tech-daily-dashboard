@@ -1,3 +1,5 @@
+"""Tests for preview/fallback chat input compatibility helpers."""
+
 import json
 import unittest
 from pathlib import Path

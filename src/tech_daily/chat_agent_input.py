@@ -1,3 +1,10 @@
+"""Compatibility input layer for preview/fallback chat rendering.
+
+This module exists to bridge rendered DailyReport artifacts into the legacy
+embedded preview chat shell. The runtime research assistant mainline should use
+research_agent_input.py instead.
+"""
+
 from __future__ import annotations
 
 import json

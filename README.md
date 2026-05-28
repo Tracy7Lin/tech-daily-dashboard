@@ -214,7 +214,7 @@ python run_dashboard.py serve --port 8080
 - `cross_day_pipeline.py`: 跨日追踪 agent 编排入口
 - `theme_tracking_pipeline.py`: 专题跟踪 agent 编排入口
 - `research_agent_pipeline.py`: 运行时研究助理主链，负责问题理解、RAG 选择、tool 执行与回答组织
-- `chat_agent_pipeline.py`: 页面嵌入式问答预览与静态 fallback 的兼容层
+- `chat_agent_pipeline.py`: 页面嵌入式问答预览与静态 fallback 的兼容层，不再代表独立 agent 主链
 - `agent_skills/research-agent-question-orchestration`: 项目内 research assistant 的问题理解、上下文选择与证据归因规范
 - `web_chat_server.py`: 本地静态站点 + 运行时 `/api/chat` 服务入口
 - `summarizer.py`: 单条摘要门面
@@ -260,6 +260,18 @@ python run_dashboard.py serve --port 8080
   - 并在需要时提示“非日报依据，仅供参考”
 
 当前 research assistant 的目标不是把 LLM 压成固定问答器，而是让它以 LLM 为主、以日报 RAG 为 grounding，并通过 skills 和边界控制保证回答可解释、可追溯、可降级。
+
+### Runtime vs Preview Layers
+
+当前仓库里仍保留一组 `chat_agent_*` 模块，但它们的定位已经发生变化：
+
+- `research_agent_*` 是真正的运行时研究助理主链
+- `chat_agent_*` 只负责：
+  - 页面静态预览 response bank
+  - 本地服务不可用时的 fallback
+  - 少量兼容辅助逻辑，例如 placeholder company answers 与 follow-up route 兼容
+
+换句话说，`chat_agent_*` 现在是 preview/fallback compatibility layer，而不是第二套正式 agent。
 
 ## Project Agent Skill
 

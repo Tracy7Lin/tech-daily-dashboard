@@ -1,3 +1,11 @@
+"""Preview/fallback chat pipeline for embedded static pages.
+
+This module intentionally sits below the runtime research assistant. It builds
+the static response bank used when the local runtime chat service is not
+available, and should be treated as a compatibility layer rather than a second
+agent mainline.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path

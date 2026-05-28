@@ -1,3 +1,10 @@
+"""Session-memory helpers for embedded preview/fallback chat.
+
+These follow-up routing utilities are shared by the preview shell and the
+runtime assistant UI, but they should be read as conversation compatibility
+helpers rather than a standalone agent implementation.
+"""
+
 from __future__ import annotations
 
 

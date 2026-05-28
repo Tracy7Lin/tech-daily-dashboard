@@ -1,3 +1,5 @@
+"""Tests for embedded preview chat context generation."""
+
 import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401

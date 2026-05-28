@@ -1,3 +1,5 @@
+"""Tests for preview/fallback chat compatibility behavior."""
+
 import unittest
 
 from bootstrap import SRC_DIR  # noqa: F401
