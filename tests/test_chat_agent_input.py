@@ -4,7 +4,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from bootstrap import SRC_DIR  # noqa: F401
-from tech_daily.chat_agent_input import load_chat_agent_inputs
+from tech_daily.chat_agent_input import build_chat_agent_inputs_from_report, load_chat_agent_inputs
+from tech_daily.models import DailyReport
 
 
 class ChatAgentInputTests(unittest.TestCase):
@@ -43,6 +44,31 @@ class ChatAgentInputTests(unittest.TestCase):
         self.assertEqual(inputs.theme_tracking_brief["primary_theme"], "安全与治理")
         self.assertEqual(inputs.theme_dossier_brief["theme_state"], "emerging")
         self.assertEqual(inputs.health_snapshot["ops_status_analysis"]["operator_brief"], "tesla still blocked")
+
+    def test_build_chat_agent_inputs_from_report_uses_embedded_briefs(self) -> None:
+        report = DailyReport(
+            date="2026-05-15",
+            headline="headline",
+            hottest_topics=["安全与治理"],
+            total_entries=1,
+            companies_covered=1,
+            company_reports=[],
+            source_statuses=[],
+            agent_brief={"editorial_signal": "signal"},
+            cross_day_brief={"warming_themes": ["安全与治理"]},
+            theme_tracking_brief={"primary_theme": "安全与治理"},
+            theme_dossier_brief={"theme_state": "emerging"},
+        )
+
+        inputs = build_chat_agent_inputs_from_report(report)
+
+        self.assertEqual(inputs.report_date, "2026-05-15")
+        self.assertEqual(inputs.report["headline"], "headline")
+        self.assertEqual(inputs.daily_brief["editorial_signal"], "signal")
+        self.assertEqual(inputs.cross_day_brief["warming_themes"], ["安全与治理"])
+        self.assertEqual(inputs.theme_tracking_brief["primary_theme"], "安全与治理")
+        self.assertEqual(inputs.theme_dossier_brief["theme_state"], "emerging")
+        self.assertEqual(inputs.health_snapshot, {})
 
 
 if __name__ == "__main__":

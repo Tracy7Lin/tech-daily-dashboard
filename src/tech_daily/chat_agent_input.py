@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .models import DailyReport
 from .settings import DEFAULT_SETTINGS
 
 
@@ -35,4 +36,16 @@ def load_chat_agent_inputs(site_dir: Path, report_date: str, data_dir: Path | No
         theme_tracking_brief=_read_json(daily_dir / "theme_tracking_brief.json"),
         theme_dossier_brief=_read_json(daily_dir / "theme_dossier.json"),
         health_snapshot=_read_json(resolved_data_dir / "health_snapshot.json"),
+    )
+
+
+def build_chat_agent_inputs_from_report(report: DailyReport) -> ChatAgentInputs:
+    return ChatAgentInputs(
+        report_date=report.date,
+        report=report.to_dict(),
+        daily_brief=report.agent_brief or {},
+        cross_day_brief=report.cross_day_brief or {},
+        theme_tracking_brief=report.theme_tracking_brief or {},
+        theme_dossier_brief=report.theme_dossier_brief or {},
+        health_snapshot={},
     )

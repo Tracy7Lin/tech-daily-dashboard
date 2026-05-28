@@ -4,7 +4,6 @@ from dataclasses import replace
 
 from .chat_agent_analysis import (
     ChatQuestionUnderstanding,
-    classify_chat_question,
     serialize_question_understanding,
 )
 from .chat_agent_input import ChatAgentInputs
@@ -178,6 +177,20 @@ def _build_runtime_context(
     return runtime_context
 
 
+def _runtime_answer_for_understanding(
+    question: str,
+    context: dict,
+    understanding: ChatQuestionUnderstanding,
+    *,
+    mode: str,
+    client: LLMClient | None,
+    history: list[dict] | None = None,
+) -> dict:
+    runtime_context = _build_runtime_context(question, context, understanding)
+    runtime_responder = RuntimeResearchAgentResponder(mode=mode, client=client)
+    return runtime_responder.answer(runtime_context, history=history)
+
+
 def _understanding_from_route(
     question: str,
     context: dict,
@@ -215,9 +228,7 @@ def _understanding_from_route(
 
 def answer_chat_question(question: str, context: dict, route: tuple[str, str] | None = None) -> dict:
     understanding = _understanding_from_route(question, context, route)
-    runtime_context = _build_runtime_context(question, context, understanding)
-    responder = RuntimeResearchAgentResponder(mode="rule", client=None)
-    return responder.answer(runtime_context)
+    return _runtime_answer_for_understanding(question, context, understanding, mode="rule", client=None)
 
 
 def build_chat_response_bank(context: dict, responder: "ChatAgentResponder") -> dict:
@@ -258,6 +269,11 @@ class ChatAgentResponder:
             context.get("theme_tracking", {}).get("primary_theme", ""),
         )
         understanding = _understanding_from_route(question, context, route)
-        runtime_context = _build_runtime_context(question, context, understanding)
-        runtime_responder = RuntimeResearchAgentResponder(mode=self.mode, client=self.client)
-        return runtime_responder.answer(runtime_context, history=history)
+        return _runtime_answer_for_understanding(
+            question,
+            context,
+            understanding,
+            mode=self.mode,
+            client=self.client,
+            history=history,
+        )
