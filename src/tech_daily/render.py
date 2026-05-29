@@ -961,6 +961,123 @@ def _render_recent_issue_items(items: list[dict]) -> str:
     )
 
 
+def _render_home_story(entry: EnrichedEntry, *, featured: bool = False) -> str:
+    story_class = "lead-story" if featured else "secondary-story"
+    summary = _truncate(entry.summary_cn, 128 if featured else 92)
+    detail_id = f"home-story-{entry.raw.company_slug}-{_slugify(entry.raw.title)}"
+    return (
+        f"<details class='story-expand {story_class}' data-motion='section-card'>"
+        "<summary class='story-summary'>"
+        f"<div class='story-topline'><p class='eyebrow'>{html.escape(entry.raw.company_name)}</p><span class='importance-pill'>P{entry.importance}</span></div>"
+        f"<h2 class='story-title'>{html.escape(entry.raw.title)}</h2>"
+        f"<p class='story-copy'>{html.escape(summary)}</p>"
+        f"<p class='story-meta'>{html.escape(_format_published_at(entry.raw.published_at))} · {html.escape(entry.raw.source_label)}</p>"
+        "<span class='story-hint'>点击展开详情</span>"
+        "</summary>"
+        f"<div class='story-detail' id='{html.escape(detail_id)}'>"
+        f"{_render_summary_grid([('核心摘要', entry.summary_cn), ('来源与时间', f'{entry.raw.source_label} · {_format_published_at(entry.raw.published_at)}'), ('分类与角度', f'{entry.category} · {entry.comparison_angle}')])}"
+        f"<p class='section-copy'>{html.escape(entry.summary_cn)}</p>"
+        f"<p class='meta meta-line'>{_entry_meta(entry)}</p>"
+        f"<p class='supplement'><strong>原文补充：</strong>{html.escape(_entry_supplement(entry))}</p>"
+        "<div class='story-detail-actions'>"
+        f"<a class='inline-link' href='{html.escape(entry.raw.url)}'>查看原文</a>"
+        "</div>"
+        "</div>"
+        "</details>"
+    )
+
+
+def _render_home_stories(report: DailyReport) -> tuple[str, str]:
+    highlights = _select_highlights(report, limit=5)
+    if not highlights:
+        empty = "<article class='lead-story story-empty'><p class='empty'>今天还没有足够形成头版的日报条目。</p></article>"
+        return empty, ""
+    lead_html = _render_home_story(highlights[0], featured=True)
+    secondary_html = "".join(_render_home_story(entry) for entry in highlights[1:5])
+    return lead_html, secondary_html
+
+
+def _render_assistant_window(report: DailyReport) -> str:
+    context = report.chat_agent_context or {}
+    tracking = report.theme_tracking_brief or {}
+    dossier = report.theme_dossier_brief or {}
+    primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme") or "暂无主专题"
+    quick_questions = context.get("quick_questions", [])
+    chips = "".join(
+        f"<button class='assistant-window-chip' type='button' data-open-chat='true'>{html.escape(question)}</button>"
+        for question in quick_questions[:3]
+    )
+    if not chips:
+        chips = (
+            "<button class='assistant-window-chip' type='button' data-open-chat='true'>今天最值得关注什么？</button>"
+            "<button class='assistant-window-chip' type='button' data-open-chat='true'>这个主专题现在怎么理解？</button>"
+        )
+    return (
+        "<section class='assistant-window' data-reveal='assistant-window'>"
+        "<p class='section-kicker'>Research Assistant</p>"
+        "<h2 class='assistant-window-title'>研究助理</h2>"
+        "<p class='assistant-window-copy'>运行时读取日报知识层、跨日观察、专题跟踪与主题档案，支持自由提问和继续追问。</p>"
+        f"<p class='assistant-window-theme'><strong>当前主专题：</strong>{html.escape(primary_theme)}</p>"
+        "<div class='assistant-window-actions'>"
+        "<button class='cover-link primary assistant-window-button' type='button' data-open-chat='true'>立即提问</button>"
+        "</div>"
+        f"<div class='assistant-window-prompts'>{chips}</div>"
+        "</section>"
+    )
+
+
+def _render_topic_panel(report: DailyReport, cover: dict) -> str:
+    tracking = report.theme_tracking_brief or {}
+    dossier = report.theme_dossier_brief or {}
+    primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme") or cover.get("primary_theme", "暂无主专题")
+    theme_summary = dossier.get("theme_summary") or dossier.get("theme_definition") or tracking.get("theme_summary") or report.headline
+    theme_state = dossier.get("theme_state") or cover.get("theme_state", "暂无")
+    participating = "、".join(tracking.get("participating_companies", []) or cover.get("participating_companies", [])) or "暂无"
+    positions = dossier.get("lead_positions", [])[:3]
+    positions_html = "".join(f"<li>{html.escape(item)}</li>" for item in positions) or "<li>暂无明确公司位置摘要</li>"
+    return (
+        "<section class='topic-panel' data-reveal='topic-panel' data-motion='section-card'>"
+        "<p class='section-kicker'>Topic Brief</p>"
+        f"<h2 class='topic-panel-title'>{html.escape(primary_theme)}</h2>"
+        f"<p class='topic-panel-copy'>{html.escape(_truncate(theme_summary, 180))}</p>"
+        "<div class='newspaper-divider'></div>"
+        "<div class='topic-panel-meta'>"
+        f"<p><strong>当前阶段：</strong>{html.escape(theme_state)}</p>"
+        f"<p><strong>参与公司：</strong>{html.escape(participating)}</p>"
+        "</div>"
+        "<p class='topic-panel-subtitle'>公司位置</p>"
+        f"<ul class='topic-position-list'>{positions_html}</ul>"
+        "<div class='topic-panel-actions'>"
+        f"<a class='cover-link primary' href='{html.escape(cover.get('topic_href', f'./{report.date}/topic.html'))}' data-motion='nav-glide' data-page-link>进入专题页</a>"
+        f"<a class='cover-link' href='{html.escape(cover.get('dossier_href', f'./{report.date}/dossier.html'))}' data-motion='nav-glide' data-page-link>查看主题档案</a>"
+        "</div>"
+        "</section>"
+    )
+
+
+def _render_home_lower_section(report: DailyReport, cover: dict) -> str:
+    recent = _render_recent_issue_items(cover.get("recent_issues", []))
+    editorial_line = cover.get("editorial_line", report.headline)
+    latest_daily_href = html.escape(cover.get("daily_href", f"./{report.date}/index.html"))
+    return (
+        "<section class='home-lower-grid'>"
+        "<article class='home-lower-card'>"
+        "<p class='section-kicker'>Editor Note</p>"
+        "<h2 class='section-title'>今日判断</h2>"
+        f"<p class='section-copy'>{html.escape(editorial_line)}</p>"
+        f"<p><a class='inline-link' href='{latest_daily_href}' data-page-link>进入当日日报</a></p>"
+        "</article>"
+        "<section class='home-lower-card'>"
+        "<p class='section-kicker'>Recent Issues</p>"
+        "<h2 class='section-title'>最近几期</h2>"
+        "<div class='recent-list'>"
+        f"{recent}"
+        "</div>"
+        "</section>"
+        "</section>"
+    )
+
+
 def _render_meta_cards(items: list[tuple[str, str]]) -> str:
     return "".join(
         "<article class='meta-card'>"
@@ -1085,18 +1202,17 @@ def _render_company_report(
 def render_index(report: DailyReport) -> str:
     template = _load_template("home_magazine.html")
     cover = report.magazine_pages.get("cover", {})
+    lead_story, secondary_stories = _render_home_stories(report)
     return template.substitute(
-        primary_theme=html.escape(cover.get("primary_theme", "暂无主专题")),
-        cover_summary=html.escape(cover.get("cover_summary", report.headline)),
         latest_report_date=html.escape(str(cover.get("latest_report_date", report.date))),
         latest_daily_href=html.escape(cover.get("daily_href", f"./{report.date}/index.html")),
         topic_href=html.escape(cover.get("topic_href", f"./{report.date}/topic.html")),
         dossier_href=html.escape(cover.get("dossier_href", f"./{report.date}/dossier.html")),
-        editorial_line=html.escape(cover.get("editorial_line", report.headline)),
-        theme_state=html.escape(cover.get("theme_state", "暂无")),
-        participating_companies=html.escape("、".join(cover.get("participating_companies", [])) or "暂无"),
-        next_focus=html.escape("、".join(cover.get("next_focus", [])) or "暂无"),
-        agent_desk_section=_render_agent_desk_section(report, page="home"),
+        assistant_window=_render_assistant_window(report),
+        lead_story=lead_story,
+        secondary_stories=secondary_stories,
+        topic_panel=_render_topic_panel(report, cover),
+        home_lower_section=_render_home_lower_section(report, cover),
         recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
         archive_href="./archive.html",
         chat_agent_styles=_render_chat_agent_styles(),

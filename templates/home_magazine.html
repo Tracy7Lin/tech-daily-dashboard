@@ -225,6 +225,266 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+    .newspaper-topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.95fr);
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .topbar-brand,
+    .assistant-window,
+    .lead-story,
+    .secondary-story,
+    .topic-panel,
+    .home-lower-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.66));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .topbar-brand {
+      border-radius: var(--radius-xl);
+      padding: 26px 28px;
+      display: grid;
+      gap: 18px;
+      align-content: space-between;
+    }
+    .topbar-brand-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .topbar-brand-title {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+    .topbar-brand-copy {
+      margin: 0;
+      max-width: 46rem;
+      color: var(--ink-soft);
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+    .topbar-brand-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .topbar-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(40, 30, 20, 0.10);
+      background: rgba(255,255,255,0.72);
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .assistant-window {
+      border-radius: var(--radius-xl);
+      padding: 24px 24px 22px;
+      display: grid;
+      gap: 14px;
+      background:
+        linear-gradient(135deg, rgba(17, 94, 224, 0.08), rgba(17, 94, 224, 0) 48%),
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
+    }
+    .assistant-window-title {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+    .assistant-window-copy,
+    .assistant-window-theme {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.72;
+      font-size: 0.96rem;
+    }
+    .assistant-window-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .assistant-window-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .assistant-window-chip {
+      border: 1px solid rgba(15, 91, 216, 0.14);
+      border-radius: 999px;
+      background: rgba(15, 91, 216, 0.08);
+      color: var(--accent);
+      padding: 8px 12px;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+    .assistant-window-chip:hover {
+      transform: translateY(-1px);
+      background: rgba(15, 91, 216, 0.12);
+    }
+    .newspaper-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .lead-column,
+    .topic-column {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+    .lead-story,
+    .secondary-story {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .lead-story {
+      background:
+        linear-gradient(135deg, rgba(17, 94, 224, 0.14), rgba(17, 94, 224, 0) 42%),
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.80));
+    }
+    .story-expand > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 24px 26px;
+    }
+    .story-expand > summary::-webkit-details-marker { display: none; }
+    .story-topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .story-title {
+      margin: 0;
+      font-size: 1.4rem;
+      line-height: 1.18;
+      letter-spacing: -0.04em;
+    }
+    .lead-story .story-title {
+      font-size: clamp(2.1rem, 4.2vw, 3.5rem);
+      line-height: 0.96;
+    }
+    .story-copy,
+    .story-meta {
+      margin: 12px 0 0;
+      color: var(--ink-soft);
+      line-height: 1.72;
+    }
+    .story-meta {
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .story-hint {
+      display: inline-flex;
+      margin-top: 14px;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+    .story-detail {
+      padding: 0 26px 24px;
+      border-top: 1px solid rgba(40, 30, 20, 0.08);
+      background: rgba(255,255,255,0.48);
+    }
+    .story-detail-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 10px;
+    }
+    .secondary-stories {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .secondary-story {
+      border-radius: var(--radius-lg);
+    }
+    .secondary-story .story-summary {
+      padding: 20px 20px 18px;
+    }
+    .secondary-story .story-detail {
+      padding: 0 20px 20px;
+    }
+    .topic-panel {
+      border-radius: var(--radius-xl);
+      padding: 24px 24px 22px;
+      display: grid;
+      gap: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72)),
+        linear-gradient(135deg, rgba(15, 91, 216, 0.10), rgba(15, 91, 216, 0) 50%);
+    }
+    .topic-panel-title {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+    .topic-panel-copy,
+    .topic-panel-meta p {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.75;
+    }
+    .newspaper-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(40, 30, 20, 0.14), rgba(40, 30, 20, 0));
+    }
+    .topic-panel-subtitle {
+      margin: 0;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .topic-position-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.72;
+    }
+    .topic-panel-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .home-lower-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .home-lower-card {
+      border-radius: var(--radius-xl);
+      padding: 22px 24px;
+    }
     .cover-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.9fr) minmax(280px, 0.95fr);
@@ -686,6 +946,10 @@
       .right-rail { position: static; }
     }
     @media (max-width: 1080px) {
+      .newspaper-topbar,
+      .newspaper-grid,
+      .home-lower-grid,
+      .secondary-stories,
       .cover-grid,
       .section-rail,
       .section-rail-asymmetric,
@@ -714,7 +978,7 @@
       <section class="left-rail-card">
         <p class="left-rail-kicker">Main Publication</p>
         <h2 class="left-rail-title">Tech Intelligence Review</h2>
-        <p class="left-rail-copy">持续更新的科技情报主刊，首页以主专题为封面，深读则进入日报、专题与主题档案。</p>
+        <p class="left-rail-copy">持续更新的科技情报主刊。首页改成头版报纸结构，优先突出今天最值得读的条目与当前主专题。</p>
       </section>
       <nav class="left-rail-card left-rail-nav">
         <a class="left-rail-link is-active" href="./index.html" data-page-link>主刊首页</a>
@@ -725,87 +989,46 @@
       </nav>
     </aside>
     <main class="site-shell">
-    <section class="cover-grid cover-frame">
-      <article class="cover-hero ink-panel" data-reveal="hero" data-motion="cover-entry">
-        <div class="cover-spotlight" aria-hidden="true"></div>
-        <div>
-          <p class="cover-kicker">当前主专题</p>
-          <h1 class="cover-title">$primary_theme</h1>
-          <div class="editorial-rule" aria-hidden="true"></div>
-          <p class="cover-summary">$cover_summary</p>
-          <div class="cover-ledger">
-            <section class="ledger-cell">
-              <p class="ledger-label">Issue</p>
-              <p class="ledger-value">$latest_report_date</p>
-            </section>
-            <section class="ledger-cell">
-              <p class="ledger-label">State</p>
-              <p class="ledger-value">$theme_state</p>
-            </section>
-            <section class="ledger-cell">
-              <p class="ledger-label">Focus</p>
-              <p class="ledger-value">$next_focus</p>
-            </section>
+      <section class="newspaper-topbar">
+        <article class="topbar-brand" data-reveal="brand">
+          <div class="topbar-brand-row">
+            <div class="publication">
+              <p class="left-rail-kicker">Daily Front Page</p>
+              <h1 class="topbar-brand-title">科技情报头版</h1>
+            </div>
+            <div class="topbar-brand-meta">
+              <span class="topbar-pill">$latest_report_date</span>
+              <span class="topbar-pill">Daily Intelligence</span>
+            </div>
           </div>
-        </div>
-        <div class="cover-actions">
-          <a class="cover-link primary" href="$topic_href" data-motion="nav-glide" data-page-link>进入专题页</a>
-          <a class="cover-link" href="$latest_daily_href" data-motion="nav-glide" data-page-link>查看最新日报</a>
-          <a class="cover-link" href="$dossier_href" data-motion="nav-glide" data-page-link>查看主题档案</a>
-        </div>
-      </article>
-
-      <aside class="cover-side" data-reveal="side">
-        <div class="signal-card">
-          <p class="signal-label">编辑判断</p>
-          <p class="signal-value">$editorial_line</p>
-        </div>
-        <div class="signal-card">
-          <p class="signal-label">当前阶段</p>
-          <p class="signal-value">$theme_state</p>
-        </div>
-        <div class="signal-card">
-          <p class="signal-label">参与公司</p>
-          <p class="signal-value">$participating_companies</p>
-        </div>
-        <div class="signal-card">
-          <p class="signal-label">下一步关注</p>
-          <p class="signal-value">$next_focus</p>
-        </div>
-        <section class="cover-editorial-note">
-          <p class="editorial-note-kicker">编辑按语</p>
-          <p class="editorial-note-copy">$editorial_line</p>
-        </section>
-      </aside>
-    </section>
-
-    <section class="section-rail section-rail-asymmetric">
-      <a class="cover-section section-card-featured section-slot-featured" href="$latest_daily_href" data-reveal="daily" data-motion="section-card" data-page-link>
-        <p class="section-kicker">Latest Issue</p>
-        <h2 class="section-title">每日一期日报</h2>
-        <p class="section-copy">快速进入当天正文，查看重点观察、公司动态与基础主题概览。</p>
-      </a>
-      <a class="cover-section section-slot-topic" href="$topic_href" data-reveal="topic" data-motion="section-card" data-page-link>
-        <p class="section-kicker">Feature</p>
-        <h2 class="section-title">专题页</h2>
-        <p class="section-copy">围绕当前主专题，阅读跨日观察、专题跟踪与深度摘要。</p>
-      </a>
-      <a class="cover-section section-slot-dossier" href="$dossier_href" data-reveal="dossier" data-motion="section-card" data-page-link>
-        <p class="section-kicker">Archive</p>
-        <h2 class="section-title">主题档案</h2>
-        <p class="section-copy">查看主题定义、状态、公司位置、时间线与跟踪决策。</p>
-      </a>
-      <section class="cover-section section-slot-recent" data-reveal="recent" data-motion="section-card">
-        <p class="section-kicker">Recent Issues</p>
-        <h2 class="section-title">最近几期</h2>
-        <p class="section-copy">以当日 headline 为索引，快速回看最近一期的主线判断。</p>
-        <div class="recent-list">$recent_issues</div>
+          <p class="topbar-brand-copy">首页优先呈现当日头条与当前主专题。更详细的主题研究、正文深读与完整档案，继续进入日报页、专题页和主题档案页。</p>
+          <nav class="magazine-nav">
+            <a href="./index.html" data-page-link>主刊首页</a>
+            <a href="$latest_daily_href" data-page-link>最新日报</a>
+            <a href="$topic_href" data-page-link>专题页</a>
+            <a href="$dossier_href" data-page-link>主题档案</a>
+            <a href="$archive_href" data-page-link>历史归档</a>
+          </nav>
+        </article>
+        $assistant_window
       </section>
-    </section>
 
-    $agent_desk_section
+      <section class="newspaper-grid">
+        <section class="lead-column">
+          <p class="section-kicker">Lead Story</p>
+          $lead_story
+          <div class="secondary-stories">
+            $secondary_stories
+          </div>
+        </section>
+        <aside class="topic-column">
+          $topic_panel
+        </aside>
+      </section>
 
-  </main>
+      $home_lower_section
+
+    </main>
     <aside class="right-rail">
       $chat_agent_shell
     </aside>
