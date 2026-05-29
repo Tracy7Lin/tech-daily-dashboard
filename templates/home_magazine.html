@@ -51,10 +51,7 @@
       display: grid;
       gap: 18px;
     }
-    .header-stage {
-      display: grid;
-      gap: 14px;
-    }
+    .header-stage { display: grid; gap: 12px; }
     .site-shell {
       min-width: 0;
       padding: 0;
@@ -68,15 +65,13 @@
     }
     .publication-bar {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) minmax(280px, 0.9fr) auto;
-      gap: 18px;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 16px;
       align-items: center;
-      padding: 18px 28px 16px;
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      background: rgba(255,255,255,0.46);
-      box-shadow: 0 12px 26px rgba(20, 26, 38, 0.04);
-      backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.58);
+      backdrop-filter: blur(14px);
     }
     .publication-brand {
       display: flex;
@@ -109,19 +104,18 @@
     }
     .publication-brand-copy h2 {
       margin: 4px 0 0;
-      font-size: 1.22rem;
+      font-size: 1.18rem;
       line-height: 1.2;
       letter-spacing: -0.03em;
     }
-    .masthead {
+    .front-intro {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 10px;
-      padding: 24px 30px 20px;
+      padding-bottom: 24px;
       border-bottom: 1px solid var(--line-strong);
-      align-items: start;
+      margin-bottom: 24px;
     }
-    .masthead-label {
+    .front-intro-label {
       margin: 0 0 6px;
       color: var(--accent);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
@@ -130,15 +124,16 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
     }
-    .masthead-title {
+    .front-intro-title {
       margin: 0;
-      font-size: clamp(2.9rem, 5vw, 4.8rem);
-      line-height: 0.92;
+      font-size: clamp(3.1rem, 5.8vw, 5.2rem);
+      line-height: 0.9;
       letter-spacing: -0.06em;
+      max-width: 10ch;
     }
-    .masthead-copy {
+    .front-intro-copy {
       margin: 12px 0 0;
-      max-width: 44rem;
+      max-width: 36rem;
       color: var(--ink-soft);
       line-height: 1.72;
       font-size: 0.98rem;
@@ -157,9 +152,7 @@
       text-transform: uppercase;
       background: rgba(255,255,255,0.72);
     }
-    .publication-nav {
-      justify-content: center;
-    }
+    .publication-nav { justify-content: center; }
     .magazine-nav {
       display: flex;
       gap: 10px;
@@ -186,33 +179,35 @@
       background: rgba(31, 111, 255, 0.06);
       text-decoration: none;
     }
-    .home-assistant-shell {
-      position: relative;
-    }
-    .home-assistant-shell {
-      display: flex;
-      align-items: center;
-    }
+    .home-assistant-shell { position: relative; display: flex; align-items: center; }
     .home-assistant-shell .chat-launcher {
       display: inline-flex;
       align-items: center;
-      min-height: 38px;
-      padding: 0 14px;
-      border: 1px solid transparent;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid rgba(31, 111, 255, 0.14);
       border-radius: 999px;
-      background: transparent;
-      color: var(--ink);
+      background: rgba(31, 111, 255, 0.06);
+      color: var(--accent);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.82rem;
+      font-size: 0.9rem;
       font-weight: 700;
       text-decoration: none;
-      transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+      transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
       box-shadow: none;
+      position: static;
+      right: auto;
+      bottom: auto;
+      z-index: auto;
     }
     .home-assistant-shell .chat-launcher:hover {
-      color: var(--accent);
-      border-color: rgba(31, 111, 255, 0.20);
-      background: rgba(31, 111, 255, 0.06);
+      color: #fff;
+      border-color: rgba(31, 111, 255, 0.22);
+      background: linear-gradient(135deg, #1d6fff, #4e9bff);
+      transform: translateY(-1px);
+    }
+    body[data-chat-compact="true"][data-chat-layout="desktop"] .home-assistant-shell .chat-launcher {
+      display: inline-flex;
     }
     .home-assistant-shell .assistant-rail.chat-drawer {
       position: fixed;
@@ -233,7 +228,7 @@
     }
     .front-page {
       display: grid;
-      grid-template-columns: minmax(0, 1.78fr) minmax(320px, 0.82fr);
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
       gap: 0;
       align-items: start;
     }
@@ -243,7 +238,7 @@
     }
     .front-side {
       border-left: 1px solid var(--line-strong);
-      background: linear-gradient(180deg, rgba(31, 111, 255, 0.018), rgba(255,255,255,0));
+      background: linear-gradient(180deg, rgba(31, 111, 255, 0.02), rgba(255,255,255,0));
     }
     .column-label {
       margin: 0 0 14px;
@@ -368,19 +363,16 @@
       gap: 12px;
       margin-top: 12px;
     }
-    .assistant-window,
     .topic-panel,
     .home-lower-card {
       border-top: 2px solid var(--line-strong);
       padding-top: 16px;
       margin-top: 16px;
     }
-    .assistant-window:first-child,
     .topic-panel:first-child,
     .home-lower-card:first-child {
       margin-top: 0;
     }
-    .assistant-window-title,
     .topic-panel-title,
     .section-title {
       margin: 0;
@@ -388,8 +380,6 @@
       line-height: 1.04;
       letter-spacing: -0.04em;
     }
-    .assistant-window-copy,
-    .assistant-window-theme,
     .topic-panel-copy,
     .topic-panel-meta p,
     .section-copy {
@@ -398,7 +388,6 @@
       line-height: 1.72;
       font-size: 0.96rem;
     }
-    .assistant-window-actions,
     .topic-panel-actions {
       display: flex;
       flex-wrap: wrap;
@@ -430,27 +419,6 @@
       transform: translateY(-1px);
       text-decoration: none;
       box-shadow: 0 10px 24px rgba(15, 91, 216, 0.14);
-    }
-    .assistant-window-prompts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .assistant-window-chip {
-      border: 1px solid rgba(15, 91, 216, 0.14);
-      background: rgba(15, 91, 216, 0.05);
-      color: var(--accent);
-      padding: 8px 10px;
-      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 180ms ease, background 180ms ease;
-    }
-    .assistant-window-chip:hover {
-      transform: translateY(-1px);
-      background: rgba(15, 91, 216, 0.10);
     }
     .newspaper-divider {
       width: 100%;
@@ -616,7 +584,6 @@
     }
     @media (max-width: 1100px) {
       .publication-bar,
-      .masthead,
       .front-page,
       .home-lower-grid {
         grid-template-columns: 1fr;
@@ -639,7 +606,6 @@
     @media (max-width: 720px) {
       .page-shell { padding: 16px 12px 56px; }
       .publication-bar,
-      .masthead,
       .front-main,
       .front-side,
       .home-lower-grid {
@@ -689,23 +655,20 @@
           <a href="$dossier_href" data-page-link>主题档案</a>
           <a href="$archive_href" data-page-link>历史归档</a>
         </nav>
-        <div class="home-assistant-shell">
-          $chat_agent_shell
-        </div>
+        <div class="home-assistant-shell">$chat_agent_launcher</div>
         <span class="issue-badge">$latest_report_date</span>
       </section>
     </div>
     <main class="site-shell">
-      <section class="masthead">
-        <article>
-          <p class="masthead-label">Daily Front Page</p>
-          <h1 class="masthead-title">科技情报头版</h1>
-          <p class="masthead-copy">主页现在只强调两件事：上方单独呈现导航与研究助理能力层，下方用明确的双栏结构组织当天头条与主专题，不再把功能块和正文硬塞在一起。</p>
-        </article>
-      </section>
-
       <section class="front-page">
         <section class="front-main">
+          <article class="front-intro">
+            <div>
+              <p class="front-intro-label">Daily Front Page</p>
+              <h1 class="front-intro-title">科技情报头版</h1>
+            </div>
+            <p class="front-intro-copy">把当天最值得看的情报直接放在页面中央，用双栏正文组织头条与主专题；导航与研究助理只保留在上方，不再切走正文注意力。</p>
+          </article>
           <p class="column-label">Lead Story</p>
           $lead_story
           <div class="secondary-stories">
@@ -720,6 +683,7 @@
       $home_lower_section
     </main>
   </div>
+  $chat_agent_shell
   $page_transition_shell
 </body>
 </html>

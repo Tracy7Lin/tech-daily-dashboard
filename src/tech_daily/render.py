@@ -101,7 +101,7 @@ def _render_chat_agent_styles() -> str:
       box-shadow: -10px 16px 42px rgba(28, 22, 15, 0.10);
       overflow: hidden;
     }
-    body[data-chat-layout="desktop"] .assistant-rail.chat-drawer[hidden] { display: grid; }
+      body[data-chat-layout="desktop"] .assistant-rail.chat-drawer[hidden] { display: none; }
     body[data-chat-layout="desktop"] .chat-close { display: none; }
     body[data-chat-layout="mobile"] .chat-drawer[hidden] { display: none; }
     body[data-chat-layout="mobile"] .assistant-rail.chat-drawer {
@@ -571,13 +571,21 @@ def _json_script_payload(value: dict) -> str:
     return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
 
 
-def _render_chat_agent_shell(context: dict) -> str:
+def _render_chat_launcher(label: str = "研究助理") -> str:
+    return (
+        "<button class='chat-launcher' type='button' id='chat-launcher' "
+        f"aria-controls='chat-drawer' aria-expanded='false'>{html.escape(label)}</button>"
+    )
+
+
+def _render_chat_agent_shell(context: dict, *, include_launcher: bool = True) -> str:
     if not context:
         return ""
     return (
         "<div class='assistant-rail-shell'>"
-        "<button class='chat-launcher' type='button' id='chat-launcher' aria-controls='chat-drawer' aria-expanded='false'>Research Assistant</button>"
-        "<aside class='assistant-rail chat-drawer' id='chat-drawer' role='dialog' aria-modal='false'>"
+        + (_render_chat_launcher("Research Assistant") if include_launcher else "")
+        +
+        "<aside class='assistant-rail chat-drawer' id='chat-drawer' role='dialog' aria-modal='false' hidden>"
         "<div class='chat-drawer-header'>"
         "<div><p class='chat-kicker'>Research Assistant</p><h3>研究助理</h3><p class='chat-subtitle'>运行时读取日报知识层、跨日观察、专题跟踪与主题档案，并给出研究助理式回答。</p></div>"
         "<button class='chat-close' type='button' id='chat-close' aria-label='关闭问答'>×</button>"
@@ -1201,7 +1209,6 @@ def render_index(report: DailyReport) -> str:
         latest_daily_href=html.escape(cover.get("daily_href", f"./{report.date}/index.html")),
         topic_href=html.escape(cover.get("topic_href", f"./{report.date}/topic.html")),
         dossier_href=html.escape(cover.get("dossier_href", f"./{report.date}/dossier.html")),
-        assistant_window=_render_assistant_window(report),
         lead_story=lead_story,
         secondary_stories=secondary_stories,
         topic_panel=_render_topic_panel(report, cover),
@@ -1209,7 +1216,8 @@ def render_index(report: DailyReport) -> str:
         recent_issues=_render_recent_issue_items(cover.get("recent_issues", [])),
         archive_href="./archive.html",
         chat_agent_styles=_render_chat_agent_styles(),
-        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context),
+        chat_agent_launcher=_render_chat_launcher("研究助理"),
+        chat_agent_shell=_render_chat_agent_shell(report.chat_agent_context, include_launcher=False),
         page_transition_shell=_render_page_transition_shell(),
     )
 
