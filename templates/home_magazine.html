@@ -6,17 +6,18 @@
   <title>科技情报主刊</title>
   <style>
     :root {
-      --bg: #efe7db;
-      --paper: #fbf7f0;
-      --paper-strong: #fffdf8;
-      --ink: #17120d;
-      --ink-soft: #62584d;
-      --accent: #0f5bd8;
-      --line: rgba(31, 24, 17, 0.14);
-      --line-strong: rgba(31, 24, 17, 0.24);
-      --shadow: 0 18px 42px rgba(27, 21, 15, 0.08);
-      --radius-lg: 22px;
-      --radius-md: 16px;
+      --bg: #f3eee7;
+      --paper: #fcfaf6;
+      --paper-strong: #fffdfa;
+      --ink: #181411;
+      --ink-soft: #6b6258;
+      --accent: #1f6fff;
+      --accent-soft: rgba(31, 111, 255, 0.10);
+      --line: rgba(42, 35, 27, 0.10);
+      --line-strong: rgba(42, 35, 27, 0.18);
+      --shadow: 0 20px 48px rgba(31, 26, 22, 0.06);
+      --radius-lg: 28px;
+      --radius-md: 20px;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,8 +25,8 @@
       color: var(--ink);
       font-family: Georgia, "Iowan Old Style", "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
       background:
-        linear-gradient(180deg, rgba(17, 94, 224, 0.05), rgba(17, 94, 224, 0) 16%),
-        linear-gradient(180deg, #f5efe5 0%, var(--bg) 100%);
+        radial-gradient(circle at top, rgba(31, 111, 255, 0.08), transparent 26%),
+        linear-gradient(180deg, #f8f4ed 0%, var(--bg) 100%);
       transition: opacity 220ms ease, transform 320ms ease;
     }
     body[data-page-state="staging"] .site-shell {
@@ -44,92 +45,73 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     .page-shell {
-      max-width: 1540px;
+      max-width: 1380px;
       margin: 0 auto;
-      padding: 24px 18px 80px;
-      display: grid;
-      grid-template-columns: minmax(180px, 0.9fr) minmax(0, 3.5fr) minmax(320px, 1fr);
-      gap: 24px;
-      align-items: start;
+      padding: 28px 20px 84px;
     }
     .site-shell {
       min-width: 0;
       padding: 0;
       border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.52)),
-        linear-gradient(180deg, rgba(17, 94, 224, 0.04), rgba(17, 94, 224, 0));
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78)),
+        linear-gradient(180deg, rgba(31, 111, 255, 0.03), rgba(31, 111, 255, 0));
       box-shadow: var(--shadow);
+      border-radius: 36px;
+      overflow: hidden;
     }
-    .left-rail,
-    .right-rail {
-      position: sticky;
-      top: 24px;
-      align-self: start;
+    .publication-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 28px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.46);
+      backdrop-filter: blur(10px);
+    }
+    .publication-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
       min-width: 0;
     }
-    .left-rail {
+    .publication-brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(31, 111, 255, 0.18), rgba(31, 111, 255, 0.06));
       display: grid;
-      gap: 14px;
+      place-items: center;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
-    .left-rail-card {
-      padding: 16px 16px 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.62);
-      box-shadow: 0 8px 20px rgba(28, 22, 15, 0.04);
-    }
-    .left-rail-kicker {
-      margin: 0 0 8px;
+    .publication-brand-copy p {
+      margin: 0;
       color: var(--accent);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
     }
-    .left-rail-title {
-      margin: 0;
-      font-size: 1.04rem;
-      line-height: 1.45;
-      letter-spacing: -0.02em;
-    }
-    .left-rail-copy {
-      margin: 10px 0 0;
-      color: var(--ink-soft);
-      line-height: 1.7;
-      font-size: 0.92rem;
-    }
-    .left-rail-nav {
-      display: grid;
-      gap: 0;
-      overflow: hidden;
-    }
-    .left-rail-link {
-      display: block;
-      padding: 12px 10px;
-      border-top: 1px solid var(--line);
-      color: var(--ink);
-      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.84rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: padding-left 180ms ease, color 180ms ease, background 180ms ease;
-    }
-    .left-rail-link:first-child { border-top: 0; }
-    .left-rail-link:hover,
-    .left-rail-link.is-active {
-      padding-left: 14px;
-      background: rgba(15, 91, 216, 0.04);
-      color: var(--accent);
-      text-decoration: none;
+    .publication-brand-copy h2 {
+      margin: 4px 0 0;
+      font-size: 1.22rem;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
     }
     .masthead {
       display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
-      gap: 24px;
-      padding: 24px 30px 20px;
+      grid-template-columns: minmax(0, 1.16fr) minmax(380px, 0.84fr);
+      gap: 28px;
+      padding: 22px 28px 24px;
       border-bottom: 1px solid var(--line-strong);
-      align-items: end;
+      align-items: start;
     }
     .masthead-label {
       margin: 0 0 6px;
@@ -155,8 +137,8 @@
     }
     .masthead-meta {
       display: grid;
-      gap: 14px;
-      justify-items: end;
+      gap: 18px;
+      justify-items: stretch;
     }
     .issue-badge {
       display: inline-flex;
@@ -176,29 +158,83 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
     .magazine-nav a {
       display: inline-flex;
       align-items: center;
-      min-height: 34px;
-      padding: 0 10px;
-      border-bottom: 1px solid transparent;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 999px;
       color: var(--ink);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
       font-size: 0.82rem;
       font-weight: 700;
       text-decoration: none;
-      transition: color 180ms ease, border-color 180ms ease;
+      transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
     }
     .magazine-nav a:hover {
       color: var(--accent);
-      border-color: rgba(15, 91, 216, 0.30);
+      border-color: rgba(31, 111, 255, 0.20);
+      background: rgba(31, 111, 255, 0.06);
       text-decoration: none;
+    }
+    .home-assistant-shell {
+      position: relative;
+    }
+    .home-assistant-shell .chat-launcher {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #1f6fff, #368cff);
+      color: #fff;
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      box-shadow: 0 14px 28px rgba(31, 111, 255, 0.22);
+    }
+    body[data-chat-layout="desktop"] .home-assistant-shell .chat-launcher {
+      display: inline-flex;
+    }
+    body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer {
+      position: absolute;
+      top: calc(100% + 14px);
+      right: 0;
+      width: min(440px, calc(100vw - 44px));
+      min-height: 0;
+      max-height: 76vh;
+      z-index: 36;
+      border-radius: 24px;
+      border: 1px solid rgba(31, 111, 255, 0.12);
+      box-shadow: 0 24px 52px rgba(20, 26, 38, 0.16);
+      background: rgba(252, 250, 246, 0.98);
+      backdrop-filter: blur(14px);
+    }
+    body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer[hidden] {
+      display: none;
+    }
+    .home-assistant-window {
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(31, 111, 255, 0.12);
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.76)),
+        linear-gradient(135deg, rgba(31,111,255,0.08), rgba(31,111,255,0.02));
+      box-shadow: 0 14px 34px rgba(20, 26, 38, 0.08);
+    }
+    .home-assistant-window .assistant-window {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
     }
     .front-page {
       display: grid;
-      grid-template-columns: minmax(0, 1.62fr) minmax(340px, 0.98fr);
+      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.92fr);
       gap: 0;
       align-items: start;
     }
@@ -208,7 +244,7 @@
     }
     .front-side {
       border-left: 1px solid var(--line-strong);
-      background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0));
+      background: linear-gradient(180deg, rgba(31, 111, 255, 0.025), rgba(255,255,255,0));
     }
     .column-label {
       margin: 0 0 14px;
@@ -570,15 +606,19 @@
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 1280px) {
-      .page-shell { grid-template-columns: 1fr; }
-      .left-rail,
-      .right-rail { position: static; }
+      .masthead {
+        grid-template-columns: 1fr;
+      }
     }
     @media (max-width: 1100px) {
+      .publication-bar,
       .masthead,
       .front-page,
       .home-lower-grid {
         grid-template-columns: 1fr;
+      }
+      .publication-bar {
+        align-items: start;
       }
       .front-side,
       .home-lower-card + .home-lower-card {
@@ -594,12 +634,20 @@
     }
     @media (max-width: 720px) {
       .page-shell { padding: 16px 12px 56px; }
+      .publication-bar,
       .masthead,
       .front-main,
       .front-side,
       .home-lower-grid {
         padding-left: 20px;
         padding-right: 20px;
+      }
+      .publication-brand {
+        align-items: flex-start;
+      }
+      .publication-brand-mark {
+        width: 42px;
+        height: 42px;
       }
       .lead-story .story-title {
         font-size: clamp(2rem, 11vw, 3rem);
@@ -608,35 +656,35 @@
         grid-template-columns: 1fr;
         gap: 6px;
       }
+      body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer {
+        width: calc(100vw - 40px);
+        right: auto;
+        left: 0;
+      }
     }
     $chat_agent_styles
   </style>
 </head>
 <body>
   <div class="page-shell">
-    <aside class="left-rail">
-      <section class="left-rail-card">
-        <p class="left-rail-kicker">Main Publication</p>
-        <h2 class="left-rail-title">Tech Intelligence Review</h2>
-        <p class="left-rail-copy">持续更新的科技情报主刊。首页是当天头版，深读继续进入日报、专题与主题档案。</p>
-      </section>
-      <nav class="left-rail-card left-rail-nav">
-        <a class="left-rail-link is-active" href="./index.html" data-page-link>主刊首页</a>
-        <a class="left-rail-link" href="$latest_daily_href" data-page-link>最新日报</a>
-        <a class="left-rail-link" href="$topic_href" data-page-link>专题页</a>
-        <a class="left-rail-link" href="$dossier_href" data-page-link>主题档案</a>
-        <a class="left-rail-link" href="$archive_href" data-page-link>历史归档</a>
-      </nav>
-    </aside>
     <main class="site-shell">
+      <section class="publication-bar">
+        <div class="publication-brand">
+          <div class="publication-brand-mark">TIR</div>
+          <div class="publication-brand-copy">
+            <p>Main Publication</p>
+            <h2>Tech Intelligence Review</h2>
+          </div>
+        </div>
+        <span class="issue-badge">$latest_report_date</span>
+      </section>
       <section class="masthead">
         <article>
           <p class="masthead-label">Daily Front Page</p>
           <h1 class="masthead-title">科技情报头版</h1>
-          <p class="masthead-copy">优先呈现当日最值得阅读的日报条目，并把当前主专题放到研究副栏里，而不是继续堆叠产品卡片。</p>
+          <p class="masthead-copy">把当天最值得看的条目放到头版中央，把研究助理和导航收回上侧，让首页重新以内容本身为重点，而不是边栏和面板。</p>
         </article>
         <div class="masthead-meta">
-          <span class="issue-badge">$latest_report_date</span>
           <nav class="magazine-nav">
             <a href="./index.html" data-page-link>主刊首页</a>
             <a href="$latest_daily_href" data-page-link>最新日报</a>
@@ -644,6 +692,12 @@
             <a href="$dossier_href" data-page-link>主题档案</a>
             <a href="$archive_href" data-page-link>历史归档</a>
           </nav>
+          <div class="home-assistant-shell">
+            <div class="home-assistant-window">
+              $assistant_window
+            </div>
+            $chat_agent_shell
+          </div>
         </div>
       </section>
 
@@ -656,16 +710,12 @@
           </div>
         </section>
         <aside class="front-side">
-          $assistant_window
           $topic_panel
         </aside>
       </section>
 
       $home_lower_section
     </main>
-    <aside class="right-rail">
-      $chat_agent_shell
-    </aside>
   </div>
   $page_transition_shell
 </body>
