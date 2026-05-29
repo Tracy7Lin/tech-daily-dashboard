@@ -48,14 +48,20 @@
       max-width: 1380px;
       margin: 0 auto;
       padding: 28px 20px 84px;
+      display: grid;
+      gap: 18px;
+    }
+    .header-stage {
+      display: grid;
+      gap: 14px;
     }
     .site-shell {
       min-width: 0;
       padding: 0;
       border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78)),
-        linear-gradient(180deg, rgba(31, 111, 255, 0.03), rgba(31, 111, 255, 0));
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.82)),
+        linear-gradient(180deg, rgba(31, 111, 255, 0.025), rgba(31, 111, 255, 0));
       box-shadow: var(--shadow);
       border-radius: 36px;
       overflow: hidden;
@@ -66,8 +72,10 @@
       gap: 18px;
       align-items: center;
       padding: 18px 28px 16px;
-      border-bottom: 1px solid var(--line);
+      border: 1px solid var(--line);
+      border-radius: 28px;
       background: rgba(255,255,255,0.46);
+      box-shadow: 0 12px 26px rgba(20, 26, 38, 0.04);
       backdrop-filter: blur(10px);
     }
     .publication-brand {
@@ -108,8 +116,8 @@
     .masthead {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 18px;
-      padding: 24px 28px 16px;
+      gap: 10px;
+      padding: 24px 30px 20px;
       border-bottom: 1px solid var(--line-strong);
       align-items: start;
     }
@@ -179,8 +187,13 @@
       text-decoration: none;
     }
     .assistant-ribbon {
-      padding: 0 28px 20px;
-      border-bottom: 1px solid var(--line);
+      padding: 18px 24px;
+      border: 1px solid rgba(31, 111, 255, 0.10);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at top left, rgba(31, 111, 255, 0.10), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.82));
+      box-shadow: 0 14px 30px rgba(20, 26, 38, 0.05);
     }
     .home-assistant-shell {
       position: relative;
@@ -206,18 +219,15 @@
       display: none;
     }
     .home-assistant-window {
-      border: 1px solid rgba(31, 111, 255, 0.10);
-      border-radius: 24px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.80)),
-        linear-gradient(135deg, rgba(31,111,255,0.07), rgba(31,111,255,0.01));
-      box-shadow: 0 12px 26px rgba(20, 26, 38, 0.05);
-      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
+      gap: 18px;
+      align-items: start;
     }
     .home-assistant-window .assistant-window {
       border-top: 0;
-      padding-top: 0;
-      margin-top: 0;
+      padding: 0;
+      margin: 0;
     }
     .home-assistant-window .assistant-window-title {
       font-size: 1.34rem;
@@ -235,6 +245,32 @@
     }
     .home-assistant-window .assistant-window-button {
       min-height: 40px;
+    }
+    .assistant-ribbon-aside {
+      display: grid;
+      gap: 12px;
+      padding-left: 18px;
+      border-left: 1px solid var(--line);
+    }
+    .assistant-ribbon-kicker {
+      margin: 0;
+      color: var(--accent);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .assistant-ribbon-copy {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.72;
+      font-size: 0.92rem;
+    }
+    .assistant-ribbon-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .front-page {
       display: grid;
@@ -617,6 +653,15 @@
       .publication-nav {
         justify-content: flex-start;
       }
+      .home-assistant-window {
+        grid-template-columns: 1fr;
+      }
+      .assistant-ribbon-aside {
+        padding-left: 0;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
     }
     @media (max-width: 1100px) {
       .publication-bar,
@@ -629,8 +674,7 @@
         align-items: start;
       }
       .assistant-ribbon {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding: 16px 20px;
       }
       .front-side,
       .home-lower-card + .home-lower-card {
@@ -681,7 +725,7 @@
 </head>
 <body data-chat-compact="true">
   <div class="page-shell">
-    <main class="site-shell">
+    <div class="header-stage">
       <section class="publication-bar">
         <div class="publication-brand">
           <div class="publication-brand-mark">TIR</div>
@@ -699,20 +743,30 @@
         </nav>
         <span class="issue-badge">$latest_report_date</span>
       </section>
-      <section class="masthead">
-        <article>
-          <p class="masthead-label">Daily Front Page</p>
-          <h1 class="masthead-title">科技情报头版</h1>
-          <p class="masthead-copy">把当天最值得看的条目放到首页中央，以更柔和的科技出版物风格组织头版信息；研究助理收回顶部，只在需要时再展开为运行时问答浮层。</p>
-        </article>
-      </section>
       <section class="assistant-ribbon">
         <div class="home-assistant-shell">
           <div class="home-assistant-window">
             $assistant_window
+            <aside class="assistant-ribbon-aside">
+              <p class="assistant-ribbon-kicker">Assistant Layer</p>
+              <p class="assistant-ribbon-copy">研究助理单独位于上方能力层，不再侵占头版正文。需要时展开运行时问答，平时只保留最短的入口与提示。</p>
+              <div class="assistant-ribbon-actions">
+                <button class="cover-link primary" type="button" data-open-chat="true">打开研究助理</button>
+                <a class="cover-link" href="$latest_daily_href" data-page-link>进入当日日报</a>
+              </div>
+            </aside>
           </div>
           $chat_agent_shell
         </div>
+      </section>
+    </div>
+    <main class="site-shell">
+      <section class="masthead">
+        <article>
+          <p class="masthead-label">Daily Front Page</p>
+          <h1 class="masthead-title">科技情报头版</h1>
+          <p class="masthead-copy">主页现在只强调两件事：上方单独呈现导航与研究助理能力层，下方用明确的双栏结构组织当天头条与主专题，不再把功能块和正文硬塞在一起。</p>
+        </article>
       </section>
 
       <section class="front-page">
