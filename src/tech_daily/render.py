@@ -999,30 +999,22 @@ def _render_home_stories(report: DailyReport) -> tuple[str, str]:
 
 
 def _render_assistant_window(report: DailyReport) -> str:
-    context = report.chat_agent_context or {}
     tracking = report.theme_tracking_brief or {}
     dossier = report.theme_dossier_brief or {}
     primary_theme = dossier.get("primary_theme") or tracking.get("primary_theme") or "暂无主专题"
-    quick_questions = context.get("quick_questions", [])
-    chips = "".join(
-        f"<button class='assistant-window-chip' type='button' data-open-chat='true'>{html.escape(question)}</button>"
-        for question in quick_questions[:3]
-    )
-    if not chips:
-        chips = (
-            "<button class='assistant-window-chip' type='button' data-open-chat='true'>今天最值得关注什么？</button>"
-            "<button class='assistant-window-chip' type='button' data-open-chat='true'>这个主专题现在怎么理解？</button>"
-        )
     return (
-        "<section class='assistant-window' data-reveal='assistant-window'>"
+        "<section class='assistant-window assistant-window-compact' data-reveal='assistant-window'>"
+        "<div class='assistant-window-main'>"
         "<p class='section-kicker'>Research Assistant</p>"
         "<h2 class='assistant-window-title'>研究助理</h2>"
         "<p class='assistant-window-copy'>运行时读取日报知识层、跨日观察、专题跟踪与主题档案，支持自由提问和继续追问。</p>"
+        "</div>"
+        "<div class='assistant-window-side'>"
         f"<p class='assistant-window-theme'><strong>当前主专题：</strong>{html.escape(primary_theme)}</p>"
         "<div class='assistant-window-actions'>"
-        "<button class='cover-link primary assistant-window-button' type='button' data-open-chat='true'>立即提问</button>"
+        "<button class='cover-link primary assistant-window-button' type='button' data-open-chat='true'>打开问答</button>"
         "</div>"
-        f"<div class='assistant-window-prompts'>{chips}</div>"
+        "</div>"
         "</section>"
     )
 

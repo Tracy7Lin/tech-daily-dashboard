@@ -68,7 +68,7 @@
     }
     .publication-bar {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: auto minmax(0, 1fr) minmax(280px, 0.9fr) auto;
       gap: 18px;
       align-items: center;
       padding: 18px 28px 16px;
@@ -186,15 +186,6 @@
       background: rgba(31, 111, 255, 0.06);
       text-decoration: none;
     }
-    .assistant-ribbon {
-      padding: 18px 24px;
-      border: 1px solid rgba(31, 111, 255, 0.10);
-      border-radius: 28px;
-      background:
-        radial-gradient(circle at top left, rgba(31, 111, 255, 0.10), transparent 38%),
-        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.82));
-      box-shadow: 0 14px 30px rgba(20, 26, 38, 0.05);
-    }
     .home-assistant-shell {
       position: relative;
     }
@@ -218,59 +209,50 @@
     .home-assistant-shell .assistant-rail.chat-drawer[hidden] {
       display: none;
     }
-    .home-assistant-window {
+    .home-assistant-shell .assistant-window {
+      margin: 0;
+      padding: 14px 16px;
+      border: 1px solid rgba(31, 111, 255, 0.12);
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.80)),
+        linear-gradient(135deg, rgba(31,111,255,0.05), rgba(31,111,255,0.01));
+      box-shadow: 0 10px 22px rgba(20, 26, 38, 0.04);
       display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
-      gap: 18px;
-      align-items: start;
-    }
-    .home-assistant-window .assistant-window {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
       border-top: 0;
-      padding: 0;
-      margin: 0;
     }
-    .home-assistant-window .assistant-window-title {
-      font-size: 1.34rem;
-      margin-bottom: 2px;
+    .assistant-window-main,
+    .assistant-window-side {
+      min-width: 0;
     }
-    .home-assistant-window .assistant-window-copy {
-      font-size: 0.92rem;
-      max-width: 60ch;
+    .assistant-window-title {
+      margin: 2px 0 0;
+      font-size: 1.08rem;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
     }
-    .home-assistant-window .assistant-window-actions {
-      margin-top: 10px;
-    }
-    .home-assistant-window .assistant-window-prompts {
-      margin-top: 10px;
-    }
-    .home-assistant-window .assistant-window-button {
-      min-height: 40px;
-    }
-    .assistant-ribbon-aside {
-      display: grid;
-      gap: 12px;
-      padding-left: 18px;
-      border-left: 1px solid var(--line);
-    }
-    .assistant-ribbon-kicker {
-      margin: 0;
-      color: var(--accent);
-      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .assistant-ribbon-copy {
-      margin: 0;
+    .assistant-window-copy {
+      margin: 6px 0 0;
       color: var(--ink-soft);
-      line-height: 1.72;
-      font-size: 0.92rem;
+      line-height: 1.55;
+      font-size: 0.86rem;
     }
-    .assistant-ribbon-actions {
+    .assistant-window-theme {
+      margin: 0 0 10px;
+      color: var(--ink-soft);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    .assistant-window-actions {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .assistant-window-button {
+      min-height: 40px;
+      border-radius: 14px;
     }
     .front-page {
       display: grid;
@@ -459,6 +441,7 @@
       font-size: 0.84rem;
       font-weight: 700;
       text-decoration: none;
+      border-radius: 14px;
       transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
     .cover-link.primary {
@@ -653,14 +636,8 @@
       .publication-nav {
         justify-content: flex-start;
       }
-      .home-assistant-window {
-        grid-template-columns: 1fr;
-      }
-      .assistant-ribbon-aside {
-        padding-left: 0;
-        border-left: 0;
-        border-top: 1px solid var(--line);
-        padding-top: 14px;
+      .home-assistant-shell {
+        width: 100%;
       }
     }
     @media (max-width: 1100px) {
@@ -672,9 +649,6 @@
       }
       .publication-bar {
         align-items: start;
-      }
-      .assistant-ribbon {
-        padding: 16px 20px;
       }
       .front-side,
       .home-lower-card + .home-lower-card {
@@ -719,6 +693,13 @@
         width: auto;
         max-height: calc(100vh - 28px);
       }
+      .home-assistant-shell .assistant-window {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .assistant-window-actions {
+        justify-content: flex-start;
+      }
     }
     $chat_agent_styles
   </style>
@@ -741,23 +722,11 @@
           <a href="$dossier_href" data-page-link>主题档案</a>
           <a href="$archive_href" data-page-link>历史归档</a>
         </nav>
-        <span class="issue-badge">$latest_report_date</span>
-      </section>
-      <section class="assistant-ribbon">
         <div class="home-assistant-shell">
-          <div class="home-assistant-window">
-            $assistant_window
-            <aside class="assistant-ribbon-aside">
-              <p class="assistant-ribbon-kicker">Assistant Layer</p>
-              <p class="assistant-ribbon-copy">研究助理单独位于上方能力层，不再侵占头版正文。需要时展开运行时问答，平时只保留最短的入口与提示。</p>
-              <div class="assistant-ribbon-actions">
-                <button class="cover-link primary" type="button" data-open-chat="true">打开研究助理</button>
-                <a class="cover-link" href="$latest_daily_href" data-page-link>进入当日日报</a>
-              </div>
-            </aside>
-          </div>
+          $assistant_window
           $chat_agent_shell
         </div>
+        <span class="issue-badge">$latest_report_date</span>
       </section>
     </div>
     <main class="site-shell">
