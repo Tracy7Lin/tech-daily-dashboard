@@ -62,10 +62,10 @@
     }
     .publication-bar {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       gap: 18px;
       align-items: center;
-      padding: 18px 28px 14px;
+      padding: 18px 28px 16px;
       border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,0.46);
       backdrop-filter: blur(10px);
@@ -107,9 +107,9 @@
     }
     .masthead {
       display: grid;
-      grid-template-columns: minmax(0, 1.16fr) minmax(380px, 0.84fr);
-      gap: 28px;
-      padding: 22px 28px 24px;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 24px 28px 16px;
       border-bottom: 1px solid var(--line-strong);
       align-items: start;
     }
@@ -135,11 +135,6 @@
       line-height: 1.72;
       font-size: 0.98rem;
     }
-    .masthead-meta {
-      display: grid;
-      gap: 18px;
-      justify-items: stretch;
-    }
     .issue-badge {
       display: inline-flex;
       align-items: center;
@@ -153,6 +148,9 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       background: rgba(255,255,255,0.72);
+    }
+    .publication-nav {
+      justify-content: center;
     }
     .magazine-nav {
       display: flex;
@@ -180,61 +178,67 @@
       background: rgba(31, 111, 255, 0.06);
       text-decoration: none;
     }
+    .assistant-ribbon {
+      padding: 0 28px 20px;
+      border-bottom: 1px solid var(--line);
+    }
     .home-assistant-shell {
       position: relative;
     }
     .home-assistant-shell .chat-launcher {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 0 16px;
-      border: 0;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #1f6fff, #368cff);
-      color: #fff;
-      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.84rem;
-      font-weight: 700;
-      box-shadow: 0 14px 28px rgba(31, 111, 255, 0.22);
+      display: none;
     }
-    body[data-chat-layout="desktop"] .home-assistant-shell .chat-launcher {
-      display: inline-flex;
-    }
-    body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer {
-      position: absolute;
-      top: calc(100% + 14px);
-      right: 0;
-      width: min(440px, calc(100vw - 44px));
+    .home-assistant-shell .assistant-rail.chat-drawer {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      width: min(460px, calc(100vw - 40px));
       min-height: 0;
-      max-height: 76vh;
-      z-index: 36;
-      border-radius: 24px;
+      max-height: calc(100vh - 48px);
+      z-index: 64;
+      border-radius: 28px;
       border: 1px solid rgba(31, 111, 255, 0.12);
-      box-shadow: 0 24px 52px rgba(20, 26, 38, 0.16);
+      box-shadow: 0 30px 70px rgba(20, 26, 38, 0.18);
       background: rgba(252, 250, 246, 0.98);
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(18px);
     }
-    body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer[hidden] {
+    .home-assistant-shell .assistant-rail.chat-drawer[hidden] {
       display: none;
     }
     .home-assistant-window {
-      padding: 18px 18px 16px;
-      border: 1px solid rgba(31, 111, 255, 0.12);
-      border-radius: 26px;
+      border: 1px solid rgba(31, 111, 255, 0.10);
+      border-radius: 24px;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.76)),
-        linear-gradient(135deg, rgba(31,111,255,0.08), rgba(31,111,255,0.02));
-      box-shadow: 0 14px 34px rgba(20, 26, 38, 0.08);
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.80)),
+        linear-gradient(135deg, rgba(31,111,255,0.07), rgba(31,111,255,0.01));
+      box-shadow: 0 12px 26px rgba(20, 26, 38, 0.05);
+      padding: 18px 20px;
     }
     .home-assistant-window .assistant-window {
       border-top: 0;
       padding-top: 0;
       margin-top: 0;
     }
+    .home-assistant-window .assistant-window-title {
+      font-size: 1.34rem;
+      margin-bottom: 2px;
+    }
+    .home-assistant-window .assistant-window-copy {
+      font-size: 0.92rem;
+      max-width: 60ch;
+    }
+    .home-assistant-window .assistant-window-actions {
+      margin-top: 10px;
+    }
+    .home-assistant-window .assistant-window-prompts {
+      margin-top: 10px;
+    }
+    .home-assistant-window .assistant-window-button {
+      min-height: 40px;
+    }
     .front-page {
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.92fr);
+      grid-template-columns: minmax(0, 1.78fr) minmax(320px, 0.82fr);
       gap: 0;
       align-items: start;
     }
@@ -244,7 +248,7 @@
     }
     .front-side {
       border-left: 1px solid var(--line-strong);
-      background: linear-gradient(180deg, rgba(31, 111, 255, 0.025), rgba(255,255,255,0));
+      background: linear-gradient(180deg, rgba(31, 111, 255, 0.018), rgba(255,255,255,0));
     }
     .column-label {
       margin: 0 0 14px;
@@ -606,8 +610,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 1280px) {
-      .masthead {
+      .publication-bar {
         grid-template-columns: 1fr;
+        justify-items: start;
+      }
+      .publication-nav {
+        justify-content: flex-start;
       }
     }
     @media (max-width: 1100px) {
@@ -619,6 +627,10 @@
       }
       .publication-bar {
         align-items: start;
+      }
+      .assistant-ribbon {
+        padding-left: 20px;
+        padding-right: 20px;
       }
       .front-side,
       .home-lower-card + .home-lower-card {
@@ -656,16 +668,18 @@
         grid-template-columns: 1fr;
         gap: 6px;
       }
-      body[data-chat-layout="desktop"] .home-assistant-shell .assistant-rail.chat-drawer {
-        width: calc(100vw - 40px);
-        right: auto;
-        left: 0;
+      .home-assistant-shell .assistant-rail.chat-drawer {
+        top: 14px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-height: calc(100vh - 28px);
       }
     }
     $chat_agent_styles
   </style>
 </head>
-<body>
+<body data-chat-compact="true">
   <div class="page-shell">
     <main class="site-shell">
       <section class="publication-bar">
@@ -676,28 +690,28 @@
             <h2>Tech Intelligence Review</h2>
           </div>
         </div>
+        <nav class="magazine-nav publication-nav">
+          <a href="./index.html" data-page-link>主刊首页</a>
+          <a href="$latest_daily_href" data-page-link>最新日报</a>
+          <a href="$topic_href" data-page-link>专题页</a>
+          <a href="$dossier_href" data-page-link>主题档案</a>
+          <a href="$archive_href" data-page-link>历史归档</a>
+        </nav>
         <span class="issue-badge">$latest_report_date</span>
       </section>
       <section class="masthead">
         <article>
           <p class="masthead-label">Daily Front Page</p>
           <h1 class="masthead-title">科技情报头版</h1>
-          <p class="masthead-copy">把当天最值得看的条目放到头版中央，把研究助理和导航收回上侧，让首页重新以内容本身为重点，而不是边栏和面板。</p>
+          <p class="masthead-copy">把当天最值得看的条目放到首页中央，以更柔和的科技出版物风格组织头版信息；研究助理收回顶部，只在需要时再展开为运行时问答浮层。</p>
         </article>
-        <div class="masthead-meta">
-          <nav class="magazine-nav">
-            <a href="./index.html" data-page-link>主刊首页</a>
-            <a href="$latest_daily_href" data-page-link>最新日报</a>
-            <a href="$topic_href" data-page-link>专题页</a>
-            <a href="$dossier_href" data-page-link>主题档案</a>
-            <a href="$archive_href" data-page-link>历史归档</a>
-          </nav>
-          <div class="home-assistant-shell">
-            <div class="home-assistant-window">
-              $assistant_window
-            </div>
-            $chat_agent_shell
+      </section>
+      <section class="assistant-ribbon">
+        <div class="home-assistant-shell">
+          <div class="home-assistant-window">
+            $assistant_window
           </div>
+          $chat_agent_shell
         </div>
       </section>
 
