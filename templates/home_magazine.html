@@ -189,8 +189,30 @@
     .home-assistant-shell {
       position: relative;
     }
+    .home-assistant-shell {
+      display: flex;
+      align-items: center;
+    }
     .home-assistant-shell .chat-launcher {
-      display: none;
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+      box-shadow: none;
+    }
+    .home-assistant-shell .chat-launcher:hover {
+      color: var(--accent);
+      border-color: rgba(31, 111, 255, 0.20);
+      background: rgba(31, 111, 255, 0.06);
     }
     .home-assistant-shell .assistant-rail.chat-drawer {
       position: fixed;
@@ -208,51 +230,6 @@
     }
     .home-assistant-shell .assistant-rail.chat-drawer[hidden] {
       display: none;
-    }
-    .home-assistant-shell .assistant-window {
-      margin: 0;
-      padding: 14px 16px;
-      border: 1px solid rgba(31, 111, 255, 0.12);
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.80)),
-        linear-gradient(135deg, rgba(31,111,255,0.05), rgba(31,111,255,0.01));
-      box-shadow: 0 10px 22px rgba(20, 26, 38, 0.04);
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: center;
-      border-top: 0;
-    }
-    .assistant-window-main,
-    .assistant-window-side {
-      min-width: 0;
-    }
-    .assistant-window-title {
-      margin: 2px 0 0;
-      font-size: 1.08rem;
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-    }
-    .assistant-window-copy {
-      margin: 6px 0 0;
-      color: var(--ink-soft);
-      line-height: 1.55;
-      font-size: 0.86rem;
-    }
-    .assistant-window-theme {
-      margin: 0 0 10px;
-      color: var(--ink-soft);
-      font-size: 0.86rem;
-      line-height: 1.45;
-    }
-    .assistant-window-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
-    .assistant-window-button {
-      min-height: 40px;
-      border-radius: 14px;
     }
     .front-page {
       display: grid;
@@ -636,9 +613,6 @@
       .publication-nav {
         justify-content: flex-start;
       }
-      .home-assistant-shell {
-        width: 100%;
-      }
     }
     @media (max-width: 1100px) {
       .publication-bar,
@@ -693,13 +667,6 @@
         width: auto;
         max-height: calc(100vh - 28px);
       }
-      .home-assistant-shell .assistant-window {
-        grid-template-columns: 1fr;
-        align-items: start;
-      }
-      .assistant-window-actions {
-        justify-content: flex-start;
-      }
     }
     $chat_agent_styles
   </style>
@@ -723,7 +690,6 @@
           <a href="$archive_href" data-page-link>历史归档</a>
         </nav>
         <div class="home-assistant-shell">
-          $assistant_window
           $chat_agent_shell
         </div>
         <span class="issue-badge">$latest_report_date</span>
