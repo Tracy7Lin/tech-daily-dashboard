@@ -17,6 +17,12 @@ _SPECULATIVE_TOKENS = (
     "预计",
     "有望",
 )
+_GENERIC_NEXT_FOCUS = (
+    "继续观察",
+    "保持观察",
+    "持续关注",
+    "后续进展",
+)
 
 
 def _clean_text(value: str) -> str:
@@ -33,6 +39,15 @@ def _is_low_signal(value: str) -> bool:
 def _contains_speculation(value: str) -> bool:
     lowered = value or ""
     return any(token in lowered for token in _SPECULATIVE_TOKENS)
+
+
+def _is_low_signal_focus(value: str) -> bool:
+    cleaned = _clean_text(value)
+    return (
+        not cleaned
+        or len(cleaned) < 4
+        or any(token in cleaned for token in _GENERIC_NEXT_FOCUS)
+    )
 
 
 class ThemeDossierEnhancer:
@@ -120,7 +135,11 @@ class ThemeDossierEnhancer:
         theme_definition = (payload.get("theme_definition") or "").strip()
         theme_summary = (payload.get("theme_summary") or "").strip()
         tracking_decision = (payload.get("tracking_decision") or "").strip()
-        next_day_focus = [item.strip() for item in (payload.get("next_day_focus") or []) if isinstance(item, str) and item.strip()]
+        next_day_focus = [
+            _clean_text(item)
+            for item in (payload.get("next_day_focus") or [])
+            if isinstance(item, str) and _clean_text(item) and not _is_low_signal_focus(item)
+        ][:3]
         company_positions = {
             company: _clean_text(value)
             for company, value in (payload.get("company_positions") or {}).items()

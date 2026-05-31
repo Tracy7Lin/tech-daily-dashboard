@@ -129,6 +129,33 @@ class ThemeDossierEnhancerTests(unittest.TestCase):
             "教育场景下的产品安全治理",
         )
 
+    def test_hybrid_mode_trims_next_day_focus_and_drops_generic_items(self) -> None:
+        client = MagicMock()
+        client.is_available.return_value = True
+        client.generate_json.return_value = {
+            "theme_definition": "这个主题关注安全与治理如何继续落到更具体的教育产品规则与默认设置中。",
+            "theme_summary": "Google 的连续动作让这一主题继续保持研究价值，重点开始转向更具体的产品机制。",
+            "tracking_decision": "建议继续跟踪，因为主题已经开始出现清晰的落地动作和后续观察点。",
+            "next_day_focus": ["继续观察", "Google 教育产品后续动作", "第二家公司是否跟进", "保持观察", "治理默认设置变化"],
+            "company_positions": {
+                "Google": "更偏向把安全治理嵌入教育场景下的产品默认设置与使用规则。"
+            },
+            "timeline_events": [
+                {
+                    "why_it_matters": "这说明主题已经开始从抽象治理讨论转向更具体的产品规则执行。"
+                }
+            ],
+        }
+        enhancer = ThemeDossierEnhancer(mode="hybrid", client=client)
+
+        enhanced = enhancer.enhance(_brief())
+
+        self.assertEqual(enhanced.mode_used, "llm")
+        self.assertEqual(
+            enhanced.next_day_focus,
+            ["Google 教育产品后续动作", "第二家公司是否跟进", "治理默认设置变化"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

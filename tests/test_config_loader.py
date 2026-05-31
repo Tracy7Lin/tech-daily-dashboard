@@ -57,6 +57,11 @@ class ConfigLoaderTests(unittest.TestCase):
         self.assertGreaterEqual(len(companies["openai"].sources), 2)
         self.assertEqual(companies["openai"].sources[1].label, "OpenAI Index")
 
+        self.assertGreaterEqual(len(companies["apple"].sources), 2)
+        self.assertEqual(companies["apple"].sources[1].label, "Apple Developer News")
+        self.assertEqual(companies["apple"].sources[1].url, "https://developer.apple.com/news/")
+        self.assertIn("/news/", companies["apple"].sources[1].path_prefixes)
+
 
 if __name__ == "__main__":
     unittest.main()

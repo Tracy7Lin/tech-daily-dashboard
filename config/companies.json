@@ -95,6 +95,17 @@
         "url": "https://www.apple.com/newsroom/rss-feed.rss",
         "include_patterns": ["apple", "iphone", "mac", "ipad", "vision", "intelligence"],
         "exclude_patterns": ["store", "music playlist"]
+      },
+      {
+        "kind": "html",
+        "label": "Apple Developer News",
+        "url": "https://developer.apple.com/news/",
+        "path_prefixes": ["/news/"],
+        "include_patterns": ["ai", "developer", "framework", "ml", "machine learning", "vision", "foundation models"],
+        "exclude_patterns": ["design awards", "app store", "swift student challenge"],
+        "fetch_article_details": true,
+        "detail_fetch_limit": 4,
+        "require_published_at": true
       }
     ]
   },

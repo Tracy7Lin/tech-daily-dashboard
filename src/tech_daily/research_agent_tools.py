@@ -26,7 +26,7 @@ def list_research_agent_tools() -> list[ResearchToolDescriptor]:
         ResearchToolDescriptor(
             name="report_generation",
             purpose="触发日报生成与更新本地产物。",
-            availability="future",
+            availability="available",
         ),
         ResearchToolDescriptor(
             name="web_search",

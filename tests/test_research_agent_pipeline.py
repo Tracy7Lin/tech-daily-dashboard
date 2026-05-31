@@ -143,6 +143,72 @@ class ResearchAgentPipelineTests(unittest.TestCase):
         self.assertEqual(result["answer"], "健康检查已完成。")
         self.assertEqual(result["question_type"], "ops_status")
 
+    def test_run_research_agent_reloads_inputs_after_report_generation(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            site_dir = Path(tmpdir) / "site"
+            data_dir = Path(tmpdir) / "data"
+            daily_dir = site_dir / "2026-05-18"
+            daily_dir.mkdir(parents=True)
+            data_dir.mkdir(parents=True)
+            for name, payload in {
+                "report.json": '{"date":"2026-05-18","headline":"old"}',
+                "daily_intel_brief.json": '{"editorial_signal":"old"}',
+                "cross_day_intel_brief.json": '{"warming_themes":["安全与治理"]}',
+                "theme_tracking_brief.json": '{"primary_theme":"安全与治理"}',
+                "theme_dossier.json": '{"primary_theme":"安全与治理"}',
+            }.items():
+                (daily_dir / name).write_text(payload, encoding="utf-8")
+            (data_dir / "health_snapshot.json").write_text("{}", encoding="utf-8")
+
+            first_inputs = SimpleNamespace(
+                report={"date": "2026-05-18", "headline": "old", "company_reports": []},
+                daily_intel_brief={"editorial_signal": "old"},
+                cross_day_intel_brief={"warming_themes": ["安全与治理"]},
+                theme_tracking_brief={"primary_theme": "安全与治理"},
+                theme_dossier={"primary_theme": "安全与治理"},
+                health_snapshot={},
+                report_date="2026-05-18",
+            )
+            refreshed_inputs = SimpleNamespace(
+                report={"date": "2026-05-18", "headline": "new", "company_reports": []},
+                daily_intel_brief={"editorial_signal": "new"},
+                cross_day_intel_brief={"warming_themes": ["安全与治理"]},
+                theme_tracking_brief={"primary_theme": "安全与治理"},
+                theme_dossier={"primary_theme": "安全与治理"},
+                health_snapshot={},
+                report_date="2026-05-18",
+            )
+
+            with patch("tech_daily.research_agent_pipeline.load_research_agent_inputs", side_effect=[first_inputs, refreshed_inputs]) as mock_loader, patch(
+                "tech_daily.research_agent_pipeline._build_responder"
+            ) as mock_builder, patch(
+                "tech_daily.research_agent_pipeline.run_research_agent_tool",
+                return_value={
+                    "tool_name": "report_generation",
+                    "status": "ok",
+                    "summary": "日报已重新生成。",
+                    "payload": {},
+                },
+            ):
+                def fake_answer(context, history=None):
+                    return {
+                        "answer": context["report_headline"],
+                        "mode_used": "rule",
+                        "question_type": context["question_understanding"]["question_type"],
+                        "evidence_items": [],
+                    }
+
+                mock_builder.return_value.answer.side_effect = fake_answer
+                result = run_research_agent(
+                    site_dir,
+                    data_dir,
+                    "2026-05-18",
+                    "重新生成今天的日报",
+                )
+
+        self.assertEqual(mock_loader.call_count, 2)
+        self.assertEqual(result["answer"], "new")
+
 
 if __name__ == "__main__":
     unittest.main()

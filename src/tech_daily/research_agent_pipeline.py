@@ -57,6 +57,11 @@ def run_research_agent(
             site_dir=site_dir,
             data_dir=data_dir,
         )
+        if (
+            understanding.requested_tool == "report_generation"
+            and tool_result.get("status") == "ok"
+        ):
+            inputs = load_research_agent_inputs(site_dir, data_dir, report_date)
     context = build_research_context(
         question,
         understanding.question_type,
