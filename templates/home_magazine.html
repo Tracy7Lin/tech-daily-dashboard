@@ -45,13 +45,12 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     .page-shell {
-      max-width: 1380px;
+      max-width: 1320px;
       margin: 0 auto;
       padding: 28px 20px 84px;
       display: grid;
       gap: 18px;
     }
-    .header-stage { display: grid; gap: 12px; }
     .site-shell {
       min-width: 0;
       padding: 0;
@@ -63,15 +62,15 @@
       border-radius: 36px;
       overflow: hidden;
     }
-    .publication-bar {
+    .home-header {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
-      gap: 16px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 20px;
       align-items: center;
       padding: 16px 24px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,0.58);
+      background: rgba(255,255,255,0.7);
       backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
     }
     .publication-brand {
       display: flex;
@@ -108,12 +107,19 @@
       line-height: 1.2;
       letter-spacing: -0.03em;
     }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
     .front-intro {
       display: grid;
-      gap: 10px;
-      padding-bottom: 24px;
+      gap: 14px;
+      padding-bottom: 20px;
       border-bottom: 1px solid var(--line-strong);
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
     .front-intro-label {
       margin: 0 0 6px;
@@ -126,16 +132,16 @@
     }
     .front-intro-title {
       margin: 0;
-      font-size: clamp(3.1rem, 5.8vw, 5.2rem);
-      line-height: 0.9;
+      font-size: clamp(3rem, 5vw, 4.8rem);
+      line-height: 0.94;
       letter-spacing: -0.06em;
-      max-width: 10ch;
+      max-width: 9ch;
     }
     .front-intro-copy {
-      margin: 12px 0 0;
-      max-width: 36rem;
+      margin: 0;
+      max-width: 40rem;
       color: var(--ink-soft);
-      line-height: 1.72;
+      line-height: 1.82;
       font-size: 0.98rem;
     }
     .issue-badge {
@@ -162,7 +168,7 @@
     .magazine-nav a {
       display: inline-flex;
       align-items: center;
-      min-height: 38px;
+      min-height: 40px;
       padding: 0 14px;
       border: 1px solid transparent;
       border-radius: 999px;
@@ -184,13 +190,13 @@
       display: inline-flex;
       align-items: center;
       min-height: 40px;
-      padding: 0 16px;
+      padding: 0 18px;
       border: 1px solid rgba(31, 111, 255, 0.14);
       border-radius: 999px;
-      background: rgba(31, 111, 255, 0.06);
+      background: linear-gradient(135deg, rgba(31, 111, 255, 0.1), rgba(31, 111, 255, 0.04));
       color: var(--accent);
       font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 700;
       text-decoration: none;
       transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
@@ -296,8 +302,8 @@
     }
     .lead-story .story-title {
       margin: 0;
-      font-size: clamp(2.5rem, 4.4vw, 4.4rem);
-      line-height: 0.92;
+      font-size: clamp(2.3rem, 4vw, 4rem);
+      line-height: 0.94;
       letter-spacing: -0.06em;
       max-width: 12ch;
     }
@@ -399,7 +405,7 @@
       align-items: center;
       justify-content: center;
       min-height: 42px;
-      padding: 0 14px;
+      padding: 0 16px;
       border: 1px solid var(--line-strong);
       background: var(--paper-strong);
       color: var(--ink);
@@ -407,7 +413,7 @@
       font-size: 0.84rem;
       font-weight: 700;
       text-decoration: none;
-      border-radius: 14px;
+      border-radius: 999px;
       transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
     .cover-link.primary {
@@ -574,16 +580,17 @@
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 1280px) {
-      .publication-bar {
+      .home-header {
         grid-template-columns: 1fr;
         justify-items: start;
       }
-      .publication-nav {
+      .publication-nav,
+      .header-meta {
         justify-content: flex-start;
       }
     }
     @media (max-width: 1100px) {
-      .publication-bar,
+      .home-header,
       .front-page,
       .home-lower-grid {
         grid-template-columns: 1fr;
@@ -605,16 +612,14 @@
     }
     @media (max-width: 720px) {
       .page-shell { padding: 16px 12px 56px; }
-      .publication-bar,
+      .home-header,
       .front-main,
       .front-side,
       .home-lower-grid {
         padding-left: 20px;
         padding-right: 20px;
       }
-      .publication-brand {
-        align-items: flex-start;
-      }
+      .publication-brand { align-items: flex-start; }
       .publication-brand-mark {
         width: 42px;
         height: 42px;
@@ -639,26 +644,26 @@
 </head>
 <body data-chat-compact="true">
   <div class="page-shell">
-    <div class="header-stage">
-      <section class="publication-bar">
-        <div class="publication-brand">
-          <div class="publication-brand-mark">TIR</div>
-          <div class="publication-brand-copy">
-            <p>Main Publication</p>
-            <h2>Tech Intelligence Review</h2>
-          </div>
+    <header class="home-header">
+      <div class="publication-brand">
+        <div class="publication-brand-mark">TIR</div>
+        <div class="publication-brand-copy">
+          <p>Main Publication</p>
+          <h2>Tech Intelligence Review</h2>
         </div>
-        <nav class="magazine-nav publication-nav">
-          <a href="./index.html" data-page-link>主刊首页</a>
-          <a href="$latest_daily_href" data-page-link>最新日报</a>
-          <a href="$topic_href" data-page-link>专题页</a>
-          <a href="$dossier_href" data-page-link>主题档案</a>
-          <a href="$archive_href" data-page-link>历史归档</a>
-        </nav>
+      </div>
+      <nav class="magazine-nav publication-nav">
+        <a href="./index.html" data-page-link>主刊首页</a>
+        <a href="$latest_daily_href" data-page-link>最新日报</a>
+        <a href="$topic_href" data-page-link>专题页</a>
+        <a href="$dossier_href" data-page-link>主题档案</a>
+        <a href="$archive_href" data-page-link>历史归档</a>
+      </nav>
+      <div class="header-meta">
         <div class="home-assistant-shell">$chat_agent_launcher</div>
         <span class="issue-badge">$latest_report_date</span>
-      </section>
-    </div>
+      </div>
+    </header>
     <main class="site-shell">
       <section class="front-page">
         <section class="front-main">
@@ -667,7 +672,7 @@
               <p class="front-intro-label">Daily Front Page</p>
               <h1 class="front-intro-title">科技情报头版</h1>
             </div>
-            <p class="front-intro-copy">把当天最值得看的情报直接放在页面中央，用双栏正文组织头条与主专题；导航与研究助理只保留在上方，不再切走正文注意力。</p>
+            <p class="front-intro-copy">把当天最值得读的条目直接放在中央版面，用双栏正文组织头条与主专题；导航与研究助理只停留在页首，不再侵占首页正文。</p>
           </article>
           <p class="column-label">Lead Story</p>
           $lead_story
